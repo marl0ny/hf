@@ -1,0 +1,10 @@
+
+/*/__pycache__
+/**/__pycache__
+.*
+!.gitignore
+*.png
+*.txt
+*_fd.json
+*.so
+*.o
