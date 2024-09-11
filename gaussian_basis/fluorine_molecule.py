@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 import matplotlib.pyplot as plt
@@ -23,7 +23,7 @@ for i in range(n_points):
     data = dat_f_pos1 + dat_f_pos2
     data.set_number_of_orbitals(9)
 
-    system = ClosedShellSystem(primitives=data.primitives(),
+    system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                             orbitals=data.orbitals(),
                             nuclear_config=[[fluorine_pos1, 9.0],
                                             [fluorine_pos2, 9.0]],

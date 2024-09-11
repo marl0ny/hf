@@ -44,6 +44,25 @@ class MolecularGeometry:
     config: Dict[str, List[np.ndarray]]
 
     def __init__(self, **kw):
+        """MolecularGeometry constructor.
+
+        If an argument is supplied, it must be the key-value pair
+
+        config={<element>: <positions>, ...},
+
+        where <element> is the atomic number of an atom and
+        <positions> is a list of Numpy arrays of length 3
+        where each numpy array gives the position for where
+        this atom can be found.
+
+        As an example,
+        
+        config={'H': [np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0])],
+                'O': [np.array([0.0, 0.0, 0.0])]}
+
+        places hydrogen atoms at (1, 0, 0) and (0, 1, 0) and an oxygen
+        atom at the origin.
+        """
         self.config = {}
         if 'config' in kw:
             self.config = kw['config']
@@ -56,8 +75,10 @@ class MolecularGeometry:
     def __getitem__(self, atomic_symbol: str) -> np.ndarray:
         return np.array(self.config[atomic_symbol])
 
-    def __add__(self, other: Union[np.ndarray, 'MolecularGeometry', int]
-                ) -> 'MolecularGeometry':
+    def __add__(
+            self,
+            other: Union[np.ndarray, 'MolecularGeometry', int]
+            ) -> 'MolecularGeometry':
         if isinstance(other, np.ndarray):
             config = copy_config(self.config)
             # print(config)
@@ -98,7 +119,17 @@ class MolecularGeometry:
             for i, r in enumerate(self.config[k]):
                 self.config[k][i] = rotate(r, angle, rotation_axis, offset)
 
-    def get_nuclear_configuration(self) -> List[Union[np.ndarray, int]]:
+    def get_nuclear_configuration(self) -> List[List[Union[np.ndarray, int]]]:
+        """ Get the configuration of the nuclear charges.
+
+        It returns a list of the form
+
+        [<position>: <charge>, ...],
+
+        where <position> is a length 3 numpy array that indicates
+        the position of the charge and <charge> is its charge strength.
+
+        """
         nuc_config = []
         for k in self.config:
             if k == 'H':

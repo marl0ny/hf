@@ -1,7 +1,7 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 
@@ -33,7 +33,7 @@ for i in range(n_points):
 
     # x = np.linspace(-10.0, 10.0, 100)
     # y = np.zeros([x.shape[0]])
-    # for g in data.primitives():
+    # for g in data.get_primitives():
     #     # print(g.orbital_exponent(), g.position(), g.angular())
     #     plt.plot(x, g([x, 0.0, 0.0]))
     #     # y += g([x, 0.0, 0.0])
@@ -42,7 +42,7 @@ for i in range(n_points):
     # plt.show()
     # plt.close()
 
-    system = ClosedShellSystem(primitives=data.primitives(),
+    system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                             orbitals=data.orbitals()[:-1],
                             nuclear_config=[[hydrogen_position, 1.0],
                                             [fluorine_position, 9.0]],

@@ -1,7 +1,8 @@
 from gaussian_basis import *
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.integrals3d import *
+from gaussian_basis import get_orbitals_dict_from_file
 import numpy as np
 import unittest
 import json
@@ -116,7 +117,7 @@ def neon_hf_energies(ne_orbitals_dict):
     #             basis_func_count += 1
     #         orbital_count += 1
 
-    system = ClosedShellSystem(primitives=data.primitives(),
+    system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                orbitals=data.orbitals(),
                                nuclear_config=[[nuc_pos, 10.0]],
                                use_ext=True)
@@ -149,10 +150,9 @@ class Test(unittest.TestCase):
         # repulsion exchange eV
         # 1800.1917704764494 -328.5441270092453
 
-        with open('../data/10p10e-4gaussians.json', 'r') as f:
-            for line in f:
-                string += line
-            ne_orbitals_dict = json.loads(string)
+        ne_orbitals_dict = get_orbitals_dict_from_file(
+            '../data/10p10e-6gaussians.json')
+        ne_orbitals_dict['2s'] = ne_orbitals_dict['2p']
         self.ne_energies_dict = neon_hf_energies(ne_orbitals_dict)
 
     def test_hydrogen_1s_energy(self):

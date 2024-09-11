@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ for i in range(10):
     data = dat_oxygen_pos1 + dat_oxygen_pos2
     data.set_number_of_orbitals(8)
 
-    system = ClosedShellSystem(primitives=data.primitives(),
+    system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                             orbitals=data.orbitals(),
                             nuclear_config=[[oxygen_pos1, 8.0],
                                             [oxygen_pos2, 8.0]],
@@ -39,7 +39,7 @@ for i in range(10):
     # x, y = np.meshgrid(s, s)
     # u = np.zeros(x.shape)
     # for k, orbital in enumerate(system.orbitals):
-    #     o = sum([orbital[i] * data.primitives()[i]([x, y, 0.0])
+    #     o = sum([orbital[i] * data.get_primitives()[i]([x, y, 0.0])
     #              for i in range(len(orbital))])
     #     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     #     ax.set_title(r'$\phi_'

@@ -1,13 +1,19 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import get_build_from_primitives
+from gaussian_basis import make_system_from_geometry_and_build
+from gaussian_basis.molecular_geometry import MolecularGeometry
 from gaussian_basis import get_orbitals_dict_from_file
-from gaussian_basis import OrbitalPrimitivesBuilder
 
 
 t1 = perf_counter_ns()
 
+carbon_dict = get_orbitals_dict_from_file('../data/10p10e-5gaussians.json')
+hydrogen_dict = {'1s':
+                 get_orbitals_dict_from_file('../data/1p1e-3gaussians.json')
+                 ['1s']
+                 }
 cc_r = 2.5
 c_positions = np.array([[cc_r/2.0, 0.0, 0.0],
                         [-cc_r/2.0, 0.0, 0.0]])
@@ -22,40 +28,21 @@ h_positions_list = [
 ]
 h_positions = np.array(h_positions_list)
 
-# plt.scatter(h_positions.T[0], h_positions.T[1])
-# plt.scatter(c_positions.T[0], c_positions.T[1])
-# plt.show()
-# plt.close()
+geom = MolecularGeometry()
+for i in range(len(h_positions)):
+    geom.add_atom('H', h_positions[i])
+for j in range(len(c_positions)):
+    geom.add_atom('C', c_positions[j])
 
-carbon_dict = get_orbitals_dict_from_file('../data/7p8e-5gaussians.json')
-hydrogen_dict = {'1s':
-                 get_orbitals_dict_from_file('../data/1p2e-3gaussians.json')
-                 ['1s']
-                 }
 
-dat_c_list = [OrbitalPrimitivesBuilder(position=c_positions[i],
-                                       orbitals_dict=carbon_dict)
-              for i in range(c_positions.shape[0])]
-dat_h_list = [OrbitalPrimitivesBuilder(position=h_positions[i],
-                                       orbitals_dict=hydrogen_dict)
-              for i in range(h_positions.shape[0])]
-data = dat_c_list[0] + dat_c_list[1] \
-       + dat_h_list[0] + dat_h_list[1] + dat_h_list[2] + dat_h_list[3]
-data.set_number_of_orbitals(8)
+data = get_build_from_primitives(
+    geom, {'C': hydrogen_dict, 'H': carbon_dict}, 8)
+system = make_system_from_geometry_and_build(geom, data)
 
 t2 = perf_counter_ns()
-system = ClosedShellSystem(primitives=data.primitives(),
-                           orbitals=data.orbitals(),
-                           nuclear_config=[[c_positions[0], 6.0],
-                                           [c_positions[1], 6.0],
-                                           [h_positions[0], 1.0],
-                                           [h_positions[1], 1.0],
-                                           [h_positions[2], 1.0],
-                                           [h_positions[3], 1.0]],
-                           use_ext=True
-                           )
-t3 = perf_counter_ns()
 system.solve(20)
+t3 = perf_counter_ns()
+
 print(system.energies)
 print(system.get_nuclear_configuration_energy())
 print(system.get_total_energy())
@@ -65,7 +52,7 @@ s = np.linspace(-5.0, 5.0, 100)
 x, y = np.meshgrid(s, s)
 u = np.zeros(x.shape)
 for k, orbital in enumerate(system.orbitals):
-    o = sum([orbital[i]*data.primitives()[i]([x, y, 0.0])
+    o = sum([orbital[i]*data.get_primitives()[i]([x, y, 0.0])
              for i in range(len(orbital))])
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax.set_title(r'$\phi_'

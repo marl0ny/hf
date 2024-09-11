@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.molecular_geometry import make_ch3, make_ch2
@@ -28,14 +28,15 @@ ch3_1 = make_ch3(2.07, 2.07, 2.07, np.pi*(111.800/180.0),
                  np.array([-np.sin(a), 0.0, np.cos(a)])) + 2.88*ch3_r
 geom = ch3_0 + ch2 + ch3_1
 
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# ax.scatter(geom['H'].T[0], geom['H'].T[1], geom['H'].T[2])
-# ax.scatter(geom['C'].T[0], geom['C'].T[1], geom['C'].T[2])
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-# ax.set_zlabel('z')
-# plt.show()
+import matplotlib.pyplot as plt
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(geom['H'].T[0], geom['H'].T[1], geom['H'].T[2])
+ax.scatter(geom['C'].T[0], geom['C'].T[1], geom['C'].T[2])
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+plt.show()
 
 dat_h_list = [OrbitalPrimitivesBuilder(position=geom['H'][i],
                                        orbitals_dict=hydrogen_dict)
@@ -48,7 +49,7 @@ data.set_number_of_orbitals(13)
 
 nuclear_config = [[r, 6.0] for r in geom['C']] +\
                  [[r, 1.0] for r in geom['H']]
-system = ClosedShellSystem(primitives=data.primitives(),
+system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                            orbitals=data.orbitals(),
                            nuclear_config=nuclear_config,
                            use_ext=True)

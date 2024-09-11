@@ -1,7 +1,7 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 
@@ -46,7 +46,7 @@ for i, cn_distance in enumerate(cn_distances):
                                                 orbitals_dict=hydrogen_dict)
         data = dat_nitrogen + dat_carbon + dat_hydrogen
         data.set_number_of_orbitals(7)
-        system = ClosedShellSystem(primitives=data.primitives(),
+        system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                    orbitals=data.orbitals(),
                                    nuclear_config=[[nitrogen_pos, 7.0],
                                                    [carbon_pos, 6.0],

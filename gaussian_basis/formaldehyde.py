@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.molecular_geometry import make_ch2
@@ -56,7 +56,7 @@ for i, ch_distance in enumerate(ch_distances):
             nuclear_config = [[r, 6.0] for r in geom['C']] +\
                              [[r, 8.0] for r in geom['O']] +\
                              [[r, 1.0] for r in geom['H']]
-            system = ClosedShellSystem(primitives=data.primitives(),
+            system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                        orbitals=data.orbitals(),
                                        nuclear_config=nuclear_config,
                                        use_ext=True)

@@ -1,7 +1,7 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.molecular_geometry import make_ch3, make_ch2, make_oh
@@ -48,13 +48,13 @@ dat_o_list = [OrbitalPrimitivesBuilder(position=geom['O'][i],
 dat_c_list = [OrbitalPrimitivesBuilder(position=geom['C'][i],
                                        orbitals_dict=carbon_dict)
               for i in range(len(geom['C']))]
-data = sum(dat_c_list) + sum(dat_o_list) + sum(dat_h_list)
-data.set_number_of_orbitals(13)
+data = sum(dat_o_list) + sum(dat_h_list) + sum(dat_c_list)
+# data.set_number_of_orbitals(13)
 
 nuclear_config = [[r, 6.0] for r in geom['C']] +\
                  [[r, 1.0] for r in geom['H']] +\
                  [[r, 8.0] for r in geom['O']]
-system = ClosedShellSystem(primitives=data.primitives(),
+system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                            orbitals=data.orbitals(),
                            nuclear_config=nuclear_config,
                            use_ext=True)

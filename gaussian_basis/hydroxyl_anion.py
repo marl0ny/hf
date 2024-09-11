@@ -1,5 +1,5 @@
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
                                           orbitals_dict=oxygen_dict)
         data = data_o + data_h
         data.set_number_of_orbitals(5)
-        system = ClosedShellSystem(primitives=data.primitives(),
+        system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                    orbitals=data.orbitals(),
                                    nuclear_config=[[geom['H'], 1.0],
                                                    [geom['O'], 8.0]],

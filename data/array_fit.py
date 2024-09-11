@@ -1,3 +1,43 @@
+"""This script generates Gaussian fit data for a
+finite difference Hartree-Fock atomic orbital system. 
+
+To run this script, type
+
+python3 array_fit.py filename number_of_gaussians
+
+The filename argument must be a json file containing finite difference
+Hartree-Fock atomic orbital data. This file must be structured as
+
+{"<orbital_name>": {"r": [<data point>], "values": [<data points>]}, ...},
+
+where orbital_name must either be 1s, 2s, 2p, 3s, etc. The
+key "r" gives an array of positions, while the key "values"
+contains the corresponding array of wave function magnitudes.
+These arrays must have the same length.
+
+The number_of_gaussians argument specifies the number of Gaussian functions
+used for fitting the orbital data.
+
+This script returns a json file with the following naming convention:
+
+<n_protons>p<n_electrons>e_<n_gaussians>gaussians.json,
+
+where n_protons is the number protons in the atom,
+n_electrons is the number of electrons, and n_gaussians
+is the number of Gaussian basis functions used. 
+
+The output json file will be structured as
+
+{"<orbital_name>": {"coefficients": [<coefficient_values>],
+                    "exponents": [<exponent_values>]}
+ ...
+},
+
+where orbital_name will either be 1s, 2s, 2p, 3s, etc.
+The coefficients key gives a list of the amplitudes for each of the
+Gaussian functions, while the exponents key gives their corresponding
+exponent values.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
@@ -92,4 +132,3 @@ if __name__ == '__main__':
               f'{number_of_gaussians}gaussians.json',
               'w') as f:
         json.dump(gauss_data, f)
-

@@ -1,7 +1,7 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 
@@ -10,7 +10,9 @@ t1 = perf_counter_ns()
 carbon_dict = get_orbitals_dict_from_file('../data/10p10e-5gaussians.json')
 hydrogen_dict = {'1s':
                  get_orbitals_dict_from_file('../data/1p1e-3gaussians.json')
-                 ['1s']
+                 ['1s'],
+                 # '2s':
+                 # get_orbitals_dict_from_file('../data/1p1e-3gaussians.json')['2s'],
                  }
 carbon_pos = np.array([0.0, 0.0, 0.0])
 
@@ -46,7 +48,7 @@ for i, theta in enumerate(angles):
                              + dat_h_list[2] + dat_h_list[3])
         data.set_number_of_orbitals(5)
 
-        system = ClosedShellSystem(primitives=data.primitives(),
+        system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                    orbitals=data.orbitals(),
                                    nuclear_config=[[carbon_pos, 6.0],
                                                    [h_positions[0], 1.0],

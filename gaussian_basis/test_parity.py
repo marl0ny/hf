@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import OrbitalPrimitivesBuilder, get_orbitals_dict_from_file
 
 
@@ -10,10 +10,10 @@ def get_energies():
     nuc_pos = np.array([0.0, 0.0, 0.0])
     data = OrbitalPrimitivesBuilder(position=nuc_pos,
                                     orbitals_dict=ne_dict)
-    system_python_only = ClosedShellSystem(primitives=data.primitives(),
+    system_python_only = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                            orbitals=data.orbitals(),
                                            nuclear_config=[[nuc_pos, 10.0]])
-    system_ext = ClosedShellSystem(primitives=data.primitives(),
+    system_ext = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                    orbitals=data.orbitals(),
                                    nuclear_config=[[nuc_pos, 10.0]],
                                    use_ext=True)

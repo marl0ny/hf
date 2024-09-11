@@ -6,7 +6,7 @@ from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict, List, Union
 
 
-class ClosedShellSystem(SphericallySymmetricSystemBase):
+class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
     """
     Used for numerically computing the Hartree-Fock energies and orbitals
     of spherically symmetric closed shell systems through finite differences.
@@ -249,11 +249,11 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
 
 
 if __name__ == '__main__':
-    # system = ClosedShellSystem(number_of_points=1400, extent=15.0,
+    # system = ClosedShellSystemFromPrimitives(number_of_points=1400, extent=15.0,
     #                            nuclear_charge=20, number_of_electrons=20)
     nuclear_charge_ = 10
     number_of_electrons_ = 10
-    system = ClosedShellSystem(number_of_points=1000, extent=5.0,
+    system = ClosedShellSystemFromPrimitives(number_of_points=1000, extent=5.0,
                                nuclear_charge=nuclear_charge_,
                                number_of_electrons=number_of_electrons_)
     system.solve(n_iterations=12)

@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
 
@@ -50,7 +50,7 @@ data = dat_c + dat_o + dat_h_list[0] + dat_h_list[1] \
        + dat_h_list[2] + dat_h_list[3]
 data.set_number_of_orbitals(9)
 
-system = ClosedShellSystem(primitives=data.primitives(),
+system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                            orbitals=data.orbitals(),
                            nuclear_config=[[carbon_pos, 6.0],
                                            [oxygen_pos, 8.0],

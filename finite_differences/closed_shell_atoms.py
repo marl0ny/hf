@@ -41,18 +41,18 @@ atoms = {
     #           'nuclear charge': 9, 'electron count': 10,
     #           'iterations': 51,
     #           },
-    'N^{-}': {'N': 1000, 'extent': 6.5,
-               'nuclear charge': 7, 'electron count': 8,
-               'iterations': 30,
-           },
+    # 'N^{-}': {'N': 1000, 'extent': 6.5,
+    #            'nuclear charge': 7, 'electron count': 8,
+    #            'iterations': 30,
+    #        },
     # 'O': {'N': 1000, 'extent': 7.0,
     #        'nuclear charge': 8, 'electron count': 8,
     #        'iterations': 12,
     #        },
-    # 'Ne': {'N': 1000, 'extent': 5.0,
-    #        'nuclear charge': 10, 'electron count': 10,
-    #        'iterations': 12,
-    #        },
+    'Ne': {'N': 1000, 'extent': 5.0,
+           'nuclear charge': 10, 'electron count': 10,
+           'iterations': 12,
+           },
     # 'Na^{+}': {'N': 1000, 'extent': 5.0,
     #            'nuclear charge': 11, 'electron count': 10,
     #            'iterations': 12,
@@ -78,10 +78,10 @@ atoms = {
 
 for name in atoms.keys():
     atom = atoms[name]
-    system = ClosedShellSystem(atom['N'], atom['extent'],
+    system = ClosedShellSystemFromPrimitives(atom['N'], atom['extent'],
                                atom['nuclear charge'],
                                atom['electron count'],
-                               orbital_letters=['1s', '2p', '2p', '2p']
+                               # orbital_letters=['1s', '2p', '2p', '2p']
                                )
     system.solve(n_iterations=atom['iterations'], verbose=True)
     plt.title(r'Hartree-Fock Orbital Energies for ${'

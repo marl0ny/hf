@@ -1,13 +1,14 @@
 from time import perf_counter_ns
 import numpy as np
-from gaussian_basis import ClosedShellSystem
+from gaussian_basis import ClosedShellSystemFromPrimitives, ClosedShellSystem
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
+from gaussian_basis import get_orbitals_from_geometry
 
 
 t1 = perf_counter_ns()
 
-carbon_dict = get_orbitals_dict_from_file('../data/10p10e-5gaussians.json')
+carbon_dict = get_orbitals_dict_from_file('../data/7p8e-4gaussians.json')
 hydrogen_dict = {'1s':
                  get_orbitals_dict_from_file('../data/1p1e-3gaussians.json')
                  ['1s']
@@ -33,14 +34,16 @@ for i in range(3):
                                       s*e[1] + c*e[2]]))
 h_positions = np.array(h_positions_list)
 
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# ax.scatter(h_positions.T[0], h_positions.T[1], h_positions.T[2])
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-# ax.set_zlabel('z')
-# ax.scatter(c_positions.T[0], c_positions.T[1], c_positions.T[2])
-# plt.show()
+import matplotlib.pyplot as plt
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(h_positions.T[0], h_positions.T[1], h_positions.T[2])
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.scatter(c_positions.T[0], c_positions.T[1], c_positions.T[2])
+ax.scatter([0.0, 0.0], [0.0, 0.0], [2.0, -2.0], alpha=0.0)
+plt.show()
 
 dat_h_list = [OrbitalPrimitivesBuilder(
               position=h_positions[i],
@@ -53,14 +56,33 @@ data.set_number_of_orbitals(9)
 
 nuclear_config = [[r, 6.0] for r in c_positions] +\
                  [[r, 1.0] for r in h_positions]
-system = ClosedShellSystem(primitives=data.primitives(),
+system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                            orbitals=data.orbitals(),
                            nuclear_config=nuclear_config,
                            use_ext=True)
-system.solve(10)
+system.solve(20)
 
 print(system.energies)
 print(system.get_nuclear_configuration_energy())
 print(system.get_total_energy())
 t2 = perf_counter_ns()
 print(f'Time taken: {(t2 - t1)/1000000000.0}s')
+
+import plotly.graph_objects as go
+s = np.linspace(-3.0, 3.0, 100)
+ds = s[1] - s[0]
+x, y, z = np.meshgrid(s, s, s)
+u = np.zeros(x.shape)
+for k, orbital in enumerate(system.orbitals):
+    o = sum([orbital[i]*data.get_primitives()[i]([x, y, z])
+             for i in range(len(orbital))])
+    o /= np.sqrt(np.sum(np.conj(o)*o)*ds**3)
+    u += o**2
+
+print(np.sum(u*ds**3))
+fig = go.Figure(data=go.Volume(
+    x=x.flatten(), y=y.flatten(), z=z.flatten(),
+    value=2.0*u.flatten(), isomin=0.1, isomax=1.0,
+    opacity=0.1, surface_count=20,  
+))
+fig.show()

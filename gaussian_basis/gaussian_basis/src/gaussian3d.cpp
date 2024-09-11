@@ -1,7 +1,7 @@
 #include <cmath>
 #include "gaussian3d.hpp"
 
-Gaussian3D::Gaussian3D(double amp, double orb_exp, 
+/* Gaussian3D::Gaussian3D(double amp, double orb_exp, 
                        double pos_x, double pos_y, double pos_z,
                        double ang_x, double ang_y, double ang_z) {
     this->amp = amp;
@@ -20,7 +20,7 @@ Gaussian3D::Gaussian3D(double amp, double orb_exp,
 Gaussian3D::Gaussian3D(double amp, double orb_exp, 
                        struct Vec3 pos, struct Vec3 ang) {
     Gaussian3D(amp, orb_exp, pos.x, pos.y, pos.z, ang.x, ang.y, ang.z);
-}
+}*/
 
 Gaussian1D Gaussian3D::get_gaussian1d(int index) const {
     if (index == 0) {

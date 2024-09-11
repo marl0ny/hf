@@ -1,16 +1,14 @@
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystem, make_system_from_primitives
+from gaussian_basis import make_system_from_primitives
 from gaussian_basis import get_orbitals_dict_from_file
-from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.molecular_geometry import make_oh, make_co
-from gaussian_basis.molecular_geometry import MolecularGeometry
 
 
 t1 = perf_counter_ns()
 
-carbon_dict = get_orbitals_dict_from_file('../data/10p10e-6gaussians.json')
+carbon_dict = get_orbitals_dict_from_file('../data/7p8e-6gaussians.json')
 oxygen_dict = get_orbitals_dict_from_file(
     '../data/10p10e-6gaussians.json')
 hydrogen_dict = {'1s':
