@@ -6,7 +6,7 @@ from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict, List, Union
 
 
-class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
+class ClosedShellSystem(SphericallySymmetricSystemBase):
     """
     Used for numerically computing the Hartree-Fock energies and orbitals
     of spherically symmetric closed shell systems through finite differences.
@@ -39,7 +39,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
             self.orbitals[o_name] = orbitals[o_name]
             self.orbital_energies[o_name] = []
 
-    def get_repulsion(self, orbital):
+    def get_repulsion(self, orbital: np.ndarray) -> np.ndarray:
         # orbital2 = np.zeros([N+1])
         # orbital2[1::] = np.conj(orbital)*orbital
         # integrand1 =
@@ -135,7 +135,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
                 self.orbitals[orbital_name2] \
                     = self.normalize(eigvect.T[n])
 
-    def single_iter(self, iter_count):
+    def single_iter(self, iter_count: int):
         if self.verbose:
             print('Iteration Count: ', iter_count)
         repulsion = 2.0 * sum([
@@ -148,12 +148,12 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
         self._single_iter_set_orbitals(repulsion,
                                        orbitals_copy)
 
-    def solve(self, n_iterations, verbose=False):
+    def solve(self, n_iterations: int, verbose: bool = False):
         self.verbose = verbose
         for iter_count in range(n_iterations):
             self.single_iter(iter_count)
 
-    def get_kinetic_energy(self):
+    def get_kinetic_energy(self) -> float:
         orbitals = self.orbitals
         kinetic_energy = 0.0
         for orbital_name in orbitals.keys():
@@ -176,7 +176,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
             kinetic_energy += 2.0 * n * (k1_int + k2_int)
         return kinetic_energy
 
-    def get_potential_energy(self):
+    def get_potential_energy(self) -> float:
         orbitals = self.orbitals
         potential_energy = 0.0
         for orbital_name in orbitals.keys():
@@ -193,7 +193,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
             potential_energy += 2.0 * n * integral
         return potential_energy
 
-    def get_repulsion_energy(self):
+    def get_repulsion_energy(self) -> float:
         orbitals = self.orbitals
         repulsion_energy = 0.0
         orbital_names = list(orbitals.keys())
@@ -219,7 +219,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
                                                  repulsion_int1)
         return repulsion_energy
 
-    def get_exchange_energy(self):
+    def get_exchange_energy(self) -> float:
         orbitals = self.orbitals
         exchange_energy = 0.0
         orbital_names = list(orbitals.keys())
@@ -241,7 +241,7 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
                                               orbital_from0_i * int1))
         return exchange_energy
 
-    def get_total_energy(self):
+    def get_total_energy(self) -> float:
         return (self.get_kinetic_energy()
                 + self.get_potential_energy()
                 + self.get_repulsion_energy() / 2.0
@@ -249,11 +249,11 @@ class ClosedShellSystemFromPrimitives(SphericallySymmetricSystemBase):
 
 
 if __name__ == '__main__':
-    # system = ClosedShellSystemFromPrimitives(number_of_points=1400, extent=15.0,
+    # system = ClosedShellSystem(number_of_points=1400, extent=15.0,
     #                            nuclear_charge=20, number_of_electrons=20)
     nuclear_charge_ = 10
     number_of_electrons_ = 10
-    system = ClosedShellSystemFromPrimitives(number_of_points=1000, extent=5.0,
+    system = ClosedShellSystem(number_of_points=1000, extent=5.0,
                                nuclear_charge=nuclear_charge_,
                                number_of_electrons=number_of_electrons_)
     system.solve(n_iterations=12)

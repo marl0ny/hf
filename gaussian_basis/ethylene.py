@@ -1,3 +1,12 @@
+"""Compute the lowest Hartree-Fock energy of Ethylene.
+This uses the experimental geometry of the molecule, 
+which is found in a NIST database:
+
+    Experimental data for C2H4 (Ethylene).
+    Computational Chemistry Comparison and Benchmark DataBase,
+    https://cccbdb.nist.gov/exp2x.asp.
+
+"""
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt

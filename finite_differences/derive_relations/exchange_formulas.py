@@ -1,3 +1,23 @@
+"""Use Sympy to compute the repulsion-exchange integrals for spherically
+symmetric wave functions.
+
+Obtaining an expression for these repulsion-exchange integrals requires the
+spherical harmonics expansion of the Coulomb potential, which can be found
+in [1]. One then obtains integrals over the product of four spherical
+harmonic functions, where Sympy's Gaunt function [2] is used to solve for
+them, using their spherical harmonics functions [3].
+
+    1.  Boudreau J., Swanson E. Quantum Mechanics II-many body systems,
+        pg 813-814. In Applied Computational Physics. Oxford University Press.
+
+    2.  Gaunt,
+        https://docs.sympy.org/latest/modules/physics/wigner.html\\
+            #sympy.physics.wigner.gaunt
+
+    3.  Spherical Harmonics,
+        https://docs.sympy.org/latest/modules/functions/\\
+            special.html#spherical-harmonics
+"""
 import sympy
 from sympy.physics.wigner import gaunt
 from sympy import Symbol, Function

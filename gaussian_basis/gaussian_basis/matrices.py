@@ -60,24 +60,6 @@ def get_two_electron_integrals_tensor(g: List[Gaussian3D]) -> np.ndarray:
                 arr[b, a] = arr[a, b]
     return arr
 
-# def get_two_electron_integrals_tensor(g: List[Gaussian3D]) -> np.ndarray:
-#     primitives_count = len(g)
-#     arr = np.zeros(4*[primitives_count])
-#     for a in range(primitives_count):
-#         g_a = g[a]
-#         if g_a.amplitude() != 0.0:
-#             for b in range(primitives_count):
-#                 g_b = g[b]
-#                 if g_b.amplitude() != 0.0:
-#                     for c in range(primitives_count):
-#                         g_c = g[c]
-#                         if g_c.amplitude() != 0.0:
-#                             for d in range(primitives_count):
-#                                 g_d = g[d]
-#                                 arr[a, b, c, d] = repulsion(g_a, g_b,
-#                                                             g_c, g_d)
-#     return arr
-
 
 def get_repulsion_exchange_matrix(orbitals: np.ndarray, 
                                   g: List[Gaussian3D]) -> np.ndarray:

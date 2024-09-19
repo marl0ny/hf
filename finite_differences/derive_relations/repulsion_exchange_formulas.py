@@ -1,3 +1,25 @@
+"""Use Sympy to compute the repulsion-exchange integrals for spherically
+symmetric wave functions. Closed shell is not assumed, so spin must be taken
+into account, and the exchange and repulsion formulas must found separately.
+
+Obtaining an expression for these repulsion-exchange integrals requires the
+spherical harmonics expansion of the Coulomb potential, which can be found
+in [1]. One then obtains integrals over the product of four spherical
+harmonic functions, where Sympy's Gaunt function [2] is used to solve for
+them, using their spherical harmonics functions [3].
+
+    1.  Boudreau J., Swanson E. Quantum Mechanics II-many body systems,
+        pg 813-814. In Applied Computational Physics. Oxford University Press.
+
+    2.  Gaunt,
+        https://docs.sympy.org/latest/modules/physics/wigner.html\\
+            #sympy.physics.wigner.gaunt
+
+    3.  Spherical Harmonics,
+        https://docs.sympy.org/latest/modules/functions/\\
+            special.html#spherical-harmonics
+
+"""
 import sympy
 from sympy.physics.wigner import gaunt
 from sympy import Symbol, Function
@@ -66,7 +88,7 @@ theta = Symbol('theta')
 # principle, angular, magnetic, and spin quantum numbers
 # for each of the orbitals.
 # The top level keys are the principle quantum numbers.
-# The keys for the second level of nesting
+# The keys for the second level
 # are for the angular quantum numbers.
 # The keys for the third and final level of the
 # nested dictionary are for the magnetic quantum numbers,
@@ -127,8 +149,7 @@ def get_repulsion_formula(n_i, L_i, m_i, s_i, lev_ang_mag_spin):
 def get_exchange_formula(n_i, L_i, m_i, s_i, lev_ang_mag_spin):
     """
     n_i: the energy level for the orbital
-    that "feels" the exchange
-    force from the other orbitals.
+    that "feels" the exchange force from the other orbitals.
     L_i, m_i, and s_i are its angular, magnetic, and spin
     quantum numbers respectively.
     lev_ang_mag_spin: nested dictionary containing

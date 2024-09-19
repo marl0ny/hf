@@ -1,10 +1,25 @@
+"""Compute the lowest Hartree-Fock energy of Methanol.
+This uses the experimental geometry of the molecule,
+which is found in a NIST database:
+
+    Experimental data for CH3OH (Methyl alcohol).
+    Computational Chemistry Comparison and Benchmark DataBase,
+    https://cccbdb.nist.gov/exp2x.asp.
+
+"""
 from time import perf_counter_ns
 import numpy as np
 from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file
 from gaussian_basis import OrbitalPrimitivesBuilder
+from gaussian_basis import get_orbitals_from_geometry
+from gaussian_basis import ClosedShellSystem
+from gaussian_basis.molecular_geometry import MolecularGeometry
 
 t1 = perf_counter_ns()
+
+# Currently the one primitives per basis function implementation
+# gives a lower energy.
 
 carbon_dict = get_orbitals_dict_from_file('../data/7p8e-5gaussians.json')
 oxygen_dict = get_orbitals_dict_from_file(
@@ -13,6 +28,19 @@ hydrogen_dict = {'1s':
                  get_orbitals_dict_from_file('../data/1p1e-3gaussians.json')
                  ['1s']
                  }
+
+# carbon_dict = get_orbitals_dict_from_file(
+#     '../data/7p8e_1s111111_2s111111_2p111111.json'
+#     )
+# # oxygen_dict = get_orbitals_dict_from_file('../data/10p10e_1s2111_2s2111_2p2111.json')
+# oxygen_dict = get_orbitals_dict_from_file(
+#     '../data/10p10e_1s2111_2s2111_2p2111.json')
+# hydrogen_dict \
+#     = get_orbitals_dict_from_file('../data/1p1e_1s22_2s22_2p22.json')
+# # hydrogen_dict = get_orbitals_dict_from_file(
+# #      '../data/1p1e_1s4.json'
+# #      )
+
 
 carbon_pos = np.array([0.0, 0.0, 0.0])
 oxygen_pos = np.array([2.7, 0.0, 0.0])
@@ -29,15 +57,18 @@ h_positions = np.array([
     r_ch*np.array([c, s*np.cos(b2), s*np.sin(b2)]),
     r_ch*np.array([c, s*np.cos(b3), s*np.sin(b3)])])
 
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# ax.scatter(h_positions.T[0], h_positions.T[1], h_positions.T[2])
-# ax.set_xlabel('x')
-# ax.set_xlabel('y')
-# ax.set_xlabel('z')
-# ax.scatter(carbon_pos[0], carbon_pos[1], carbon_pos[2])
-# ax.scatter(oxygen_pos[0], oxygen_pos[1], oxygen_pos[2])
-# plt.show()
+geom = MolecularGeometry()
+geom.add_atom('C', carbon_pos)
+geom.add_atom('O', oxygen_pos)
+for h_position in h_positions:
+    geom.add_atom('H', h_position)
+
+# orbitals = get_orbitals_from_geometry(geom, 
+#                                       {'H': hydrogen_dict, 
+#                                        'C': carbon_dict, 
+#                                        'O': oxygen_dict})
+# system = ClosedShellSystem(9, orbitals, geom.get_nuclear_configuration())
+# system.solve(20)
 
 dat_c = OrbitalPrimitivesBuilder(position=carbon_pos,
                                  orbitals_dict=carbon_dict)
@@ -59,7 +90,6 @@ system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                                            [h_positions[2], 1.0],
                                            [h_positions[3], 1.0]],
                            use_ext=True)
-system.solve(10)
 
 print(system.energies)
 print(system.get_nuclear_configuration_energy())

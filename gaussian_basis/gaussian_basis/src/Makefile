@@ -25,7 +25,7 @@ CPP_COMPILE = clang++ -std=c++14
 ifeq ($(shell uname),Darwin)
 INCLUDE = -I/opt/homebrew/include\
 		-I/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/include/python3.9\
-		-I/Users/mark/Library/Python/3.9/lib/python/site-packages/numpy/core/include/numpy\
+		-I${HOME}/Library/Python/3.9/lib/python/site-packages/numpy/core/include/numpy\
 		-Wno-unused-result -Wsign-compare -g -Xpreprocessor -fopenmp\
 		-fstack-protector-strong\
 		-Wformat -Werror=format-security  -fPIC -DNDEBUG -g -fwrapv \
@@ -33,7 +33,7 @@ INCLUDE = -I/opt/homebrew/include\
 LIBS = -L/opt/homebrew/lib\
 		-L/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib\
 		-L/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload \
-		-L/usr/lib -L/Users/mark/Library/Python/3.9/lib/python/site-packages/numpy/core/lib\
+		-L/usr/lib -L${HOME}/Library/Python/3.9/lib/python/site-packages/numpy/core/lib\
 		-lpython3.9 -lpthread -ldl  -lutil -lm -lnpymath\
 		# -Xlinker -lomp
 endif

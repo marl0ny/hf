@@ -78,7 +78,7 @@ atoms = {
 
 for name in atoms.keys():
     atom = atoms[name]
-    system = ClosedShellSystemFromPrimitives(atom['N'], atom['extent'],
+    system = ClosedShellSystem(atom['N'], atom['extent'],
                                atom['nuclear charge'],
                                atom['electron count'],
                                # orbital_letters=['1s', '2p', '2p', '2p']

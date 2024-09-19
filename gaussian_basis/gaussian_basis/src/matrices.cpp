@@ -23,58 +23,28 @@ static void copy_block_to_other_block(
     }
 }
 
-static void print_primitive(const Gaussian3D &g) {
-    fprintf(stdout, "amplitude: %g\n", g.amplitude());
-    fprintf(stdout, "exponent: %g\n", g.orbital_exponent());
-    fprintf(stdout, "angular: (%g, %g, %g)\n", 
-        g.angular()[0], g.angular()[1], g.angular()[2]);
-    fprintf(stdout, "position: (%g, %g, %g)\n",
-        g.position()[0], g.position()[1], g.position()[2]);
-}
-
 static double get_overlap_element(const struct BasisFunction &a,
                                   const struct BasisFunction &b) {
     double sum = 0.0;
     for (int i = 0; i < a.count; i++) {
-        // if (a == b)
-        //     for (int j = i; j < b.count; j++)
-        //         sum += ((j == i)? 1.0: 2.0)*overlap(a[i], b[j]);
-        // else
-            for (int j = 0; j < b.count; j++) {
-                // printf("indices: %d, %d\n", i, j);
-                // print_primitive(a[i]);
-                // print_primitive(b[j]);
-                // puts("");
-                // printf("Gaussian a, Gaussian b: %g, %g\n",
-                //        a[i].orbital_exponent(), b[j].orbital_exponent());
+        if (a == b)
+            for (int j = i; j < b.count; j++)
+                sum += ((j == i)? 1.0: 2.0)*overlap(a[i], b[j]);
+        else
+            for (int j = 0; j < b.count; j++)
                 sum += overlap(a[i], b[j]);
-            }
     }
     return sum;
 }
 
 void set_overlap_elements(double *mat, const struct BasisFunction *w, int n) {
     for (int i = 0; i < n; i++) {
-        // printf("%d\n", i);
-        // print_primitive(w[i][0]);
-        for (int j = 0; j < n; j++) {
-            // printf("indices: %d, %d\n", i, j);
-            // mat[i*n + j] = overlap(w[i][0], w[j][0]);
-            mat[i*n + j] = get_overlap_element(w[i], w[j]);
-        }
-    }
-    /* for (int i = 0; i < n; i++) {
-        // printf("Gaussian %d\n", i);
-        // printf("Amplitude: %g\n", g[i].amplitude());
-        // printf("Orbital exponent: %g\n", g[i].orbital_exponent());
-        // printf("Angular number: %g, %g, %g\n", 
-        //        g[i].angular()[0], g[i].angular()[1], g[i].angular()[2]);
         for (int j = i; j < n; j++) {
             mat[i*n + j] = get_overlap_element(w[i], w[j]);
             if (j > i)
                 mat[j*n + i] = mat[i*n + j];
         }
-    }*/
+    }
 }
 
 
@@ -82,30 +52,24 @@ static double get_kinetic_element(const struct BasisFunction &a,
                                   const struct BasisFunction &b) {
     double sum = 0.0;
     for (int i = 0; i < a.count; i++) {
-        // if (a == b)
-        //     for (int j = i; j < b.count; j++)
-        //         sum += ((j == i)? 1.0: 2.0)*kinetic(a[i], b[j]);
-        // else
-            for (int j = 0; j < b.count; j++) {
+        if (a == b)
+            for (int j = i; j < b.count; j++)
+                sum += ((j == i)? 1.0: 2.0)*kinetic(a[i], b[j]);
+        else
+            for (int j = 0; j < b.count; j++)
                 sum += kinetic(a[i], b[j]);
-            }
     }
     return sum;
 }
 
 void set_kinetic_elements(double *mat, const BasisFunction *w, int n) {
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            mat[i*n + j] = get_kinetic_element(w[i], w[j]);
-        }
-    }
-    /* for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
             mat[i*n + j] = get_kinetic_element(w[i], w[j]);
             if (j > i)
                 mat[j*n + i] = mat[i*n + j];
         }
-    }*/
+    }
 }
 
 static double get_nuclear_potential_element(
@@ -114,27 +78,22 @@ static double get_nuclear_potential_element(
     Vec3 *nuc_loc, int *charges, int charge_count
 ) {
     double sum = 0.0;
-    for (int i = 0; i < a.count; i++) {
-        // printf("Nuclear location %d: %g, %g, %g\n", k, nuc_loc[k].x, nuc_loc[k].y, nuc_loc[k].z);
-        // if (a == b) {
-        //     for (int j = i; j < b.count; j++) {
-        //         double val = ((double)charges[k])
-        //         *nuclear_single_charge(a[i], a[j], nuc_loc[k]);
-        //         if (j > i)
-        //             val *= 2.0;
-        //         sum += val;
-        //     }
-        // } else {
-            for (int j = 0; j < b.count; j++) {
-                for (int k = 0; k < charge_count; k++) {
-                    // printf("charge being evaluated: %d\n", charges[k]);
-                    // printf("Position of charge: (%g, %g, %g)\n",
-                    //         nuc_loc[k][0], nuc_loc[k][1], nuc_loc[k][2]);
+    for (int k = 0; k < charge_count; k++) {
+        for (int i = 0; i < a.count; i++) {
+            if (a == b) {
+                for (int j = i; j < b.count; j++) {
+                    double val = ((double)charges[k])
+                        *nuclear_single_charge(a[i], a[j], nuc_loc[k]);
+                    if (j > i)
+                        val *= 2.0;
+                    sum += val;
+                }
+            } else {
+                for (int j = 0; j < b.count; j++)
                     sum += ((double)charges[k])
                         *nuclear_single_charge(a[i], b[j], nuc_loc[k]);
-                }
             }
-        // }
+        }
     }
     return sum;
 }
@@ -144,19 +103,13 @@ void set_nuclear_potential_elements(
     Vec3 *nuc_loc, int *charges, int charge_count
 ) {
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            mat[i*n + j] = get_nuclear_potential_element(
-                w[i], w[j], nuc_loc, charges, charge_count);
-        }
-    }
-    /* for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
             mat[i*n + j] = get_nuclear_potential_element(
                 w[i], w[j], nuc_loc, charges, charge_count);
             if (j > i)
                 mat[j*n + i] = mat[i*n + j];
         }
-    }*/
+    }
 }
 
 static double get_two_electron_integrals_element_inner(
@@ -165,17 +118,12 @@ static double get_two_electron_integrals_element_inner(
     const struct BasisFunction &c, const struct BasisFunction &d
 ) {
     double sum = 0.0;
-    // for (int n = 0; n < c.count; n++) {
-    //     int start_index = (c == d)? n: 0;
-    //     for (int m = start_index; m < d.count; m++) {
-    //         double val = repulsion(a[i], b[j], c[n], d[m]);
-    //         if (c == d && m > n) val *= 2.0;
-    //         sum += val;
-    //     }
-    // }
-    for (int nn = 0; nn < c.count; nn++) {
-        for (int m = 0; m < d.count; m++) {
-            sum += repulsion(a[i], b[j], c[nn], d[m]);
+    for (int n = 0; n < c.count; n++) {
+        int start_index = (c == d)? n: 0;
+        for (int m = start_index; m < d.count; m++) {
+            double val = repulsion(a[i], b[j], c[n], d[m]);
+            if (c == d && m > n) val *= 2.0;
+            sum += val;
         }
     }
     return sum;
@@ -194,29 +142,11 @@ static double get_two_electron_integrals_element(
             sum += val;
         }
     }
-    // for (int i = 0; i < a.count; i++) {
-    //     for (int j = 0; j < b.count; j++) {
-    //         for (int k = 0; k < c.count; k++) {
-    //             for (int l = 0; l < d.count; l++) {
-    //                 sum += repulsion(a[i], b[j], c[k], d[l]);
-    //             }
-    //         }
-    //         // sum += get_two_electron_integrals_element_inner(
-    //         //     i, j, a, b, c, d);
-    //     }
-    // }
     return sum;
 }
 
 static void set_two_electron_integrals_inner(
     int i, int j, double *arr, const BasisFunction *w, int n) {
-    // for (int k = 0; k < n; k++) {
-    //     for (int l = 0; l < n; l++) {
-    //         arr[AT_INDEX(n, i, j, k, l)] 
-    //             = get_two_electron_integrals_element(
-    //                 w[i], w[j], w[k], w[l]);
-    //     }
-    // }
     for (int k = 0; k < n; k++) {
         for (int l = k; l < n; l++) {
             arr[AT_INDEX(n, i, j, k, l)] 
@@ -297,13 +227,6 @@ void set_two_electron_integrals_elements(
 
 void set_overlap_elements(double *mat, const Gaussian3D *g, int n) {
     for (int i = 0; i < n; i++) {
-        // printf("%d\n", i);
-        // print_primitive(g[i]);
-        // printf("Gaussian %d\n", i);
-        // printf("Amplitude: %g\n", g[i].amplitude());
-        // printf("Orbital exponent: %g\n", g[i].orbital_exponent());
-        // printf("Angular number: %g, %g, %g\n", 
-        //        g[i].angular()[0], g[i].angular()[1], g[i].angular()[2]);
         for (int j = i; j < n; j++) {
             mat[i*n + j] = overlap(g[i], g[j]);
             if (j > i)

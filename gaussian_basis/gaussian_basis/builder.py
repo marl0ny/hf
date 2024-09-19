@@ -6,7 +6,6 @@ from .integrals3d import overlap
 from .matrices import get_overlap_matrix
 from .molecular_geometry import MolecularGeometry
 from .closed_shell_system import ClosedShellSystemFromPrimitives
-from .orbital import Orbital
 
 
 def get_multiplicity_from_orbital_name(orbital_name: str) -> int:

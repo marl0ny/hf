@@ -1,3 +1,13 @@
+"""Compute the various integral relations between 3D Gaussian functions.
+
+This is indebted to the following article:
+
+    Joshua Goings,
+    A (hopefully) gentle guide to the computer implementation 
+    of molecular integrals. 2017.
+    https://joshuagoings.com/2017/04/28/integrals/
+
+"""
 import numpy as np
 from typing import List, Union
 from .gaussian3d import Gaussian3D, product_center
@@ -5,6 +15,11 @@ from .integrals1d import *
 
 
 def overlap(g1: Gaussian3D, g2: Gaussian3D) -> float:
+    """Obtain the overlap coefficients between two 3D Gaussians.
+
+    Refer to the section "Overlap Integrals" from Joshua Goings' blog post
+    here: https://joshuagoings.com/2017/04/28/integrals/.
+    """
     return g1.amplitude()*g2.amplitude() * \
            overlap1d(g1.get_gaussian1d(0), g2.get_gaussian1d(0)) \
            * overlap1d(g1.get_gaussian1d(1), g2.get_gaussian1d(1)) \
@@ -12,6 +27,11 @@ def overlap(g1: Gaussian3D, g2: Gaussian3D) -> float:
 
 
 def kinetic(g1: Gaussian3D, g2: Gaussian3D) -> float:
+    """Compute the kinetic energy integral of two 3D Gaussians.
+
+    Refer to the section "Kinetic energy integrals" from Joshua Goings'
+    article: https://joshuagoings.com/2017/04/28/integrals/.
+    """
     amplitude1 = g1.amplitude()
     amplitude2 = g2.amplitude()
     g1x = g1.get_gaussian1d(0)
@@ -28,6 +48,11 @@ def kinetic(g1: Gaussian3D, g2: Gaussian3D) -> float:
 
 
 def nuclear_single_charge(g: Gaussian3D, h: Gaussian3D, r) -> float:
+    """Obtain the integral of the product of two 3D Gaussians with a Coulomb
+    potential that represents a single nuclear charge. Refer to the section
+    "Nuclear attraction integrals" from Joshua Goings' blog post:
+    https://joshuagoings.com/2017/04/28/integrals/.
+    """
     if r.shape != (3,):
         raise Exception
     gx, gy, gz = g.get_gaussian1d(0), g.get_gaussian1d(1), g.get_gaussian1d(2)
@@ -77,6 +102,11 @@ def repulsion_inner(g2: Gaussian3D, h2: Gaussian3D,
 
 def repulsion(g1: Gaussian3D, h1: Gaussian3D,
               g2: Gaussian3D, h2: Gaussian3D) -> float:
+    """Compute the repulsion-exchange integrals.
+    Refer to the section "Two electron repulsion integrals" from 
+    Joshua Goings' blog post:
+        https://joshuagoings.com/2017/04/28/integrals/.
+    """
     amplitude = g1.amplitude()*g2.amplitude()*h1.amplitude()*h2.amplitude()
     if amplitude == 0.0:
         return 0.0

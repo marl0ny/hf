@@ -1,26 +1,6 @@
 #include <cmath>
 #include "gaussian3d.hpp"
 
-/* Gaussian3D::Gaussian3D(double amp, double orb_exp, 
-                       double pos_x, double pos_y, double pos_z,
-                       double ang_x, double ang_y, double ang_z) {
-    this->amp = amp;
-    this->orb_exp = orb_exp;
-    this->r0.x = pos_x;
-    this->r0.y = pos_y;
-    this->r0.z = pos_z;
-    this->ang[0] = (short)ang_x;
-    this->ang[1] = (short)ang_y;
-    this->ang[2] = (short)ang_z;
-    // gaussian0 = Gaussian1D(orb_exp, pos_x, ang_x);
-    // gaussian1 = Gaussian1D(orb_exp, pos_y, ang_y);
-    // gaussian1 = Gaussian1D(orb_exp, pos_z, ang_z);
-}
-
-Gaussian3D::Gaussian3D(double amp, double orb_exp, 
-                       struct Vec3 pos, struct Vec3 ang) {
-    Gaussian3D(amp, orb_exp, pos.x, pos.y, pos.z, ang.x, ang.y, ang.z);
-}*/
 
 Gaussian1D Gaussian3D::get_gaussian1d(int index) const {
     if (index == 0) {

@@ -1,6 +1,5 @@
 from spherically_symmetric_system import *
 import numpy as np
-import scipy.sparse as sparse
 from scipy.sparse.linalg import eigsh
 from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict

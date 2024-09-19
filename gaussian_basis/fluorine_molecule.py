@@ -1,3 +1,6 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Hydrogen Fluoride.
+"""
 from time import perf_counter_ns
 import numpy as np
 from gaussian_basis import ClosedShellSystemFromPrimitives

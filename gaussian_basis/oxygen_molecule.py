@@ -1,3 +1,6 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Oxygen molecule.
+"""
 from time import perf_counter_ns
 import numpy as np
 from gaussian_basis import ClosedShellSystemFromPrimitives
@@ -8,8 +11,11 @@ import matplotlib.pyplot as plt
 
 t1 = perf_counter_ns()
 
+# oxygen_dict = get_orbitals_dict_from_file(
+#     '../data/8p8e_1s6_2s111111_2p111111.json'
+# )
 oxygen_dict = get_orbitals_dict_from_file(
-        '../data/8p8e-5gaussians.json')
+    '../data/8p8e-5gaussians.json')
 
 energies = []
 positions = []
@@ -35,32 +41,6 @@ for i in range(10):
     print(total_energy := system.get_total_energy())
     energies.append(total_energy)
 
-    # s = np.linspace(-5.0, 5.0, 100)
-    # x, y = np.meshgrid(s, s)
-    # u = np.zeros(x.shape)
-    # for k, orbital in enumerate(system.orbitals):
-    #     o = sum([orbital[i] * data.get_primitives()[i]([x, y, 0.0])
-    #              for i in range(len(orbital))])
-    #     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    #     ax.set_title(r'$\phi_'
-    #                  + f'{k}(x, y, z=0)$'
-    #                    f'\nE = {system.energies[k]} a.u.')
-    #     ax.set_xlabel('x')
-    #     ax.set_ylabel('y')
-    #     ax.set_zlabel(r'$\phi_' + f'{k}(x, y)$')
-    #     ax.plot_surface(x, y, o)
-    #     plt.show()
-    #     plt.close()
-    #     u += o ** 2
-    #
-    # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    # ax.set_title(r'$|\psi(x, y, z=0)|$')
-    # ax.set_xlabel('x')
-    # ax.set_ylabel('y')
-    # ax.set_zlabel(r'$|\psi(x, y)|$')
-    # ax.plot_surface(x, y, np.sqrt(u))
-    # plt.show()
-    # plt.close()
 
 t2 = perf_counter_ns()
 print(f'Time taken: {(t2 - t1)/1000000000.0}s')

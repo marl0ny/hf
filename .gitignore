@@ -8,3 +8,5 @@
 *_fd.json
 *.so
 *.o
+!requirements.txt
+/build

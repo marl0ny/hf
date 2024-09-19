@@ -1,3 +1,6 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Hydroxyl anion.
+"""
 import numpy as np
 from gaussian_basis import ClosedShellSystemFromPrimitives
 from gaussian_basis import get_orbitals_dict_from_file

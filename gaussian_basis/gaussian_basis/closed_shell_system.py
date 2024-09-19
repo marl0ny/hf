@@ -77,16 +77,16 @@ class ClosedShellSystem:
         extension.compute_two_electron_integrals(
             self.two_electron_integrals, self._orbitals_data
         )
-        import matplotlib.pyplot as plt
-        plt.imshow(self.overlap)
-        plt.title("Overlap matrix")
-        plt.show(); plt.close()
-        plt.title("Kinetic matrix")
-        plt.imshow(self.kinetic)
-        plt.show(); plt.close()
-        plt.title("Nuclear matrix")
-        plt.imshow(self.nuclear)
-        plt.show(); plt.close()
+        # import matplotlib.pyplot as plt
+        # plt.imshow(self.overlap)
+        # plt.title("Overlap matrix")
+        # plt.show(); plt.close()
+        # plt.title("Kinetic matrix")
+        # plt.imshow(self.kinetic)
+        # plt.show(); plt.close()
+        # plt.title("Nuclear matrix")
+        # plt.imshow(self.nuclear)
+        # plt.show(); plt.close()
         self.hamiltonian = self.kinetic + self.nuclear
         self.energies = np.zeros([self.orbitals_count])
 

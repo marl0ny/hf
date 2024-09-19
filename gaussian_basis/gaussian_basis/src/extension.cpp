@@ -213,7 +213,7 @@ static PyObject *set_pointer_addresses(PyObject *self, PyObject *args) {
         arr_basis_func[i].primitives = &arr_gaussian3d[index];
         index += arr_basis_func[i].count;
     }
-    print_data_contents((char *)arr);
+    // print_data_contents((char *)arr);
     return Py_None;
 
 }

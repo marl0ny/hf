@@ -1,3 +1,12 @@
+"""Compute the lowest Hartree-Fock energy of Carbon Dioxide,
+and plot its probability density. This uses the experimental geometry
+of the molecule, which is found in a NIST database:
+
+    Experimental data for CO2 (Carbon dioxide).
+    Computational Chemistry Comparison and Benchmark DataBase,
+    https://cccbdb.nist.gov/exp2x.asp.
+
+"""
 from time import perf_counter_ns
 import numpy as np
 from gaussian_basis import ClosedShellSystem
@@ -15,10 +24,13 @@ geom = MolecularGeometry()
 geom.add_atom('O', oxygen_pos1)
 geom.add_atom('C', carbon_pos)
 geom.add_atom('O', oxygen_pos2)
-oxygen_dict = get_orbitals_dict_from_file('../data/10p10e_1s2111_2s2111_2p2111.json')
-carbon_dict = get_orbitals_dict_from_file('../data/7p8e_1s3111_2s3111_2p111111.json')
+oxygen_dict = get_orbitals_dict_from_file(
+    '../data/10p10e_1s2111_2s2111_2p2111.json')
+carbon_dict = get_orbitals_dict_from_file(
+    '../data/7p8e_1s3111_2s3111_2p111111.json')
 
-orbitals = get_orbitals_from_geometry(geom, {'O': oxygen_dict, 'C': carbon_dict})
+orbitals = get_orbitals_from_geometry(
+    geom, {'O': oxygen_dict, 'C': carbon_dict})
 system = ClosedShellSystem(11, orbitals, geom.get_nuclear_configuration())
 
 system.solve(20)
@@ -40,7 +52,7 @@ for k, orbital in enumerate(system.orbitals):
              for i in range(len(orbital))])
     o /= np.sqrt(np.sum(np.conj(o)*o)*ds**3)
     u += o**2
-print(np.sum(u*ds**3))
+# print(np.sum(u*ds**3))
 fig = go.Figure(data=go.Volume(
     x=x.flatten(), y=y.flatten(), z=z.flatten(),
     value=2.0*u.flatten(), isomin=0.1, isomax=2.0,

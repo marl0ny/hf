@@ -1,9 +1,11 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Hydrogen molecule.
+"""
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
-from gaussian_basis import ClosedShellSystemFromPrimitives, make_system_from_primitives
+from gaussian_basis import make_system_from_primitives
 from gaussian_basis import get_orbitals_dict_from_file
-from gaussian_basis import OrbitalPrimitivesBuilder
 from gaussian_basis.molecular_geometry import MolecularGeometry
 
 

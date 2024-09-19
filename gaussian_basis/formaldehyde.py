@@ -1,3 +1,8 @@
+"""Compute the Hartree-Fock ground state energy of Formaldehyde.
+Iterate over a predefined list of H-C-H angles and C-H and C-O distances,
+then choose the configuration that gives the lowest
+ground state energy.
+"""
 from time import perf_counter_ns
 import numpy as np
 from gaussian_basis import ClosedShellSystemFromPrimitives

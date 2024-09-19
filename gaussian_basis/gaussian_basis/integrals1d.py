@@ -1,12 +1,35 @@
+"""Compute the various integral relations between Gaussian functions
+of the form a*exp(-alpha*x^2).
+
+This is indebted to the following article:
+
+    Joshua Goings,
+    A (hopefully) gentle guide to the computer implementation 
+    of molecular integrals. 2017.
+    https://joshuagoings.com/2017/04/28/integrals/
+
+"""
 import numpy as np
 from scipy.special import hyp1f1
 from .gaussian1d import Gaussian1D
 
+
 def boys_func(x: float, n: int) -> float:
+    """The Boys function is used to find the Coulomb coefficients, which
+    is in turn used to compute integrals involving the Coulomb potential.
+    See the section "Nuclear attraction integrals" from this article
+    by Joshua Goings:
+        https://joshuagoings.com/2017/04/28/integrals/.
+    """
     return hyp1f1(n + 0.5, n + 1.5, -x)/(2.0*n + 1.0)
 
 
 def overlap_coefficient(n: int, g1: Gaussian1D, g2: Gaussian1D) -> float:
+    """Obtain the overlap coefficients between two 1D Gaussians.
+
+    Refer to the section "Overlap Integrals" from Joshua Goings' blog post
+    here: https://joshuagoings.com/2017/04/28/integrals/.
+    """
     e1 = g1.orbital_exponent()
     e2 = g2.orbital_exponent()
     r1 = g1.position()
@@ -36,6 +59,11 @@ def overlap1d(g1: Gaussian1D, g2: Gaussian1D) -> float:
 
 
 def laplacian1d(g1: Gaussian1D, g2: Gaussian1D) -> float:
+    """Laplacian integral of two 1D Gaussians.
+
+    Refer to the section "Kinetic energy integrals" from Joshua Goings'
+    article: https://joshuagoings.com/2017/04/28/integrals/.
+    """
     a2 = g2.angular()
     e2 = g2.orbital_exponent()
     return (a2*(a2-1)*overlap1d(g1, g2-2)
@@ -45,6 +73,12 @@ def laplacian1d(g1: Gaussian1D, g2: Gaussian1D) -> float:
 
 def coulomb_coefficient(i: int, j: int, k: int, n: int,
                         orb_exp: float, r12: np.ndarray):
+    """Compute the Coulomb coefficients. This is used in integrals
+    that involve the Coulomb potential, such as the
+    nuclear and repulsion-exchange integrals. Refer to the section
+    "Nuclear attraction integrals" from Joshua Goings' blog post:
+    https://joshuagoings.com/2017/04/28/integrals/.
+    """
     if i == j == k == 0:
         return (-2*orb_exp)**n*boys_func(orb_exp*(r12 @ r12), n)
     elif i < 0 or j < 0 or k < 0:

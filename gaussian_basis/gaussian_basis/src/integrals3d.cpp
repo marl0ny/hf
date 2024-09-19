@@ -1,3 +1,12 @@
+/* Compute the various integral relations between 3D Gaussian functions.
+This is indebted to the following article:
+
+    Joshua Goings, 
+    A (hopefully) gentle guide to the computer implementation 
+    of molecular integrals. 2017.
+    https://joshuagoings.com/2017/04/28/integrals/
+
+*/
 #include "gaussian1d.hpp"
 #include "integrals1d.hpp"
 #include "gaussian3d.hpp"
@@ -5,7 +14,11 @@
 
 #define PI 3.141592653589793
 
+/* Obtain the overlap coefficients between two 3D Gaussians.
 
+Refer to the section "Overlap Integrals" from Joshua Goings' blog post
+here: https://joshuagoings.com/2017/04/28/integrals/.
+*/
 double overlap(const Gaussian3D &g1, const Gaussian3D &g2) {
     return g1.amplitude()*g2.amplitude() *
         overlap1d(g1.get_gaussian1d(0), g2.get_gaussian1d(0))
@@ -13,6 +26,11 @@ double overlap(const Gaussian3D &g1, const Gaussian3D &g2) {
         * overlap1d(g1.get_gaussian1d(2), g2.get_gaussian1d(2));
 }
 
+/* Compute the kinetic energy integral of two 3D Gaussians.
+
+Refer to the section "Kinetic energy integrals" from Joshua Goings'
+article: https://joshuagoings.com/2017/04/28/integrals/.
+*/
 double kinetic(const Gaussian3D &g1, const Gaussian3D &g2) {
     double amplitude1 = g1.amplitude();
     double amplitude2 = g2.amplitude();
@@ -29,6 +47,11 @@ double kinetic(const Gaussian3D &g1, const Gaussian3D &g2) {
             )*amplitude1*amplitude2;
 }
 
+/* Obtain the integral of the product of two 3D Gaussians with a Coulomb
+potential that represents a single nuclear charge. Refer to the section
+"Nuclear attraction integrals" from Joshua Goings' blog post:
+https://joshuagoings.com/2017/04/28/integrals/.
+*/
 double nuclear_single_charge(const Gaussian3D &g, const Gaussian3D &h,
                              struct Vec3 r) {
     Gaussian1D gx = g.get_gaussian1d(0);
@@ -83,6 +106,11 @@ static double repulsion_inner(const Gaussian3D &g2, const Gaussian3D &h2,
     return val;
 }
 
+/* Compute the repulsion-exchange integrals.
+Refer to the section "Two electron repulsion integrals" from 
+Joshua Goings' blog post:
+    https://joshuagoings.com/2017/04/28/integrals/.
+*/
 double repulsion(const Gaussian3D &g1,
                  const Gaussian3D &h1,
                  const Gaussian3D &g2,

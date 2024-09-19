@@ -1,3 +1,6 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Hydrogen Cyanide.
+"""
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt

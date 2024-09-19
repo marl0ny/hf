@@ -1,3 +1,6 @@
+"""Plot the closed-shell Hartree-Fock potential energy curve of the
+Hydrogen Fluoride.
+"""
 from time import perf_counter_ns
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,17 +33,6 @@ for i in range(n_points):
     data_f = OrbitalPrimitivesBuilder(position=fluorine_position,
                                     orbitals_dict=fluorine_dict)
     data = data_f + data_h
-
-    # x = np.linspace(-10.0, 10.0, 100)
-    # y = np.zeros([x.shape[0]])
-    # for g in data.get_primitives():
-    #     # print(g.orbital_exponent(), g.position(), g.angular())
-    #     plt.plot(x, g([x, 0.0, 0.0]))
-    #     # y += g([x, 0.0, 0.0])
-    # print(data.get_orbital_exponents())
-    # # plt.plot(x, y)
-    # plt.show()
-    # plt.close()
 
     system = ClosedShellSystemFromPrimitives(primitives=data.get_primitives(),
                             orbitals=data.orbitals()[:-1],

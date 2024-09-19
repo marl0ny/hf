@@ -1,10 +1,12 @@
 import numpy as np
 import scipy.sparse as sparse
-from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
+from scipy.integrate import simpson
 from typing import Union, Callable, Dict
 
 
 def angular_number_from_orbital_name(orbital_name: str) -> int:
+    """Get the orbital angular number given the name of the orbital.
+    """
     letters_numbers = {'s': 0, 'p': 1, 'd': 2, 'f': 3}
     for letter in letters_numbers.keys():
         if letter in orbital_name:
@@ -20,54 +22,84 @@ def multiplicity_from_orbital_name(orbital_name):
     raise NotImplementedError
 
 
-def get_principle_from_orbital_name(orbital_name):
+def get_principle_from_orbital_name(orbital_name: str) -> int:
+    """Extract the principal quantum number from the name of the orbital.
+    """
     return int(orbital_name[0])
 
 
-def letter_from_orbital_name(orbital_name):
+def letter_from_orbital_name(orbital_name: str) -> int:
+    """Extract the orbital angular letter from the name of the orbital.
+    """
     return orbital_name[1]
 
 
 class SphericallySymmetricSystemBase:
-    """
-    Used for numerically computing the Hartree-Fock energies and orbitals
-    of spherically symmetric systems through finite differences.
+    """Base class for managing the Hartree-Fock energies and orbitals
+    of spherically symmetric systems through finite differences. This base 
+    class's responsibilities include storing the initial trial and final
+    orbital solutions and energies, the mesh discretization,
+    which in general is non-uniform, those matrix operators such as the 
+    kinetic or overlap which are dependant on the underlying mesh
+    discretization used, and the potential, which is assumed to be Coulombic.
+    The actual Hartree-Fock computations are handled in derived classes.
 
-    N: number of points used in the discretization of the orbitals
-    L: physical extent of the simulation, starting from the origin
-    S_0:
-    DS:
-    DELTA:
-    RP:
-    R_0: Array of spatial positions, including the origin at 0
-    R: Array of spatial positions that skips the origin at 0
-    DR_0: Array of distances between each point in R, including the origin
-    DR: Array of distances between each point in R,
+    To help improve accuracy, especially at the vicinity of the origin where
+    there is a singularity due to the Coulomb potential, use a non-uniform 
+    finite difference discretization in which a higher density of points are
+    placed closer to the origin. This is introduced in [1], where if R denotes
+    the array of grid points used in the discretization, then
+        R[i] = RP*(exp(i*DELTA) - 1), i = 0..N-1,
+    where N is the total number of points used, and RP and DELTA are constants
+    which determine the points distribution. From here the Schrodinger equation 
+    and other relations can be recast in terms of i by applying
+    the chain rule.
+
+        1. Jos Thijssen, Computational Physics, Second Edition
+           Exercise 5.1, pg 116-117. 
+
+    @param N: number of points used in the discretization of the orbitals
+    @param L: physical extent of the simulation, starting from the origin
+    @param S_0: Array of evenly spaced points, which is used to construct
+    the non-uniform, non-equally spaced array of spatial positions R. At its
+    zeroth index is the origin at 0.
+    @param DS: Distance between each point in S and S0.
+    @param S: S = S_0[1::]
+    @param DELTA: Factor that controls grid non-uniformity
+    @param RP: Another factor for controlling grid non-uniformity
+    @param R_0: Array of spatial positions, including the origin at 0
+    @param R: Array of spatial positions that skips the origin at 0. Used in
+    computations where there is a singularity at the origin.
+    @param DR_0: Array of distances between each point in R, including the origin
+    @param DR: Array of distances between each point in R,
     where the origin at 0 is skipped.
-    Z: Nuclear charge
-    V: Numpy array for the potential
-    DIAG_M:
-    M_SPARSE:
-    INV_M_SPARSE:
-    M:
-    INV_M:
-    R_GREATER_THAN:
-    R_LESS_THAN:
-    init_orbitals: dictionary containing the initial trial orbitals,
+    @param Z: Nuclear charge
+    @param V: Numpy array for the potential
+    @param DIAG_M: Diagonal of the overlap matrix.
+    @param M_SPARSE: Sparse overlap matrix.
+    @param INV_M_SPARSE: Inverse of the sparse overlap matrix.
+    @param M: Numpy array of the overlap matrix.
+    @param INV_M: Inverse of the numpy array of the sparse overlap matrix.
+    @param R_GREATER_THAN: 2D Numpy array, where for an index i, j and
+    spatial positions R, R_GREATER_THAN[i, j] = R[i] if R[i] > R[j] else R[j].
+    @param R_LESS_THAN: 2D Numpy array, where for an index i, j and spatial
+    positions R, R_GREATER_THAN[i, j] = R[i] if R[i] < R[j] else R[j].
+    @param init_orbitals: dictionary containing the initial trial orbitals,
     where the keys are the orbital names.
-    orbitals: dictionary of the computed orbitals,
+    @param orbitals: dictionary of the computed orbitals,
     where the keys are the orbital names.
-    orbital_energies: dictionary of the orbital energies, where the
+    @param orbital_energies: dictionary of the orbital energies, where the
     keys are the orbital names.
-    GLOBAL_SHIFT: a global shift applied to the potential so that its
+    @param GLOBAL_SHIFT: a global shift applied to the potential so that its
     minimum value is zero.
-    T1: discretized Laplacian part of the kinetic energy operator
-    T2: Angular dependance part of the kinetic energy operator
+    @param T1: discretized Laplacian part of the kinetic energy operator
+    @param T2: Angular dependance part of the kinetic energy operator
     """
     N: int
     L: float
     S_0: np.ndarray
     DS: float
+    S: np.ndarray
     DELTA: float
     RP: float
     R_0: np.ndarray
@@ -93,7 +125,18 @@ class SphericallySymmetricSystemBase:
 
     def __init__(self, number_of_points: int, extent: float,
                  nuclear_charge: float, delta: float,
-                 potential_f: Union[Callable, np.ndarray]):
+                 potential_f: Union[Callable[[np.ndarray, int], np.ndarray],
+                                    np.ndarray]):
+        """Constructor.
+
+        @param number_of_points: number of points to use.
+        @param extent: extent of the simulation, in Hartree atomic units.
+        Note that the simulation always starts from the origin.
+        @param nuclear_charge: the charge at the origin.
+        @param delta: controls the spacing between each point.
+        @param potential_f: The potential. If this is a function, this must
+        take as argument the spatial positions array and nuclear charge.
+        """
 
         self.N = number_of_points
         self.L = extent
@@ -146,13 +189,21 @@ class SphericallySymmetricSystemBase:
 
         self.verbose = False
 
-    def normalize(self, psi: np.ndarray):
+    def normalize(self, psi: np.ndarray) -> np.ndarray:
+        """Normalize the input wave function.
+
+        @param psi: input wave function.
+        """
         psi_ = np.zeros([1+self.N])
         psi_[1::] = psi
         return psi/np.sqrt(simpson(self.DR_0*np.exp(self.S_0 * self.DELTA)
                                    * psi_*np.conj(psi_)))
 
     def construct_hydrogen_like_orbitals(self):
+        """Hydrogen-like orbitals. These come from here:
+
+        http://hyperphysics.phy-astr.gsu.edu/hbase/quantum/hydwf.html
+        """
         orbitals = dict()
         orbitals['1s'] = self.normalize(self.R * np.exp(-self.Z * self.R)
                                         / np.exp(0.5 * self.S
@@ -180,7 +231,27 @@ class SphericallySymmetricSystemBase:
                                         / np.exp(0.5 * self.S * self.DELTA))
         return orbitals
 
-    def get_spatial_derivative(self, number_of, discretization_type='sin'):
+    def get_spatial_derivative(self, number_of: int, 
+                               discretization_type: str = 'sin'
+                               ) -> Union[np.ndarray, sparse.dia_matrix]:
+        """Get the matrix that performs the spatial derivative. Currently
+        only the first and second derivative are supported.
+
+        @param number_of: order of differentiation.
+
+        @param discretization_type: Either 'sin' or '2nd_order'. 
+        
+        If discretization_type is 'sin', the derivative matrix is composed of
+        first that linear transform that takes an input position vector to
+        the sin function basis, the diagonal derivative matrix in this 
+        basis, and finally the linear transform that goes back to the original
+        basis. Note that this corresponds to boundary conditions where things
+        vanish at the endpoints. The matrix returned is a Numpy array.
+
+        If on the other hand discretization_type is '2nd_order', return a 
+        sparse matrix of the finite difference 2nd order approximation
+        for the given spatial derivative.
+        """
         if discretization_type == 'sin':
             arr_1d = np.arange(1, self.N + 1)
             dst = np.vectorize(lambda k, n:
@@ -210,9 +281,17 @@ class SphericallySymmetricSystemBase:
                 raise NotImplementedError
 
     def orbital_names(self):
+        """Get the names of the orbitals.
+        """
         return self.orbitals.keys()
 
-    def get_outermost_letter_name(self, letter):
+    def get_outermost_letter_name(self, letter: str) -> Union[None, str]:
+        """Given an orbital angular momentum letter, get the highest principal 
+        quantum number which contains an orbital that corresponds to that 
+        letter. 
+
+        @param letter: orbital angular momentum letter
+        """
         if letter not in ['s', 'p', 'd', 'f', 'g']:
             raise NotImplementedError
         orbital_names = self.orbitals.keys()
@@ -222,6 +301,12 @@ class SphericallySymmetricSystemBase:
         return f'{max(orbital_values)}{letter}'
 
     def get_innermost_letter_name(self, letter):
+        """Given an orbital angular momentum letter, get the lowest principal 
+        quantum number which contains an orbital that corresponds to that 
+        letter. 
+
+        @param letter: orbital angular momentum letter
+        """
         if letter not in ['s', 'p', 'd', 'f', 'g']:
             raise NotImplementedError
         orbital_names = self.orbitals.keys()
@@ -230,22 +315,36 @@ class SphericallySymmetricSystemBase:
             return
         return f'{min(orbital_values)}{letter}'
 
-    def get_s_orbitals(self):
+    def get_s_orbitals(self) -> Dict[str, np.ndarray]:
+        """Get a dictionary of all s orbitals. The keys are the name of
+        the orbitals, and the values are the arrays.
+        """
         return {k: self.orbitals[k]
                 for k in self.orbitals.keys() if 's' in k}
 
-    def get_p_orbitals(self):
+    def get_p_orbitals(self) -> Dict[str, np.ndarray]:
+        """Get a dictionary of all p orbitals. The keys are the name of
+        the orbitals, and the values are the arrays.
+        """
         return {k: self.orbitals[k]
                 for k in self.orbitals.keys() if 'p' in k}
 
-    def get_d_orbitals(self):
+    def get_d_orbitals(self) -> Dict[str, np.ndarray]:
+        """Get a dictionary of all d orbitals. The keys are the name of
+        the orbitals, and the values are the arrays.
+        """
         return {k: self.orbitals[k]
                 for k in self.orbitals.keys() if 'd' in k}
 
-    def get_initial_orbital(self, orbital_name) -> np.ndarray:
+    def get_initial_orbital(self, orbital_name: str) -> np.ndarray:
+        """Get the initial trial orbitals. The keys are the name of
+        the orbitals, and the values are the arrays.
+        """
         orbital = self.init_orbitals[orbital_name]
         return orbital * np.exp(0.5 * self.S * self.DELTA)
 
-    def get_orbital(self, orbital_name) -> np.ndarray:
+    def get_orbital(self, orbital_name: str) -> np.ndarray:
+        """Get the computed orbital, given its name.
+        """
         orbital = self.orbitals[orbital_name]
         return orbital * np.exp(0.5 * self.S * self.DELTA)

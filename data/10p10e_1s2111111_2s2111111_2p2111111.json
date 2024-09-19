@@ -1,0 +1,245 @@
+{
+    "1s": [
+        {
+            "coefficient": 0.021696127249689168,
+            "primitives": {
+                "coefficients": [
+                    -63.17848660519929,
+                    -100.80523189300887
+                ],
+                "exponents": [
+                    4409.69747699235,
+                    863.8301121198206
+                ]
+            }
+        },
+        {
+            "coefficient": 0.06943717971952236,
+            "primitives": {
+                "coefficients": [
+                    -44.628130429088465
+                ],
+                "exponents": [
+                    248.65553746646262
+                ]
+            }
+        },
+        {
+            "coefficient": 0.18414504966427486,
+            "primitives": {
+                "coefficients": [
+                    -20.276178591219495
+                ],
+                "exponents": [
+                    86.84963963502682
+                ]
+            }
+        },
+        {
+            "coefficient": 0.34270527871706524,
+            "primitives": {
+                "coefficients": [
+                    -10.062074694022083
+                ],
+                "exponents": [
+                    34.12216611637297
+                ]
+            }
+        },
+        {
+            "coefficient": 0.37198830648576,
+            "primitives": {
+                "coefficients": [
+                    -5.284450791287635
+                ],
+                "exponents": [
+                    14.458381764902347
+                ]
+            }
+        },
+        {
+            "coefficient": 0.15410885889960368,
+            "primitives": {
+                "coefficients": [
+                    -2.818978140397861
+                ],
+                "exponents": [
+                    6.25521374741119
+                ]
+            }
+        },
+        {
+            "coefficient": 0.008439157403543408,
+            "primitives": {
+                "coefficients": [
+                    -1.1520906169039618
+                ],
+                "exponents": [
+                    1.8971517165915004
+                ]
+            }
+        }
+    ],
+    "2s": [
+        {
+            "coefficient": 0.3005493698820816,
+            "primitives": {
+                "coefficients": [
+                    -8.386697415699755,
+                    0.3589472090274536
+                ],
+                "exponents": [
+                    25.853628028206444,
+                    1.2368575025685706
+                ]
+            }
+        },
+        {
+            "coefficient": 0.1137790455619359,
+            "primitives": {
+                "coefficients": [
+                    0.8358893385996042
+                ],
+                "exponents": [
+                    1.2368534887551865
+                ]
+            }
+        },
+        {
+            "coefficient": 0.10337336126080025,
+            "primitives": {
+                "coefficients": [
+                    0.8358885240458528
+                ],
+                "exponents": [
+                    1.2368518817107466
+                ]
+            }
+        },
+        {
+            "coefficient": 0.09861497275164613,
+            "primitives": {
+                "coefficients": [
+                    0.8358881785129312
+                ],
+                "exponents": [
+                    1.236851200004191
+                ]
+            }
+        },
+        {
+            "coefficient": 0.23718254180683204,
+            "primitives": {
+                "coefficients": [
+                    0.8358729518984686
+                ],
+                "exponents": [
+                    1.2368211593046867
+                ]
+            }
+        },
+        {
+            "coefficient": 0.3828886335896691,
+            "primitives": {
+                "coefficients": [
+                    0.3605562751443117
+                ],
+                "exponents": [
+                    0.4031041676493056
+                ]
+            }
+        },
+        {
+            "coefficient": 0.015352969434433398,
+            "primitives": {
+                "coefficients": [
+                    0.14867529603723553
+                ],
+                "exponents": [
+                    0.12371953895742469
+                ]
+            }
+        }
+    ],
+    "2p": [
+        {
+            "coefficient": 0.010249105741173232,
+            "primitives": {
+                "coefficients": [
+                    -189.8006502775051,
+                    -229.0667922562746
+                ],
+                "exponents": [
+                    241.12768111540922,
+                    62.691515495208584
+                ]
+            }
+        },
+        {
+            "coefficient": 0.03711580649584002,
+            "primitives": {
+                "coefficients": [
+                    -68.03092156313318
+                ],
+                "exponents": [
+                    22.029924711761275
+                ]
+            }
+        },
+        {
+            "coefficient": 0.1075588440287012,
+            "primitives": {
+                "coefficients": [
+                    -21.82534257886928
+                ],
+                "exponents": [
+                    8.871903005266974
+                ]
+            }
+        },
+        {
+            "coefficient": 0.22643319283896912,
+            "primitives": {
+                "coefficients": [
+                    -7.579132586506287
+                ],
+                "exponents": [
+                    3.8066551326843863
+                ]
+            }
+        },
+        {
+            "coefficient": 0.34054250159539246,
+            "primitives": {
+                "coefficients": [
+                    -2.6246225464871924
+                ],
+                "exponents": [
+                    1.6296765406993268
+                ]
+            }
+        },
+        {
+            "coefficient": 0.35716182861680984,
+            "primitives": {
+                "coefficients": [
+                    -0.8470107795917794
+                ],
+                "exponents": [
+                    0.6594153912178663
+                ]
+            }
+        },
+        {
+            "coefficient": 0.19106514995560064,
+            "primitives": {
+                "coefficients": [
+                    -0.24215918154298427
+                ],
+                "exponents": [
+                    0.24217465057091947
+                ]
+            }
+        }
+    ]
+}
