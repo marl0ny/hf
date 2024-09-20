@@ -4,31 +4,32 @@ import os
 import platform
 import glob
 import shutil
+import numpy
 
 print(os.environ['HOME'])
 
 HOME = os.environ['HOME']
 PYTHON_VERSION = '.'.join(sys.version.split(' ')[0].split('.')[:2])
+NUMPY_PATH, = numpy.__path__
 
 
 INCLUDE_DIRS = [
     f"/usr/include/python{PYTHON_VERSION}", 
     f"{HOME}/.local/lib/python{PYTHON_VERSION}"
     + f"/site-packages/numpy/core/include/numpy",
+    f"{NUMPY_PATH}/core/include/numpy",
 ]
 LIB_DIRS = [
     f"/usr/lib/python{PYTHON_VERSION}"
     + f"/config-{PYTHON_VERSION}-x86_64-linux-gnu",
-    f"{HOME}/.local/lib/python{PYTHON_VERSION}"
-    + "/site-packages/numpy/core/lib/",
+    f"{NUMPY_PATH}/core/lib"
 ]
 INCLUDE_DIRS_MACOS = [
     "/opt/homebrew/include", "/usr/include",
     "/Applications/Xcode.app/Contents/Developer/Library/Frameworks"
     + f"/Python3.framework/Versions/{PYTHON_VERSION}/"
     + f"include/python{PYTHON_VERSION}",
-    f"{HOME}/Library/Python/3.9/lib/python/site-packages"
-    + "/numpy/core/include/numpy"]
+    f"{NUMPY_PATH}/core/include/numpy"]
 LIB_DIRS_MACOS = [
     "/opt/homebrew/lib", "/usr/lib",
     "/Applications/Xcode.app/Contents/Developer/Library/"
@@ -36,8 +37,8 @@ LIB_DIRS_MACOS = [
     "/Applications/Xcode.app/Contents/Developer/Library/Frameworks"
     + f"/Python3.framework/Versions/{PYTHON_VERSION}"
     + f"/lib/python{PYTHON_VERSION}/lib-dynload",
-    f"{HOME}/Library/Python/{PYTHON_VERSION}/lib/python"
-    + "/site-packages/numpy/core/lib"]
+    f"{NUMPY_PATH}/core/lib",
+]
 
 lib_dirs = LIB_DIRS
 include_dirs = INCLUDE_DIRS

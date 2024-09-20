@@ -4,9 +4,7 @@
 #include "basis_function.hpp"
 
 #include <stdio.h>
-#ifdef __APPLE__
 #include <pthread.h>
-#endif
 
 #define AT_INDEX(n, i, j, k, l) \
     (i)*(n)*(n)*(n) + (j)*(n)*(n) + (k)*(n) + (l)
@@ -200,7 +198,7 @@ void set_two_electron_integrals_elements(
             set_two_electron_integrals_inner(i, j, arr, w, n);
         }
     }
-    #elif defined(__APPLE__)
+    #else
     for (int i = 0; i < n; i++) {
         s_basis_func_thread_data[i].arr = arr;
         s_basis_func_thread_data[i].basis_functions = w;
@@ -212,16 +210,6 @@ void set_two_electron_integrals_elements(
     }
     for (int i = 0; i < n; i++)
         pthread_join(s_basis_func_threads[i], NULL);
-    #else
-    #pragma omp parallel for
-    for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
-            set_two_electron_integrals_inner(i, j, arr, w, n);
-            if (j > i) {
-                copy_block_to_other_block(arr, n, j, i, i, j);
-            }
-        }
-    }
     #endif
 }
 
@@ -274,10 +262,6 @@ static void set_two_electron_integrals_inner(
     }
 }
 
-
-// #define SINGLE_THREADED_ONLY
-
-#ifdef __APPLE__
 struct PrimitiveTwoElectronIntegralsThreadData {
     double *arr;
     const Gaussian3D *g;
@@ -306,24 +290,12 @@ static void *threaded_set_two_electron_integrals_elements_inner(void *data) {
 pthread_t s_primitive_threads[MAX_SUPPORTED_THREADS] = {};
 struct PrimitiveTwoElectronIntegralsThreadData 
     s_primitive_thread_data[MAX_SUPPORTED_THREADS] = {};
-#endif
 
 
 void set_two_electron_integrals_elements(
     double *arr, const Gaussian3D *g, int n
 ) {
     #ifdef SINGLE_THREADED_ONLY
-    for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
-            set_two_electron_integrals_inner(i, j, arr, g, n);
-            if (j > i) {
-                copy_block_to_other_block(arr, n, j, i, i, j);
-            }
-        }
-    }
-    #else
-    #ifndef __APPLE__
-    #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
             set_two_electron_integrals_inner(i, j, arr, g, n);
@@ -344,7 +316,6 @@ void set_two_electron_integrals_elements(
     }
     for (int i = 0; i < n; i++)
         pthread_join(s_primitive_threads[i], NULL);
-    #endif
     #endif
 }
 
