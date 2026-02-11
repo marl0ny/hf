@@ -37,11 +37,11 @@ def letter_from_orbital_name(orbital_name: str) -> int:
 class SphericallySymmetricSystemBase:
     """Base class for managing the Hartree-Fock energies and orbitals
     of spherically symmetric systems through finite differences. This base 
-    class's responsibilities include storing the initial trial and final
-    orbital solutions and energies, the mesh discretization,
-    which in general is non-uniform, those matrix operators such as the 
+    class's responsibilities include: storing the initial trial and final
+    orbital solutions and energies; the mesh discretization,
+    which in general is non-uniform; those matrix operators such as the 
     kinetic or overlap which are dependant on the underlying mesh
-    discretization used, and the potential, which is assumed to be Coulombic.
+    discretization used; and the potential, which is assumed to be Coulombic.
     The actual Hartree-Fock computations are handled in derived classes.
 
     To help improve accuracy, especially at the vicinity of the origin where

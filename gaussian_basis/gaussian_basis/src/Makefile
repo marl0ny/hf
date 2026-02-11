@@ -16,10 +16,10 @@ LIBS = -L/usr/lib/python${PYTHON_VERSION}/config-3.8-x86_64-linux-gnu \
 C_COMPILE = clang 
 CPP_COMPILE = clang++ -std=c++14
 
-# For MacOS you must first install the relavent OpenGL and GLFW libraries.
+# For MacOS you must first install the relevant OpenGL and GLFW libraries.
 # Depending on which package manager you used, as well as the age and 
 # type of your system, the actual location of these libraries will vary.
-# You must first determine the actual location of the developement directories
+# You must first determine the actual location of the development directories
 # for your own system, and then edit the INCLUDE and LIBS 
 # variables accordingly.
 ifeq ($(shell uname),Darwin)
