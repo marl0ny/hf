@@ -8,7 +8,7 @@ double overlap(const Gaussian3D &g1, const Gaussian3D &g2);
 double kinetic(const Gaussian3D &g1, const Gaussian3D &g2);
 
 double nuclear_single_charge(const Gaussian3D &g, const Gaussian3D &h,
-                             struct Vec3 r);
+                             struct spatial::Vec3 r);
 
 double repulsion(const Gaussian3D &g1,
                  const Gaussian3D &h1,

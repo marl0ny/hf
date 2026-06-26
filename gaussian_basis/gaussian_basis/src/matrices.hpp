@@ -1,5 +1,6 @@
 #include "gaussian3d.hpp"
 #include "basis_function.hpp"
+#include "nuclear.hpp"
 
 
 #ifndef _MATRICES_
@@ -11,7 +12,13 @@ void set_kinetic_elements(double *mat, const BasisFunction *w, int n);
 
 void set_nuclear_potential_elements(
     double *mat, const BasisFunction *w, int n,
-    Vec3 *nuc_loc, int *charges, int charge_count
+    spatial::Vec3 *nuc_loc, int *charges, int charge_count
+);
+
+
+void set_nuclear_potential_elements( 
+    double *mat, const BasisFunction *w, int n,
+    const Nuclear *nuclear_config, int charge_count
 );
 
 void set_two_electron_integrals_elements(
@@ -24,7 +31,7 @@ void set_kinetic_elements(double *mat, const Gaussian3D *g, int n);
 
 void set_nuclear_potential_elements(
     double *mat, const Gaussian3D *g, int n,
-    Vec3 *nuc_loc, int *charges, int charge_count
+    spatial::Vec3 *nuc_loc, int *charges, int charge_count
 );
 
 void set_two_electron_integrals_elements(

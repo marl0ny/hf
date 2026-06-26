@@ -12,6 +12,8 @@ This is indebted to the following article:
 #include "gaussian3d.hpp"
 #include <cmath>
 
+using namespace spatial;
+
 #define PI 3.141592653589793
 
 /* Obtain the overlap coefficients between two 3D Gaussians.

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
+using namespace spatial;
+
 #define AT_INDEX(n, i, j, k, l) \
     (i)*(n)*(n)*(n) + (j)*(n)*(n) + (k)*(n) + (l)
 
@@ -96,6 +98,34 @@ static double get_nuclear_potential_element(
     return sum;
 }
 
+static double get_nuclear_potential_element(
+    const struct BasisFunction &a,
+    const struct BasisFunction &b,
+    const Nuclear *nuclear_config, int charge_count
+) {
+    double sum = 0.0;
+    for (int k = 0; k < charge_count; k++) {
+        int charge = nuclear_config[k].charge;
+        Vec3 position = nuclear_config[k].position;
+        for (int i = 0; i < a.count; i++) {
+            if (a == b) {
+                for (int j = i; j < b.count; j++) {
+                    double val = ((double)charge)
+                        *nuclear_single_charge(a[i], a[j], position);
+                    if (j > i)
+                        val *= 2.0;
+                    sum += val;
+                }
+            } else {
+                for (int j = 0; j < b.count; j++)
+                    sum += ((double)charge)
+                        *nuclear_single_charge(a[i], b[j], position);
+            }
+        }
+    }
+    return sum;
+}
+
 void set_nuclear_potential_elements(
     double *mat, const BasisFunction *w, int n,
     Vec3 *nuc_loc, int *charges, int charge_count
@@ -104,6 +134,20 @@ void set_nuclear_potential_elements(
         for (int j = i; j < n; j++) {
             mat[i*n + j] = get_nuclear_potential_element(
                 w[i], w[j], nuc_loc, charges, charge_count);
+            if (j > i)
+                mat[j*n + i] = mat[i*n + j];
+        }
+    }
+}
+
+void set_nuclear_potential_elements(
+    double *mat, const BasisFunction *w, int n,
+    const Nuclear *nuclear_config, int charge_count
+) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            mat[i*n + j] = get_nuclear_potential_element(
+                w[i], w[j], nuclear_config, charge_count);
             if (j > i)
                 mat[j*n + i] = mat[i*n + j];
         }

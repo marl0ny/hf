@@ -8,15 +8,20 @@ class Gaussian3D {
     double orb_exp;
     double amp;
     short ang[4];
-    struct Vec3 r0;
+    struct spatial::Vec3 r0;
     public:
+    Gaussian3D(
+        double orb_exponent,
+        double amplitude, 
+        short ang1, short ang2, short ang3,
+        const spatial::Vec3 &position);
     Gaussian1D get_gaussian1d(int index) const;
-    Vec3 position() const;
+    spatial::Vec3 position() const;
     double orbital_exponent() const;
-    Vec3 angular() const;
+    spatial::Vec3 angular() const;
     double amplitude() const;
 };
 
-struct Vec3 product_center(const Gaussian3D &g, const Gaussian3D &h);
+struct spatial::Vec3 product_center(const Gaussian3D &g, const Gaussian3D &h);
 
 #endif

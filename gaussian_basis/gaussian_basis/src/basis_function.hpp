@@ -3,6 +3,11 @@
 #ifndef _BASIS_FUNCTION_
 #define _BASIS_FUNCTION_
 
+// TODO:
+// Tie the positions and angular numbers
+// to the basis function structures instead of storing
+// these in the primitives.
+
 struct BasisFunction {
     long count;
     Gaussian3D *primitives;

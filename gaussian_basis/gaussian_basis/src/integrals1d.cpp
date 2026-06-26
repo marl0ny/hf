@@ -20,6 +20,8 @@ This is indebted to the following article:
 
 #define PI 3.141592653589793
 
+using namespace spatial;
+
 /* The Boys function is used to find the Coulomb coefficients, which
 is in turn used to compute integrals involving the Coulomb potential.
 See the section "Nuclear attraction integrals" from this article

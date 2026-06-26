@@ -1,6 +1,21 @@
 #include <cmath>
 #include "gaussian3d.hpp"
+#include "gaussian1d.hpp"
 
+using namespace spatial;
+
+Gaussian3D::Gaussian3D(
+    double orb_exponent,
+    double amplitude, 
+    short ang_x, short ang_y, short ang_z,
+    const spatial::Vec3 &position) {
+    this->orb_exp = orb_exponent;
+    this->amp = amplitude;
+    this->ang[0] = ang_x;
+    this->ang[1] = ang_y;
+    this->ang[2] = ang_z;
+    this->r0 = position;
+}
 
 Gaussian1D Gaussian3D::get_gaussian1d(int index) const {
     if (index == 0) {

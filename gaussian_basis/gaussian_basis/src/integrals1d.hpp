@@ -15,6 +15,6 @@ double overlap1d(Gaussian1D g1, Gaussian1D g2);
 double laplacian1d(Gaussian1D g1, Gaussian1D g2);
 
 double coulomb_coefficient(int i, int j, int k, int n,
-                           double orb_exp, const Vec3 &r12);
+                           double orb_exp, const spatial::Vec3 &r12);
 
 #endif
