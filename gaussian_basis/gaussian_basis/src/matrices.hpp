@@ -15,7 +15,6 @@ void set_nuclear_potential_elements(
     spatial::Vec3 *nuc_loc, int *charges, int charge_count
 );
 
-
 void set_nuclear_potential_elements( 
     double *mat, const BasisFunction *w, int n,
     const Nuclear *nuclear_config, int charge_count
