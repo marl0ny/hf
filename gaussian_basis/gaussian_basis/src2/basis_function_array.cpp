@@ -147,6 +147,10 @@ BasisFunctionArray::repulsion_exchange(int a, int b, int c, int d) const {
     return sum;
 }
 
+int BasisFunctionArray::get_number_of_basis_functions() const {
+    return m_basis_function_count;
+}
+
 void BasisFunctionArray::print() const {
     for (int i = 0; i < m_basis_function_count; i++) {
         BasisFunctionData basis_function = m_basis_function_data[i];
@@ -175,5 +179,7 @@ void BasisFunctionArray::print() const {
             double exponent = primitive.exponent;
             std::cout << amplitude << "\t" << exponent << std::endl;
         }
+        if (i != m_basis_function_count - 1)
+            std::cout << "\n";
     }
 }

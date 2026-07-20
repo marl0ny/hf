@@ -1,6 +1,10 @@
 #include <vector>
 
 #include "basis_function_array.hpp"
+#include "array_helpers.hpp"
+
+#ifndef _ORBITALS_DESCRIPTION_
+#define _ORBITALS_DESCRIPTION_
 
 
 namespace orbital_description_data {
@@ -42,9 +46,15 @@ BasisFunctionArray get_basis_function_array(
 BasisFunctionArray get_basis_function_array(
     const std::vector<PositionedOrbitalsData> &o_array);
 
+array_helpers::Array2D get_orbital_basis_function_coefficients(
+    unsigned int orbital_count,
+    const std::vector<PositionedOrbitalsData> &o_array);
+
 void add_to_basis_function_array(
     BasisFunctionArray &basis_functions,
     const orbital_description_data::OrbitalsData &d,
     spatial::Vector position);
 
 }
+
+#endif

@@ -182,3 +182,33 @@ orbital_description_data::get_basis_function_array(
     }
     return basis_func_arr;
 }
+
+array_helpers::Array2D
+orbital_description_data::get_orbital_basis_function_coefficients(
+    unsigned int orbital_count,
+    const std::vector
+    <orbital_description_data::PositionedOrbitalsData> &o_arr) {
+    int number_of_basis_functions = 0;
+    int basis_func_index = 0;
+    for (const auto &o: o_arr) {
+        number_of_basis_functions +=
+            orbital_description_data::get_number_of_basis_functions(o);
+    }
+    array_helpers::Array2D coeffs(orbital_count, number_of_basis_functions);
+    for (const auto &o: o_arr) {
+        for (int orbital_index = 0; 
+            orbital_index < o.orbitals.size(); orbital_index++) {
+            orbital_description_data::Orbital orbital = o.orbitals[orbital_index];
+            int multiplicity = get_angular_multiplicity(orbital.name);
+            for (int i = 0; i < multiplicity; i++) {
+                for (auto &basis_function: orbital.basis_functions) {
+                    double coeff = basis_function.coefficient;
+                    coeffs(std::min(basis_func_index, int(orbital_count-1)),
+                           basis_func_index) = coeff;
+                    basis_func_index++;
+                }
+            }
+        }
+    }
+    return coeffs;
+}

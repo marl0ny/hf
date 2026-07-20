@@ -13,9 +13,12 @@ struct NuclearCharge {
 class NuclearChargesArray {
     std::vector<NuclearCharge> m_nuclear_charges;
     public:
+    NuclearChargesArray(std::vector<NuclearCharge> charges);
     int size() const;
     int strength(int) const;
     spatial::Vector location(int) const;
+    void push_back(NuclearCharge c);
+    double get_energy();
 };
 
 #endif

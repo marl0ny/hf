@@ -33,8 +33,8 @@ class BasisFunctionArray {
     public:
     BasisFunctionArray(
         int number_of_primitives, int number_of_basis_functions);
-    void extend_size(
-        int number_of_primitives, int number_of_basis_functions);
+    // void extend_size(
+    //     int number_of_primitives, int number_of_basis_functions);
     void add_basis_function(
         spatial::Vector &position, spatial::UByte4 &angular,
         const std::vector<double> &primitive_amplitudes,
@@ -45,6 +45,7 @@ class BasisFunctionArray {
     double nuclear(int i, int j, 
         const NuclearChargesArray &nuclear_charges) const;
     double repulsion_exchange(int i, int j, int k, int l) const;
+    int get_number_of_basis_functions() const;
     void print() const;
 };
 

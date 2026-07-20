@@ -1,83 +1,153 @@
 #include "basis_function_array.hpp"
 #include "orbitals_description.hpp"
+#include "atomic_data.hpp"
+#include "molecular_geometry.hpp"
+#include "array_helpers.hpp"
+#include "eigenvalues_eigenvectors.hpp"
 
-static unsigned int get_angular_number(const std::string &orbital_letter) {
-    if (orbital_letter.substr(1) == "s") {
-        return 0;
-    }
-    else if (orbital_letter.substr(1) == "p") {
-        return 1;
-    }
-    else if (orbital_letter.substr(1) == "d") {
-        return 2;
-    }
-    else if (orbital_letter.substr(1) == "d") {
-        return 3;
-    }
-    return 0;
+
+void iteration(
+    array_helpers::Array1D &energies,
+    array_helpers::Array2D &next_orbitals,
+    const array_helpers::SquareArray &overlap,
+    const array_helpers::SquareArray &kinetic_nuclear,
+    const array_helpers::HypercubeArray &repulsion_exchange_tensor,
+    const array_helpers::Array2D &orbitals) {
+    array_helpers::SquareArray
+    repulsion = 2.0*repulsion_exchange_tensor.reduce(
+        2, 3, orbitals, orbitals
+    );
+    array_helpers::SquareArray
+    exchange = repulsion_exchange_tensor.reduce(
+        1, 3, orbitals, orbitals
+    );
+    array_helpers::SquareArray
+    fock = kinetic_nuclear + repulsion - exchange;
+
+    compute_eigenvalues_eigenvectors(
+        energies, next_orbitals, overlap, fock);
+
 }
 
-static unsigned int get_angular_multiplicity(const std::string &orbital_letter) {
-    if (orbital_letter.substr(1) == "s") {
-        return 1;
-    }
-    else if (orbital_letter.substr(1) == "p") {
-        return 3;
-    }
-    else if (orbital_letter.substr(1) == "d") {
-        return 5;
-    }
-    else if (orbital_letter.substr(1) == "d") {
-        return 7;
-    }
-    return 0;
+double get_kinetic_energy(
+    const array_helpers::SquareArray &kinetic,
+    const array_helpers::Array2D &orbitals) {
+    return 2.0*kinetic.reduce(orbitals);
 }
+
+double get_nuclear_potential_energy(
+    const array_helpers::SquareArray &nuclear,
+    const array_helpers::Array2D &orbitals) {
+    return 2.0*nuclear.reduce(orbitals);
+}
+
+double get_repulsion_exchange_energy(
+    const array_helpers::HypercubeArray &repulsion_exchange,
+    const array_helpers::Array2D &orbitals) {
+    double repulsion = repulsion_exchange.reduce(
+        0, 1, orbitals, orbitals, 2, 3, orbitals, orbitals
+    );
+    double exchange = repulsion_exchange.reduce(
+        0, 2, orbitals, orbitals, 1, 3, orbitals, orbitals
+    );
+    return 2.0*repulsion - exchange;
+}
+
+
 
 int main() {
-    orbital_description_data::OrbitalsData h {
-
-    }; 
-    orbital_description_data::OrbitalsData o 
-    {{
-        { "1s", {
-            {1.0, {
-                {-1.565145837078264, -3.2236688634591735, -5.06767755890338, -4.97157485330118, -1.5385215642168175},
-                {4917.464401508277, 639.5663856621088, 128.2768175526814, 32.356355456120546, 9.19912353939672}}
-            },
-        }},
-        { "2s", {
-            {0.3175179837964322, {
-                {-2.9789387460278784, -5.597631221888869, -5.544100372008324},
-                {1120.6258122308013, 110.93703793713162, 19.448441289134422}}
-            },
-            {0.7085814239470662, {
-                {0.8450702001437524},
-                {1.254999617721712}}
-            },
-            {0.3814201499948026, {
-                {0.3417065041192091},
-                {0.37525302696178114}}
-            },
-        }},
-        { "2p", {
-            {0.33895869962327, {
-                {10.56860018785741, 11.773609092593366, 8.621957795319085},
-                {104.96875904945789, 18.566810994814183, 4.783861677077649}}
-            },
-            {0.5147121761201113, {
-                {2.0890150948130195},
-                {1.3576917911330364}}
-            },
-            {0.3777298776428878, {
-                {0.4004605146792502},
-                {0.36215600491247746}}
-            },
-        }},
-    }};
+    orbital_description_data::PositionedOrbitalsData h1
+        {atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21, 
+            {.t=0.0, .x=0.0, .y=0.0, .z=1.75/2.0}}; 
+    orbital_description_data::PositionedOrbitalsData h2
+        {atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21, 
+            {.t=0.0, .x=0.0, .y=0.0, .z=-1.75/2.0}}; 
+    orbital_description_data::PositionedOrbitalsData o 
+        {atomic_data_descriptions::ORB_10P10E_1S5_2S311_2P311,
+            {.ind{0.0, 0.0, 0.0, 0.0}}};
+    NuclearChargesArray nuclear_charges = NuclearChargesArray({
+        {{.t=0.0, .x=0.0, .y=0.0, .z=1.75/2.0}, 1},
+        {{.t=0.0, .x=0.0, .y=0.0, .z=-1.75/2.0}, 1},
+        {{.t=0.0, .x=0.0, .y=0.0, .z=0.0}, 8},
+    });
     BasisFunctionArray arr = orbital_description_data::get_basis_function_array(
-        o, spatial::Vector{.x=0.0, 0.0, 0.0});
+        {h1, h2, o});
     arr.print();
-    orbital_description_data::PositionedOrbitalsData q {
-        o, {}};
+    // array_helpers::test1();
+    // array_helpers::test2();
+    // array_helpers::test3();
+    // array_helpers::test4();
+    // array_helpers::test5();
+    // array_helpers::test6();
+    // array_helpers::test7();
+    // array_helpers::test8();
+    // array_helpers::test9();
+
+    int n = arr.get_number_of_basis_functions();
+    array_helpers::SquareArray overlap(n);
+    array_helpers::SquareArray kinetic(n);
+    array_helpers::SquareArray nuclear(n);
+    array_helpers::HypercubeArray repulsion_exchange(n);
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            overlap(i, j) = arr.overlap(i, j);
+            kinetic(i, j) = arr.overlap(i, j);
+            nuclear(i, j) = arr.nuclear(i, j, nuclear_charges);
+            for (int k = 0; k < n; k++) {
+                for (int l = k; l < n; l++) {
+                    repulsion_exchange(i, j, k, l) 
+                        = arr.repulsion_exchange(i, j, k, l);
+                    if (l > k) {
+                        repulsion_exchange(i, j, l, k)
+                            = repulsion_exchange(i, j, k, l);
+                    }
+                }
+            }
+            if (j > i) {
+                overlap(j, i) = overlap(i, j);
+                kinetic(j, i) = kinetic(i, j);
+                nuclear(j, i) = nuclear(i, j);
+                repulsion_exchange(j, i, repulsion_exchange(i, j));
+            }
+        }
+    }
+    // for (int i = 0; i < n; i++) {
+    //     for (int j = 0; j < n; j++) {
+    //         printf("Overlap %d, %d: %g\n", i, j, overlap(i, j));
+    //         printf("Kinetic %d, %d: %g\n", i, j, kinetic(i, j));
+    //         printf("Nuclear %d, %d: %g\n", i, j, nuclear(i, j));
+    //     }
+    // }
+    array_helpers::SquareArray h = kinetic + nuclear;
+    array_helpers::Array1D energies(5);
+    array_helpers::Array2D orbitals
+        = orbital_description_data::get_orbital_basis_function_coefficients(
+            5, {h1, h2, o});
+    for (int i = 0; i < orbitals.col_size(); i++) {
+        for (int j = 0; j < orbitals.row_size(); j++) {
+            printf("%g ", orbitals(i, j));
+        }
+        printf("\n");
+    }
+    // for (int i = 5; i < overlap.row_size(); i++)
+    //     orbitals(4, i) = 1.0;
+    for (int i = 0; i < 20; i++) {
+        iteration(energies, orbitals, overlap, h, 
+            repulsion_exchange, orbitals);
+        for (int i = 0; i < energies.size(); i++)
+            printf("%g ", energies(i));
+        printf("\n");
+    }
+    double ke = get_kinetic_energy(kinetic, orbitals);
+    double pe = get_nuclear_potential_energy(nuclear, orbitals);
+    double re = get_repulsion_exchange_energy(repulsion_exchange, orbitals);
+    double ne = nuclear_charges.get_energy();
+    printf("Total energy: %g\n", ke + pe + re + ne);
+    for (int i = 0; i < orbitals.col_size(); i++) {
+        for (int j = 0; j < orbitals.row_size(); j++) {
+            printf("%g ", orbitals(i, j));
+        }
+        printf("\n");
+    }
     return 0;
 }

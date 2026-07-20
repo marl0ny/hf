@@ -17,13 +17,13 @@ Gaussian3D::Gaussian3D(
 
 Gaussian1D Gaussian3D::get_gaussian1d(int index) const {
     if (index == 0) {
-        return Gaussian1D(orb_exp, this->r0[0], (long)this->ang[0]);
+        return Gaussian1D(orb_exp, this->r0.x, (long)this->ang[0]);
         // return gaussian0;
     } else if (index == 1) {
-        return Gaussian1D(orb_exp, this->r0[1], (long)this->ang[1]);
+        return Gaussian1D(orb_exp, this->r0.y, (long)this->ang[1]);
         // return gaussian1;
     } else if (index == 2) {
-        return Gaussian1D(orb_exp, this->r0[2], (long)this->ang[2]);
+        return Gaussian1D(orb_exp, this->r0.z, (long)this->ang[2]);
         // return gaussian2;
     } else {
         return {};
@@ -43,7 +43,9 @@ double Gaussian3D::orbital_exponent() const {
 
 spatial::Vector Gaussian3D::angular() const {
     return {{{
-        (double)this->ang[0], (double)this->ang[1], (double)this->ang[2]}}};
+        .t=0.0,
+        .x=(double)this->ang[0],
+        .y=(double)this->ang[1], .z=(double)this->ang[2]}}};
     // return {{{(double)this->gaussian0.angular(),
     //         (double)this->gaussian1.angular(),
     //         (double)this->gaussian2.angular()}}};

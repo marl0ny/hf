@@ -17,7 +17,7 @@ from gaussian_basis.molecular_geometry import MolecularGeometry
 t1 = perf_counter_ns()
 
 oxygen_dict = get_orbitals_dict_from_file(
-    '../data/10p10e_1s2111_2s2111_2p2111.json')
+    '../data/10p10e_1s5_2s311_2p311.json')
 hydrogen_dict = get_orbitals_dict_from_file(
     '../data/1p1e_1s21_2s21_2p21.json')
 

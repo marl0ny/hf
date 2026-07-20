@@ -26,7 +26,9 @@
 ##############################################################################
 
 ifeq ($(shell uname),Darwin)
-INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals -I/opt/homebrew/include
+INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
+	-I${PWD}/matrix_computations \
+	-I/opt/homebrew/include
 # 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
 # 	-I/opt/homebrew/include -I${PWD}/visualization_3d -I${PWD}/matrix \
 # 	 -I${PWD}/parse -I${PWD}/user_edit  -I${PWD}/bmp\
@@ -35,7 +37,9 @@ LIBS = -ldl -L/opt/homebrew/lib -lglfw\
        -framework CoreVideo -framework OpenGL -framework IOKit \
        -framework Cocoa -framework Carbon
 else
-INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals -I/opt/homebrew/lib
+INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
+	-I${PWD}/matrix_computations \
+	-I/opt/homebrew/lib
 # 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers -I${PWD}/visualization_3d \
 # 	 -I${PWD}/matrix -I${PWD}/parse -I${PWD}/user_edit -I${PWD}/bmp
 LIBS = -lm -lGL -lGLEW -lglfw
@@ -58,7 +62,7 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 
 TARGET = ${PWD}/program
-FLAGS = -O2 -g
+FLAGS = -O0 -g
 FLAGS2 = 
 CPP_COMPILE = clang++ -std=c++17
 
@@ -86,10 +90,11 @@ DEPENDENCIES = ${DATA_DEPENDENCIES} ${GENERATED_DEPENDENCIES}
 all: ${TARGET}
 
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
-	orbitals_description.cpp
+	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp
+MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 # VISUALIZATION_3D_SOURCES = ./visualization_3d/volume_render.cpp \
 # 	./visualization_3d/planar_slice.cpp ./visualization_3d/line_arrows3d.cpp \
 # 	./visualization_3d/conical_arrow3d.cpp ./visualization_3d/cube_outline.cpp \
@@ -102,9 +107,10 @@ INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 # BMP_SOURCES = ./bmp/bmp.cpp
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
-	orbitals_description.o
+	orbitals_description.o molecular_geometry.o array_helpers.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o
+MATRIX_COMPUTATIONS_OBJECTS = eigenvalues_eigenvectors.o
 # VISUALIZATION_3D_OBJECTS = ./volume_render.o \
 # 	./planar_slice.o ./line_arrows3d.o \
 # 	./conical_arrow3d.o ./cube_outline.o \
@@ -117,7 +123,8 @@ INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o
 # BMP_OBJECTS = ./bmp.o
 
 OBJECTS = ${TOP_LEVEL_OBJECTS} \
-	${SPATIAL_OBJECTS} ${INTEGRALS_OBJECTS}
+	${SPATIAL_OBJECTS} ${INTEGRALS_OBJECTS} \
+	${MATRIX_COMPUTATIONS_OBJECTS}
 # 	${VISUALIZATION_3D_OBJECTS} \
 # 	${GL_WRAPPER_OBJECTS} ${GLFW_WRAPPER_OBJECTS} ${MATRIX_OBJECTS} \
 # 	${PARSE_OBJECTS} ${USER_EDIT_OBJECTS} ${BMP_OBJECTS} ${IMGUI_OBJECTS}
@@ -135,6 +142,9 @@ ${INTEGRALS_OBJECTS}: ${INTEGRALS_SOURCES} ${DEPENDENCIES}
 
 ${SPATIAL_OBJECTS}: ${SPATIAL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${SPATIAL_SOURCES} ${INCLUDE}
+
+${MATRIX_COMPUTATIONS_OBJECTS}: ${MATRIX_COMPUTATIONS_SOURCES}
+	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_COMPUTATIONS_SOURCES} ${INCLUDE}
 
 # ${VISUALIZATION_3D_OBJECTS}: ${VISUALIZATION_3D_SOURCES} ${DEPENDENCIES}
 # 	${CPP_COMPILE} ${FLAGS} -c ${VISUALIZATION_3D_SOURCES} ${INCLUDE}
