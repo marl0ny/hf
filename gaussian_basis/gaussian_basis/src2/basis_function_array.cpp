@@ -6,7 +6,7 @@
 
 
 Gaussian3D BasisFunctionArray::primitive(const BasisFunctionData &b, int i) const {
-    PrimitiveData p = this->m_gaussian_primitive_data[i];
+    PrimitiveData p = this->m_gaussian_primitive_data[i + b.primitives.offset];
     double amplitude = p.amplitude;
     double exponent = p.exponent;
     spatial::Vector position = b.position;

@@ -91,7 +91,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
             overlap(i, j) = arr.overlap(i, j);
-            kinetic(i, j) = arr.overlap(i, j);
+            kinetic(i, j) = arr.kinetic(i, j);
             nuclear(i, j) = arr.nuclear(i, j, nuclear_charges);
             for (int k = 0; k < n; k++) {
                 for (int l = k; l < n; l++) {
