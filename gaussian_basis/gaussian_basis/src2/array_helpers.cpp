@@ -58,7 +58,7 @@ unsigned int SquareArray::row_size() const {
     return m_size;
 }
 
-SquareArray SquareArray::operator+(SquareArray &m) const {
+SquareArray SquareArray::operator+(const SquareArray &m) const {
     SquareArray arr2(this->row_size());
     for (int i = 0; i < std::min(row_size(), m.row_size()); i++)
         for (int j = 0; j < std::min(row_size(), m.row_size()); j++)
@@ -66,7 +66,7 @@ SquareArray SquareArray::operator+(SquareArray &m) const {
     return arr2;
 }
 
-SquareArray SquareArray::operator-(SquareArray &m) const {
+SquareArray SquareArray::operator-(const SquareArray &m) const {
     SquareArray arr2(this->row_size());
     for (int i = 0; i < std::min(row_size(), m.row_size()); i++)
         for (int j = 0; j < std::min(row_size(), m.row_size()); j++)
@@ -333,77 +333,57 @@ SquareArray HypercubeArray::reduce(
     // std::cout << "Sum label b: " << sum_label_b << std::endl;
     // std::cout << "Final label 0: " << final_labels[0] << std::endl;
     // std::cout << "Final label 1: " << final_labels[1] << std::endl;
-    for (int ind0 = 0; ind0 < this->row_size(); ind0++) {
-        for (int ind1 = 0; ind1 < this->row_size(); ind1++) {
-            for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+    for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+        for (int ind0 = 0; ind0 < this->row_size(); ind0++) {
+            for (int ind1 = 0; ind1 < this->row_size(); ind1++) {
                 for (int ind2 = 0; ind2 < this->row_size(); ind2++) {
                     for (int ind3 = 0; ind3 < this->row_size(); ind3++) {
-                        int sum_index_a = 0, sum_index_b = 1;
-                        int final_index0 = 0, final_index1 = 1;
+                        int sum_index_a = 0, sum_index_b = 0;
+                        int final_index0 = 0, final_index1 = 0;
                         unsigned int indices[4] = {0, 0, 0, 0};
                         switch (sum_label_a) {
-                            case 0:
-                            sum_index_a = ind0;
+                            case 0: sum_index_a = ind0;
                             break;
-                            case 1:
-                            sum_index_a = ind1;
+                            case 1: sum_index_a = ind1;
                             break;
-                            case 2:
-                            sum_index_a = ind2;
+                            case 2: sum_index_a = ind2;
                             break;
-                            case 3:
-                            sum_index_a = ind3;
+                            case 3: sum_index_a = ind3;
                             break;
-                            default:
-                            break;
+                            default: break;
                         }
                         switch (sum_label_b) {
-                            case 0:
-                            sum_index_b = ind0;
+                            case 0: sum_index_b = ind0;
                             break;
-                            case 1:
-                            sum_index_b = ind1;
+                            case 1: sum_index_b = ind1;
                             break;
-                            case 2:
-                            sum_index_b = ind2;
+                            case 2: sum_index_b = ind2;
                             break;
-                            case 3:
-                            sum_index_b = ind3;
+                            case 3: sum_index_b = ind3;
                             break;
-                            default:
-                            break;
+                            default: break;
                         }
                         switch (final_labels[0]) {
-                            case 0:
-                            final_index0 = ind0;
+                            case 0: final_index0 = ind0;
                             break;
-                            case 1:
-                            final_index0 = ind1;
+                            case 1: final_index0 = ind1;
                             break;
-                            case 2:
-                            final_index0 = ind2;
+                            case 2: final_index0 = ind2;
                             break;
-                            case 3:
-                            final_index0 = ind3;
+                            case 3: final_index0 = ind3;
                             break;
-                            default:
-                            break;
+                            default: break;
                         }
                         switch (final_labels[1]) {
-                            case 0:
-                            final_index1 = ind0;
+                            case 0: final_index1 = ind0;
                             break;
-                            case 1:
-                            final_index1 = ind1;
+                            case 1: final_index1 = ind1;
                             break;
-                            case 2:
-                            final_index1 = ind2;
+                            case 2: final_index1 = ind2;
                             break;
-                            case 3:
-                            final_index1 = ind3;
+                            case 3: final_index1 = ind3;
                             break;
-                            default:
-                            break;
+                            default: break;
                         }
                         indices[sum_label_a] = sum_index_a;
                         indices[sum_label_b] = sum_index_b;
@@ -442,8 +422,8 @@ HypercubeArray::reduce(
     unsigned int n_size = n_arr1.col_size();
     unsigned int m_size = m_arr1.col_size();
     double sum = 0.0;
-    for (int n = 0; n < n_size; n++) {
-        for (int m = 0; m < m_size; m++) {
+    for (int m = 0; m < m_size; m++) {
+        for (int n = 0; n < n_size; n++) {
             for (int i = 0; i < this->row_size(); i++) {
                 for (int j = 0; j < this->row_size(); j++) {
                     for (int k = 0; k < this->row_size(); k++) {

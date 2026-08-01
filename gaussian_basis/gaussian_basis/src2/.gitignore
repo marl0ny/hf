@@ -1,5 +1,6 @@
 /data
 /**/Eigen
-.clangd
 *.o
 program
+.*
+!.gitignore

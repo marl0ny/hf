@@ -15,6 +15,9 @@ class Gaussian3D {
         double amplitude, 
         short ang1, short ang2, short ang3,
         const spatial::Vector &position);
+    Gaussian1D get_x() const;
+    Gaussian1D get_y() const;
+    Gaussian1D get_z() const;
     Gaussian1D get_gaussian1d(int index) const;
     spatial::Vector position() const;
     double orbital_exponent() const;

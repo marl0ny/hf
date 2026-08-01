@@ -62,7 +62,7 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 
 TARGET = ${PWD}/program
-FLAGS = -O0 -g
+FLAGS = -O2 -g
 FLAGS2 = 
 CPP_COMPILE = clang++ -std=c++17
 

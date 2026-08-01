@@ -15,6 +15,18 @@ Gaussian3D::Gaussian3D(
     this->r0 = position;
 }
 
+Gaussian1D Gaussian3D::get_x() const {
+    return Gaussian1D(this->orb_exp, this->r0.x, (long)this->ang[0]);
+}
+
+Gaussian1D Gaussian3D::get_y() const {
+    return Gaussian1D(this->orb_exp, this->r0.y, (long)this->ang[1]);
+}
+
+Gaussian1D Gaussian3D::get_z() const {
+    return Gaussian1D(this->orb_exp, this->r0.z, (long)this->ang[2]);
+}
+
 Gaussian1D Gaussian3D::get_gaussian1d(int index) const {
     if (index == 0) {
         return Gaussian1D(orb_exp, this->r0.x, (long)this->ang[0]);

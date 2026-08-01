@@ -1,4 +1,5 @@
 import json
+import glob
 
 
 def get_orbitals_data_string(spec):
@@ -43,10 +44,18 @@ namespace atomic_data_descriptions {
 
 """
 
+# files = glob.glob('./data/**', recursive=True)
+# for f in files:
+#     print(f)
+
+# import sys; sys.exit()
+
 with open('atomic_data.hpp', 'w') as f:
     f.write(ATOMIC_DATA_STR)
-    specs = ['10p10e_1s5_2s311_2p311',
-             '1p1e_1s21_2s21_2p21']
+    specs = glob.glob('./data/**', recursive=True)
+    specs = [s.split('/')[-1].strip('.json') for s in specs][1::]
+    specs = [s for s in specs if not 
+             ('fd' in s or 'fg' in s or 'py' in s)]
     for spec in specs:
         f.write(f'static const OrbitalsData ORB_{spec.upper()} = ')
         orbitals_data_string = get_orbitals_data_string(spec)

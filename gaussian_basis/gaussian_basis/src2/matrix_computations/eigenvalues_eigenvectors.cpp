@@ -5,7 +5,7 @@
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
 
-#include <iostream>
+// #include <iostream>
 
 using namespace Eigen;
 
@@ -28,7 +28,8 @@ void compute_eigenvalues_eigenvectors(
             overlap(i, j) = overlap_array(i, j);
         }
     }
-    GeneralizedSelfAdjointEigenSolver<MatrixXd> solver(matrix, overlap);
+    GeneralizedSelfAdjointEigenSolver<MatrixXd> solver {};
+    solver.compute(matrix, overlap);
     ComputationInfo info = solver.info();
     if (info == Eigen::NumericalIssue)
         return;
@@ -37,17 +38,23 @@ void compute_eigenvalues_eigenvectors(
         for (int j = 0; j < eigenvalues.innerStride(); j++) {
             if (i < eigenvalues_array.size())
                 eigenvalues_array(i) = double(eigenvalues(i, 0).real());
-            // std::cout << "Eigenvalue" << i << ", " << j << ": " << eigenvalues(i, j) << std::endl;
+            // std::cout << "Eigenvalue" << i << ", " << j << 
+            // ": " << eigenvalues(i, j) << std::endl;
         }
     }
     MatrixXcd eigenvectors = solver.eigenvectors();
-    // std::cout << eigenvectors.rows() << ", " << eigenvectors.cols() << std::endl;
+    // std::cout << eigenvectors.rows() << ", " 
+    // << eigenvectors.cols() << std::endl;
     for (int i = 0; i < eigenvectors_array.row_size(); i++) {
-        for (int j = 0; j < eigenvectors.innerStride(); j++) {
+        // There was a major bug that gave the incorrect energies.
+        // It took a long time to realize that its cause was because
+        // eigenvectors.innerStride was originally used here.
+        // The outerStride method needs to be used instead since
+        // this copies from the transpose of the eigenvectors matrix.
+        for (int j = 0; j < eigenvectors.outerStride(); j++) {
             eigenvectors_array(i, j) = eigenvectors(j, i).real();
         }
     }
 
     
 }
-

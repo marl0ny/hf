@@ -27,8 +27,8 @@ namespace array_helpers {
         double operator()(unsigned int i, unsigned int j) const;
         double &operator()(unsigned int i, unsigned int j);
         unsigned int row_size() const;
-        SquareArray operator+(SquareArray &m) const;
-        SquareArray operator-(SquareArray &m) const;
+        SquareArray operator+(const SquareArray &m) const;
+        SquareArray operator-(const SquareArray &m) const;
         double reduce(const Array2D &vectors) const;
     };
 
