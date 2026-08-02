@@ -113,12 +113,12 @@ double coulomb_coefficient(int i, int j, int k, int n,
         return 0.0;
     } else if (j == k && k == 0) {
         return (i-1)*coulomb_coefficient(i-2, j, k, n+1, orb_exp, r12)
-               + r12[0]*coulomb_coefficient(i-1, j, k, n+1, orb_exp, r12);
+               + r12.x*coulomb_coefficient(i-1, j, k, n+1, orb_exp, r12);
     } else if (k == 0) {
         return (j-1)*coulomb_coefficient(i, j-2, k, n+1, orb_exp, r12)
-               + r12[1]*coulomb_coefficient(i, j-1, k, n+1, orb_exp, r12);
+               + r12.y*coulomb_coefficient(i, j-1, k, n+1, orb_exp, r12);
     } else {
         return (k-1)*coulomb_coefficient(i, j, k-2, n+1, orb_exp, r12)
-               + r12[2]*coulomb_coefficient(i, j, k-1, n+1, orb_exp, r12);
+               + r12.z*coulomb_coefficient(i, j, k-1, n+1, orb_exp, r12);
     }
 }

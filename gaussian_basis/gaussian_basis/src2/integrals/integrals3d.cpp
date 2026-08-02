@@ -56,12 +56,12 @@ https://joshuagoings.com/2017/04/28/integrals/.
 */
 double nuclear_single_charge(const Gaussian3D &g, const Gaussian3D &h,
                              struct Vector r) {
-    Gaussian1D gx = g.get_gaussian1d(0);
-    Gaussian1D gy = g.get_gaussian1d(1);
-    Gaussian1D gz = g.get_gaussian1d(2);
-    Gaussian1D hx = h.get_gaussian1d(0);
-    Gaussian1D hy = h.get_gaussian1d(1);
-    Gaussian1D hz = h.get_gaussian1d(2);
+    Gaussian1D gx = g.get_x();
+    Gaussian1D gy = g.get_y();
+    Gaussian1D gz = g.get_z();
+    Gaussian1D hx = h.get_x();
+    Gaussian1D hy = h.get_y();
+    Gaussian1D hz = h.get_z();
     Vector r2 = product_center(g, h);
     Vector r12 = r2 - r;
     double orb_exp = g.orbital_exponent() + h.orbital_exponent();
@@ -85,12 +85,12 @@ static double repulsion_inner(const Gaussian3D &g2, const Gaussian3D &h2,
                               int ix, int iy, int iz,
                               double orb_exp, const Vector &r12) {
     double val = 0.0;
-    Gaussian1D g2x = g2.get_gaussian1d(0);
-    Gaussian1D g2y = g2.get_gaussian1d(1);
-    Gaussian1D g2z = g2.get_gaussian1d(2);
-    Gaussian1D h2x = h2.get_gaussian1d(0);
-    Gaussian1D h2y = h2.get_gaussian1d(1);
-    Gaussian1D h2z = h2.get_gaussian1d(2);
+    Gaussian1D g2x = g2.get_x();
+    Gaussian1D g2y = g2.get_y();
+    Gaussian1D g2z = g2.get_z();
+    Gaussian1D h2x = h2.get_x();
+    Gaussian1D h2y = h2.get_y();
+    Gaussian1D h2z = h2.get_z();
     for (int jx = 0; jx < (g2x.angular() + h2x.angular() + 1); jx++) {
         // double overlap_x = overlap_coefficient(jx, g2x, h2x);
         for (int jy = 0; jy < (g2y.angular() + h2y.angular() + 1); jy++) {
@@ -122,12 +122,12 @@ double repulsion(const Gaussian3D &g1,
     if (amplitude == 0.0)
         return 0.0;
     double val = 0.0;
-    Gaussian1D g1x = g1.get_gaussian1d(0);
-    Gaussian1D g1y = g1.get_gaussian1d(1);
-    Gaussian1D g1z = g1.get_gaussian1d(2);
-    Gaussian1D h1x = h1.get_gaussian1d(0);
-    Gaussian1D h1y = h1.get_gaussian1d(1);
-    Gaussian1D h1z = h1.get_gaussian1d(2);
+    Gaussian1D g1x = g1.get_x();
+    Gaussian1D g1y = g1.get_y();
+    Gaussian1D g1z = g1.get_z();
+    Gaussian1D h1x = h1.get_x();
+    Gaussian1D h1y = h1.get_y();
+    Gaussian1D h1z = h1.get_z();
     double orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
     double orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
     double orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);

@@ -12,7 +12,8 @@ Gaussian3D BasisFunctionArray::primitive(const BasisFunctionData &b, int i) cons
     spatial::Vector position = b.position;
     spatial::UByte4 angular = b.angular;
     return Gaussian3D(
-        exponent, amplitude, angular.x, angular.y, angular.z, position);
+        exponent, amplitude, 
+        (int)angular.x, (int)angular.y, (int)angular.z, position);
 }
 
 BasisFunctionArray::BasisFunctionArray(

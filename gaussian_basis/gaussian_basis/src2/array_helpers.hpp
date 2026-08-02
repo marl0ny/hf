@@ -85,6 +85,11 @@ namespace array_helpers {
             const Array2D &n_arr1, const Array2D &n_arr2,
             int m_label1, int m_label2,
             const Array2D &m_arr1, const Array2D &m_arr2) const;
+        double reduce(
+            int n_label1, int n_label2,
+            const Array1D &n_arr1, const Array1D &n_arr2,
+            int m_label1, int m_label2,
+            const Array1D &m_arr1, const Array1D &m_arr2) const;
     };
 
     class SquareArraySlice {
