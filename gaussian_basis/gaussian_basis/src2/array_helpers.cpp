@@ -88,6 +88,22 @@ double SquareArray::reduce(const Array2D &m) const {
     return sum;
 }
 
+double SquareArray::reduce(const Array2D &m1, const Array2D &m2) const {
+    if (m1.row_size() != m2.row_size())
+        return 0.0;
+    if (m1.row_size() != this->row_size())
+        return 0.0;
+    double sum = 0.0;
+    for (int m_ind = 0; m_ind < m1.col_size(); m_ind++) {
+        for (int i = 0; i < this->row_size(); i++) {
+            for (int j = 0; j < this->row_size(); j++) {
+                sum += m1(m_ind, i)*m2(m_ind, j)*this->operator()(i, j);
+            }
+        }
+    }
+    return sum;
+}
+
 SquareArray operator*(double x, const SquareArray &arr) {
     SquareArray arr2(arr.row_size());
     for (int i = 0; i < arr.row_size(); i++)
@@ -123,6 +139,10 @@ double &Array2D::operator()(unsigned int i, unsigned int j) {
     // if (i >= m_col_size || j >= m_row_size)
     //     return;
     return this->m_data[i*m_row_size + j];
+}
+
+const double *Array2D::c_ptr(unsigned int i) const {
+    return (const double *)&this->m_data[i*m_row_size];
 }
 
 unsigned int Array2D::row_size() const {
@@ -447,6 +467,68 @@ HypercubeArray::reduce(
     }
     return sum;
 
+}
+
+double HypercubeArray::reduce(
+    int n_label1, int n_label2,
+    const Array1D &n_arr1, const Array1D &n_arr2,
+    int m_label1, int m_label2,
+    const Array1D &m_arr1, const Array1D &m_arr2) const {
+    if (n_arr1.size() != this->row_size() || 
+        n_arr1.size() != n_arr2.size())
+        return 0.0;
+    if (m_arr1.size() != this->row_size() || 
+        m_arr1.size() != m_arr2.size())
+        return 0.0;
+    double sum = 0.0;
+    for (int i = 0; i < this->row_size(); i++) {
+        for (int j = 0; j < this->row_size(); j++) {
+            for (int k = 0; k < this->row_size(); k++) {
+                for (int l = 0; l < this->row_size(); l++) {
+                    int m_index1 = (m_label1 == 0)? i: 
+                        ((m_label1 == 1)? j: ((m_label1 == 2)? k: l));
+                    int m_index2 = (m_label2 == 0)? i: 
+                        ((m_label2 == 1)? j: ((m_label2 == 2)? k: l));
+                    int n_index1 = (n_label1 == 0)? i: 
+                        ((n_label1 == 1)? j: ((n_label1 == 2)? k: l));
+                    int n_index2 = (n_label2 == 0)? i: 
+                        ((n_label2 == 1)? j: ((n_label2 == 2)? k: l));
+                    sum += this->operator()(i, j, k, l)
+                        *m_arr1(m_index1)*m_arr2(m_index2)
+                        *n_arr1(n_index1)*n_arr2(n_index2);
+                }
+            }
+        }
+    }
+    return sum;
+}
+
+double HypercubeArray::reduce(
+    int n_label1, int n_label2,
+    const double *n_arr1, const double *n_arr2,
+    int m_label1, int m_label2,
+    const double *m_arr1, const double *m_arr2) const {
+    double sum = 0.0;
+    for (int i = 0; i < this->row_size(); i++) {
+        for (int j = 0; j < this->row_size(); j++) {
+            for (int k = 0; k < this->row_size(); k++) {
+                for (int l = 0; l < this->row_size(); l++) {
+                    int m_index1 = (m_label1 == 0)? i: 
+                        ((m_label1 == 1)? j: ((m_label1 == 2)? k: l));
+                    int m_index2 = (m_label2 == 0)? i: 
+                        ((m_label2 == 1)? j: ((m_label2 == 2)? k: l));
+                    int n_index1 = (n_label1 == 0)? i: 
+                        ((n_label1 == 1)? j: ((n_label1 == 2)? k: l));
+                    int n_index2 = (n_label2 == 0)? i: 
+                        ((n_label2 == 1)? j: ((n_label2 == 2)? k: l));
+                    sum += this->operator()(i, j, k, l)
+                        *m_arr1[m_index1]*m_arr2[m_index2]
+                        *n_arr1[n_index1]*n_arr2[n_index2];
+                }
+            }
+        }
+    }
+    return sum;
 }
 
 unsigned int HypercubeArray::row_size() const {

@@ -35,10 +35,24 @@ double get_kinetic_energy(
     return 2.0*kinetic.reduce(orbitals);
 }
 
+double get_kinetic_energy(
+    const array_helpers::SquareArray &kinetic,
+    const array_helpers::Array2D &orbitals1,
+    const array_helpers::Array2D &orbitals2) {
+    return 2.0*kinetic.reduce(orbitals1, orbitals2);
+}
+
 double get_nuclear_potential_energy(
     const array_helpers::SquareArray &nuclear,
     const array_helpers::Array2D &orbitals) {
     return 2.0*nuclear.reduce(orbitals);
+}
+
+double get_nuclear_potential_energy(
+    const array_helpers::SquareArray &nuclear,
+    const array_helpers::Array2D &orbitals1,
+    const array_helpers::Array2D &orbitals2) {
+    return 2.0*nuclear.reduce(orbitals1, orbitals2);
 }
 
 double get_repulsion_exchange_energy(
@@ -53,39 +67,97 @@ double get_repulsion_exchange_energy(
     return 2.0*repulsion - exchange;
 }
 
-/* double mp2(const array_helpers::Array1D &energies, 
+double get_repulsion_exchange_energy(
+    const array_helpers::HypercubeArray &repulsion_exchange,
+    const array_helpers::Array2D &orbitals1,
+    const array_helpers::Array2D &orbitals2) {
+    double repulsion = repulsion_exchange.reduce(
+        0, 1, orbitals1, orbitals1, 2, 3, orbitals2, orbitals2
+    );
+    double exchange = repulsion_exchange.reduce(
+        0, 2, orbitals1, orbitals1, 1, 3, orbitals2, orbitals2
+    );
+    return 2.0*repulsion - exchange;
+}
+
+/*
+ For implementing MP2, 
+ I've followed the Wikipedia page "Moller-Plesset perturbation theory",
+ as well as Chapter 23, pg 833 of Boudreau and Swanson (see README).
+*/
+double mp2(const array_helpers::Array1D &energies, 
            const array_helpers::Array2D &orbitals, 
            const array_helpers::HypercubeArray &repulsion_exchange,
            int occupation_count) {
-    int n_orb = occupation_count;
     int total_count = orbitals.row_size();
-    double sum;
+    double sum = 0.0;
     for (int occ_ind1 = 0; occ_ind1 < occupation_count; occ_ind1++) {
         for (int occ_ind2 = 0; occ_ind2 < occupation_count; occ_ind2++) {
             for (int virt_ind1 = occupation_count; 
                  virt_ind1 < total_count; virt_ind1++) {
-                for (int virt_ind2 = occupation_count; 
+                for (int virt_ind2 = virt_ind1; 
                      virt_ind2 < total_count; virt_ind2++) {
-                    double occ_energy1 = energies(occ_ind1);
-                    double occ_energy2 = energies(occ_ind2);
-                    double virt_energy1 = energies(virt_ind1);
-                    double virt_energy2 = energies(virt_ind2);
-                    repulsion_exchange.reduce()
+                    double occ_e1 = energies(occ_ind1);
+                    double occ_e2 = energies(occ_ind2);
+                    double virt_e1 = energies(virt_ind1);
+                    double virt_e2 = energies(virt_ind2);
+                    double occ12_virt12 = repulsion_exchange.reduce(
+                        0, 2,
+                        orbitals.c_ptr(occ_ind1), orbitals.c_ptr(occ_ind2),
+                        1, 3,
+                        orbitals.c_ptr(virt_ind1), orbitals.c_ptr(virt_ind2));
+                    // double virt12_occ12 = occ12_virt12;
+                    double virt12_occ12 = repulsion_exchange.reduce(
+                        0, 2,
+                        orbitals.c_ptr(virt_ind1), orbitals.c_ptr(virt_ind2),
+                        1, 3,
+                        orbitals.c_ptr(occ_ind1), orbitals.c_ptr(occ_ind2));
+                    double virt12_occ21 = repulsion_exchange.reduce(
+                        0, 2,
+                        orbitals.c_ptr(virt_ind1), orbitals.c_ptr(virt_ind2),
+                        1, 3,
+                        orbitals.c_ptr(occ_ind2), orbitals.c_ptr(occ_ind1));
+                    double 
+                    term = 2.0*occ12_virt12*virt12_occ12/(
+                        occ_e1 + occ_e2 - virt_e1 - virt_e2);
+                    term -= occ12_virt12*virt12_occ21/(
+                        occ_e1 + occ_e2 - virt_e1 - virt_e2); 
+                    // sum += term;
+                    sum += ((virt_ind2 == virt_ind1)? term: 2.0*term);
                 }
-            
             }
         }
     }
-}*/
+    return sum;
+}
+
+array_helpers::Array2D construct_ci_matrix(
+    const array_helpers::Array1D &energies,
+    const array_helpers::Array2D &orbitals,
+    const array_helpers::SquareArray &kinetic,
+    const array_helpers::SquareArray &nuclear,
+    const array_helpers::HypercubeArray &repulsion_exchange,
+    int occupation_count
+) {
+    int total_count = orbitals.row_size();
+    for (int i = occupation_count; i < total_count; i++) {
+
+    }
+    double kinetic_energy = get_kinetic_energy(kinetic, orbitals, orbitals);
+    double nuclear_potential = get_nuclear_potential_energy(nuclear, orbitals, orbitals);
+    get_repulsion_exchange_energy(repulsion_exchange, orbitals, orbitals);
+
+
+}
 
 void h2_example() {
     orbital_description_data::PositionedOrbitalsData h1
-        {// atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21, 
-         atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
+        {// atomic_data_descriptions::ORB_1P1E_1S4, 
+         atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
             {.t=0.0, 1.37,  0.0,  0.0}}; 
     orbital_description_data::PositionedOrbitalsData h2
-        {// atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21, 
-         atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
+        {// atomic_data_descriptions::ORB_1P1E_1S4, 
+         atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
             {.t=0.0, 0.0, 0.0,  0.0}}; 
     NuclearChargesArray nuclear_charges = NuclearChargesArray({
         {{.t=0.0, 1.37,  0.0,  0.0}, 1},
@@ -153,7 +225,8 @@ void h2_example() {
     double pe = get_nuclear_potential_energy(nuclear, orbitals);
     double re = get_repulsion_exchange_energy(repulsion_exchange, orbitals);
     double ne = nuclear_charges.get_energy();
-    printf("Total energy: %g\n", ke + pe + re + ne);
+    double mp2e = mp2(energies_final, orbitals_final, repulsion_exchange, 1);
+    printf("Total energy: %g\n", ke + pe + re + ne + mp2e);
     for (int i = 0; i < orbitals_final.col_size(); i++) {
         for (int j = 0; j < orbitals_final.row_size(); j++) {
             printf("%g ", orbitals(i, j));
@@ -166,11 +239,13 @@ void h2_example() {
 void h2o_example() {
     orbital_description_data::PositionedOrbitalsData h1
         { // atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21,
-        atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
+        atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
+        // atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
             {.t=0.0, -1.93044664,  0.82666546,  0.0}}; 
     orbital_description_data::PositionedOrbitalsData h2
         { // atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21,
-        atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
+        atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
+        // atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
             {.t=0.0, 0.82666546, -1.93044664,  0.0}}; 
     orbital_description_data::PositionedOrbitalsData o 
         {// atomic_data_descriptions::ORB_10P10E_1S5_2S311_2P311,
@@ -224,6 +299,9 @@ void h2o_example() {
     array_helpers::Array2D orbitals
         = orbital_description_data::get_orbital_basis_function_coefficients(
             5, {h1, h2, o});
+    array_helpers::Array2D orbitals_final = 
+        array_helpers::Array2D(orbitals.row_size(), orbitals.row_size());
+    array_helpers::Array1D energies_final(orbitals.row_size());
     for (int i = 0; i < orbitals.col_size(); i++) {
         for (int j = 0; j < orbitals.row_size(); j++) {
             printf("%g ", orbitals(i, j));
@@ -235,6 +313,9 @@ void h2o_example() {
     for (int i = 0; i < 20; i++) {
         iteration(energies, orbitals, overlap, h, 
             repulsion_exchange, orbitals);
+        if (i == 19)
+            iteration(energies_final, orbitals_final, overlap, h,
+                repulsion_exchange, orbitals);
         for (int i = 0; i < energies.size(); i++)
             printf("%g ", energies(i));
         printf("\n");
@@ -243,7 +324,8 @@ void h2o_example() {
     double pe = get_nuclear_potential_energy(nuclear, orbitals);
     double re = get_repulsion_exchange_energy(repulsion_exchange, orbitals);
     double ne = nuclear_charges.get_energy();
-    printf("Total energy: %g\n", ke + pe + re + ne);
+    double mp2e = mp2(energies_final, orbitals_final, repulsion_exchange, 5);
+    printf("Total energy: %g\n", ke + pe + re + ne + mp2e);
     for (int i = 0; i < orbitals.col_size(); i++) {
         for (int j = 0; j < orbitals.row_size(); j++) {
             printf("%g ", orbitals(i, j));

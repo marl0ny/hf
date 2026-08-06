@@ -30,6 +30,7 @@ namespace array_helpers {
         SquareArray operator+(const SquareArray &m) const;
         SquareArray operator-(const SquareArray &m) const;
         double reduce(const Array2D &vectors) const;
+        double reduce(const Array2D &arr1, const Array2D &arr2) const;
     };
 
     SquareArray operator*(double x, const SquareArray &arr);
@@ -42,6 +43,8 @@ namespace array_helpers {
         Array2D(std::vector<std::vector<double>> m);
         double operator()(unsigned int i, unsigned int j) const;
         double &operator()(unsigned int i, unsigned int j);
+        // TODO: create a View1D class or something.
+        const double *c_ptr(unsigned int i) const;
         unsigned int row_size() const;
         unsigned int col_size() const;
     };
@@ -90,6 +93,11 @@ namespace array_helpers {
             const Array1D &n_arr1, const Array1D &n_arr2,
             int m_label1, int m_label2,
             const Array1D &m_arr1, const Array1D &m_arr2) const;
+        double reduce(
+            int n_label1, int n_label2,
+            const double *n_arr1, const double *n_arr2,
+            int m_label1, int m_label2,
+            const double *m_arr1, const double *m_arr2) const;
     };
 
     class SquareArraySlice {
