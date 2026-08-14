@@ -1,4 +1,5 @@
 from closed_shell_system import *
+from post_hf_closed_shell_system import *
 import matplotlib.pyplot as plt
 import numpy as np
 import json
@@ -35,7 +36,11 @@ atoms = {
     #            },
     # 'O^{2-}': {'N': 1000, 'extent': 5.5,
     #            'nuclear charge': 8, 'electron count': 10,
-    #            'iterations': 51,
+    #            'iterations': 10,
+    #            },
+    # 'O^{4+}': {'N': 1000, 'extent': 4.0,
+    #            'nuclear charge': 8, 'electron count': 4,
+    #            'iterations': 10,
     #            },
     # 'F^{-}': {'N': 1000, 'extent': 5.7,
     #           'nuclear charge': 9, 'electron count': 10,
@@ -45,14 +50,22 @@ atoms = {
     #            'nuclear charge': 7, 'electron count': 8,
     #            'iterations': 30,
     #        },
-    # 'O': {'N': 1000, 'extent': 7.0,
+    # 'C': {'N': 512, 'extent': 6.0,
+    #        'nuclear charge': 6, 'electron count': 6,
+    #        'iterations': 12,
+    #        },
+    # 'O': {'N': 512, 'extent': 3.75,
     #        'nuclear charge': 8, 'electron count': 8,
     #        'iterations': 12,
     #        },
-    'Ne': {'N': 1000, 'extent': 5.0,
-           'nuclear charge': 10, 'electron count': 10,
-           'iterations': 12,
+    'O': {'N': 1024, 'extent': 7.0,
+           'nuclear charge': 8, 'electron count': 8,
+           'iterations': 24,
            },
+    # 'Ne': {'N': 1000, 'extent': 5.0,
+    #        'nuclear charge': 10, 'electron count': 10,
+    #        'iterations': 12,
+    #        },
     # 'Na^{+}': {'N': 1000, 'extent': 5.0,
     #            'nuclear charge': 11, 'electron count': 10,
     #            'iterations': 12,
@@ -61,6 +74,14 @@ atoms = {
     #        'nuclear charge': 12, 'electron count': 12,
     #        'iterations': 10,
     #        },
+    # 'Si': {'N': 256, 'extent': 6.0,
+    #        'nuclear charge': 14, 'electron count': 14,
+    #        'iterations': 24,
+    #        },
+    # 'S': {'N': 1400, 'extent': 7.5,
+    #        'nuclear charge': 16, 'electron count': 16,
+    #            'iterations': 12,
+    #            },
     # 'Cl^{-}': {'N': 1400, 'extent': 10.0,
     #        'nuclear charge': 17, 'electron count': 18,
     #        'iterations': 15,
@@ -73,11 +94,20 @@ atoms = {
     #        'nuclear charge': 20, 'electron count': 20,
     #        'iterations': 12,
     #        },
+    # 'Zn': {'N': 1400, 'extent': 4.5,
+    #        'nuclear charge': 30, 'electron count': 30,
+    #        'iterations': 12,
+    #        }
 
 }
 
 for name in atoms.keys():
     atom = atoms[name]
+    # system = ClosedShellSystemWithPostHF(atom['N'], atom['extent'],
+    #                            atom['nuclear charge'],
+    #                            atom['electron count'],
+    #                            # orbital_letters=['1s', '2p', '2p', '2p']
+    #                            )
     system = ClosedShellSystem(atom['N'], atom['extent'],
                                atom['nuclear charge'],
                                atom['electron count'],
@@ -113,11 +143,17 @@ for name in atoms.keys():
             {'r': list(system.R),
              'values': list(system.get_orbital(orbital_name))
              }
+    # for orbital_name in system.virtual_orbitals:
+    #     virtual_orbital = np.abs(system.virtual_orbitals[orbital_name])
+    #     plt.plot(system.R, virtual_orbital,
+    #              label=r'Virtual $|r\phi_{' + orbital_name + r'}(r)|$',
+    #              color='gray', linestyle='--', alpha=0.25)
     plt.legend()
     plt.savefig(f'{file_name}_orbitals.png')
     plt.show()
     plt.close()
-    print(27.211386245 * system.get_total_energy())
+    print(system.get_total_energy())
+    print(27.211386245 * system.get_total_energy(), 'eV')
     with open(f"../data/{atom['nuclear charge']}p"
               + f"{atom['electron count']}e_fd.json", "w") as f:
         json.dump(orbitals_dict, f)

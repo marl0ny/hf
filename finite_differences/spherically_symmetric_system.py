@@ -224,6 +224,9 @@ class SphericallySymmetricSystemBase:
                                         np.exp(-self.Z * self.R / 3.0)
                                         * (6.0 - self.Z * self.R)
                                         / np.exp(0.5 * self.S * self.DELTA))
+        orbitals['3d'] = self.normalize(self.R ** 2 *
+                                        np.exp(-self.Z * self.R / 3.0)
+                                        / np.exp(0.5 * self.S * self.DELTA))
         orbitals['4s'] = self.normalize(self.R * np.exp(-self.Z
                                                         * self.R / 3.0)
                                         * (27.0 - 18.0 * self.Z * self.R
