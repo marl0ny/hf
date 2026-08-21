@@ -232,6 +232,28 @@ class SphericallySymmetricSystemBase:
                                         * (27.0 - 18.0 * self.Z * self.R
                                             + 2.0 * self.Z ** 2 * self.R ** 2)
                                         / np.exp(0.5 * self.S * self.DELTA))
+        
+        # TODO: These are completely wrong. 
+        orbitals['4p']  = self.normalize(self.R * np.exp(-self.Z * self.R)
+                                        / np.exp(0.5 * self.S
+                                                 * self.DELTA))
+        orbitals['5s'] = self.normalize(self.R * np.exp(-self.Z
+                                                        * self.R / 4.0)
+                                        * (27.0 - 18.0 * self.Z * self.R
+                                         + 2.0 * self.Z ** 2 * self.R ** 2)
+                                         / np.exp(0.5 * self.S * self.DELTA))
+        orbitals['4d'] = self.normalize(self.R ** 2 *
+                                        np.exp(-self.Z * self.R / 3.0)
+                                        / np.exp(0.5 * self.S * self.DELTA))
+        orbitals['5p']  = self.normalize(self.R * np.exp(-self.Z * self.R)
+                                                / np.exp(0.5 * self.S
+                                                         * self.DELTA))
+        orbitals['6s'] = self.normalize(self.R * np.exp(-self.Z
+                                        * self.R / 4.0)
+                                        * (27.0 - 18.0 * self.Z * self.R
+                                        + 2.0 * self.Z ** 2 * self.R ** 2)
+                                        / np.exp(0.5 * self.S * self.DELTA))
+
         return orbitals
 
     def get_spatial_derivative(self, number_of: int, 

@@ -6,86 +6,38 @@ import json
 
 
 atoms = {
-    # 'H^{-}': {'N': 1024, 'extent': 17.0,
-    #           'nuclear charge': 1, 'electron count': 2,
-    #           'iterations': 20,
-    #           },
     # 'He': {'N': 1024, 'extent': 7.0,
     #        'nuclear charge': 2, 'electron count': 2,
     #        'iterations': 20,
     #        },
-    # 'Li^{+}': {'N': 1024, 'extent': 5.0,
-    #            'nuclear charge': 3, 'electron count': 2,
-    #            'iterations': 10,
-    #            },
     # 'Be': {'N': 1024, 'extent': 10.0,
     #        'nuclear charge': 4, 'electron count': 4,
     #        'iterations': 10,
     #        },
-    # 'C^{2+}': {'N': 1000, 'extent': 7.0,
-    #            'nuclear charge': 6, 'electron count': 4,
-    #            'iterations': 12,
-    #            },
-    # 'C^{4-}': {'N': 1000, 'extent': 10.0,
-    #            'nuclear charge': 6, 'electron count': 10,
-    #            'iterations': 12,
-    #            },
-    # 'N^{3-}': {'N': 1000, 'extent': 10.0,
-    #            'nuclear charge': 7, 'electron count': 10,
-    #            'iterations': 12,
-    #            },
-    # 'O^{2-}': {'N': 1000, 'extent': 5.5,
-    #            'nuclear charge': 8, 'electron count': 10,
-    #            'iterations': 10,
-    #            },
-    # 'O^{4+}': {'N': 1000, 'extent': 4.0,
-    #            'nuclear charge': 8, 'electron count': 4,
-    #            'iterations': 10,
-    #            },
-    # 'F^{-}': {'N': 1000, 'extent': 5.7,
-    #           'nuclear charge': 9, 'electron count': 10,
-    #           'iterations': 51,
-    #           },
-    # 'N^{-}': {'N': 1000, 'extent': 6.5,
-    #            'nuclear charge': 7, 'electron count': 8,
-    #            'iterations': 30,
-    #        },
-    # 'C': {'N': 512, 'extent': 6.0,
+    # 'C': {'N': 512, 'extent': 11.0,
     #        'nuclear charge': 6, 'electron count': 6,
-    #        'iterations': 12,
+    #        'iterations': 15,
     #        },
-    # 'O': {'N': 512, 'extent': 3.75,
+    # 'O': {'N': 1024, 'extent': 7.0,
     #        'nuclear charge': 8, 'electron count': 8,
-    #        'iterations': 12,
+    #        'iterations': 15,
     #        },
-    'O': {'N': 1024, 'extent': 7.0,
-           'nuclear charge': 8, 'electron count': 8,
-           'iterations': 24,
-           },
-    # 'Ne': {'N': 1000, 'extent': 5.0,
+    # 'Ne': {'N': 1400, 'extent': 5.0,
     #        'nuclear charge': 10, 'electron count': 10,
-    #        'iterations': 12,
+    #        'iterations': 20,
     #        },
-    # 'Na^{+}': {'N': 1000, 'extent': 5.0,
-    #            'nuclear charge': 11, 'electron count': 10,
-    #            'iterations': 12,
-    #            },
     # 'Mg': {'N': 1400, 'extent': 12.0,
     #        'nuclear charge': 12, 'electron count': 12,
     #        'iterations': 10,
     #        },
-    # 'Si': {'N': 256, 'extent': 6.0,
+    # 'Si': {'N': 1024, 'extent': 13.5,
     #        'nuclear charge': 14, 'electron count': 14,
-    #        'iterations': 24,
+    #        'iterations': 16,
     #        },
     # 'S': {'N': 1400, 'extent': 7.5,
-    #        'nuclear charge': 16, 'electron count': 16,
-    #            'iterations': 12,
-    #            },
-    # 'Cl^{-}': {'N': 1400, 'extent': 10.0,
-    #        'nuclear charge': 17, 'electron count': 18,
-    #        'iterations': 15,
-    #        },
+    #       'nuclear charge': 16, 'electron count': 16,
+    #       'iterations': 15,
+    #       },
     # 'Ar': {'N': 1400, 'extent': 7.0,
     #        'nuclear charge': 18, 'electron count': 18,
     #        'iterations': 10,
@@ -94,10 +46,101 @@ atoms = {
     #        'nuclear charge': 20, 'electron count': 20,
     #        'iterations': 12,
     #        },
-    # 'Zn': {'N': 1400, 'extent': 4.5,
+    # 'Ti': {'N': 1024, 'extent': 11.0,
+    #        'nuclear charge': 22, 'electron count': 22,
+    #        'iterations': 17
+    #        },
+    # 'Cr': {'N': 1828, 'extent': 12.0,
+    #        'nuclear charge': 24, 'electron count': 24,
+    #        'iterations': 12
+    #        },
+
+    ## TODO: these do not work properly yet! #################################
+    # 'Fe': {'N': 1024, 'extent': 12.0,
+    #        'nuclear charge': 26, 'electron count': 26,
+    #        'iterations': 15
+    #        },
+    # 'Ni': {'N': 1024, 'extent': 10.0,
+    #        'nuclear charge': 28, 'electron count': 28,
+    #        'iterations': 15
+    #        },
+    # 'Zn': {'N': 1024, 'extent': 9.0,
     #        'nuclear charge': 30, 'electron count': 30,
+    #        'iterations': 15
+    #        },
+    # 'Ge': {'N': 1024, 'extent': 9.0,
+    #         'nuclear charge': 32, 'electron count': 32,
+    #         'iterations': 15,
+    #         },
+    ##########################################################################
+
+
+    # 'Se': {'N': 1400, 'extent': 8.5,
+    #        'nuclear charge': 34, 'electron count': 34,
+    #        'iterations': 15,
+    #        },
+    # 'Kr': {'N': 1400, 'extent': 7.75,
+    #         'nuclear charge': 36, 'electron count': 36,
+    #         'iterations': 15,
+    #         }
+    # 'Sr': {'N': 1828, 'extent': 14.5,
+    #        'nuclear charge': 38, 'electron count': 38,
+    #        'iterations': 15,
+    #        },
+    # 'Zr': {'N': 1400, 'extent': 12.5,
+    #        'nuclear charge': 40, 'electron count': 40,
+    #        'iterations': 15,
+    #        # -3451.65759132418
+    #        },
+    # 'Mo': {'N': 1400, 'extent': 11.0,
+    #        'nuclear charge': 42, 'electron count': 42,
+    #        'iterations': 15,
+    #        # Approx. -3880
+    #        },
+    # 'Ru': {'N': 1400, 'extent': 11.5,
+    #        'nuclear charge': 44, 'electron count': 44,
+    #        'iterations': 15,
+    #        # -4331.900226454583
+    #        },
+
+    ## TODO: these do not work properly yet! #################################
+    'Pd': {'N': 1024, 'extent': 7.5,
+           'nuclear charge': 46, 'electron count': 46,
+           'iterations': 15,
+           'orbital_letters':
+               ['1s',
+                '2s', '2p', '2p', '2p',
+                '3s', '3p', '3p', '3p',
+                '4s', '3d', '3d', '3d', '3d', '3d',
+                '4p', '4p', '4p',
+                '4d', '4d', '4d', '4d', '4d'],
+            'delta': 0.15**2
+           },
+    # 'Cd': {'N': 1400, 'extent': 9.0,
+    #        'nuclear charge': 48, 'electron count': 48,
+    #        'iterations': 15,
+    #        },
+    ##########################################################################
+
+    # 'Sn': {'N': 1400, 'extent': 10.0,
+    #        # -5881.166746421344 -- This is way off!!!
+    #        'nuclear charge': 50, 'electron count': 50,
+    #        'iterations': 15,
+    #        },
+    # 'Te': {'N': 1828, 'extent': 9.0,
+    #        'nuclear charge': 52, 'electron count': 52,
+    #        # -6521.673794329942
+    #        'iterations': 15,
+    #        },
+    # 'Xe': {'N': 1024, 'extent': 8.5,
+    #        'nuclear charge': 54, 'electron count': 54,
+    #        'iterations': 15,
+    #        'delta': (0.146484375) ** 2,
+    #        },
+    # 'Ba': {'N': 1024, 'extent': 16.0,
+    #        'nuclear charge': 56, 'electron count': 56,
     #        'iterations': 12,
-    #        }
+    #        },
 
 }
 
@@ -108,11 +151,27 @@ for name in atoms.keys():
     #                            atom['electron count'],
     #                            # orbital_letters=['1s', '2p', '2p', '2p']
     #                            )
+    kw = {}
+    if 'orbital_letters' in atom.keys():
+        kw['orbital_letters'] = atom['orbital_letters']
+    if 'delta' in atom.keys():
+        kw['delta'] = atom['delta']
     system = ClosedShellSystem(atom['N'], atom['extent'],
                                atom['nuclear charge'],
                                atom['electron count'],
+                               **kw
                                # orbital_letters=['1s', '2p', '2p', '2p']
                                )
+    if atom['electron count'] > 20 or name in ['C', 'O', 'Si', 'S']:
+        print(name)
+        system.toggle_right_boundary_potential_regulator(
+            remove_regulator_at=8)
+    # plt.imshow(system.R_GREATER_THAN)
+    # plt.show()
+    # plt.close()
+    # plt.imshow(system.R_LESS_THAN)
+    # plt.show()
+    # plt.close()
     system.solve(n_iterations=atom['iterations'], verbose=True)
     plt.title(r'Hartree-Fock Orbital Energies for ${'
               + name + '}$')
@@ -134,11 +193,11 @@ for name in atoms.keys():
         orbital = np.abs(system.get_orbital(orbital_name))
         plt.plot(system.R, init_orbital,
                  label=r'Initial $|r\phi_{' + orbital_name + r'}(r)|$',
-                 color=cols[k],
+                 color=cols[k] if k < len(cols) else 'red',
                  linestyle='--')
         plt.plot(system.R, orbital,
                  label=r'Final $|r\phi_{' + orbital_name + r'}(r)|$',
-                 color=cols[k])
+                 color=cols[k] if k < len(cols) else 'red')
         orbitals_dict[orbital_name] = \
             {'r': list(system.R),
              'values': list(system.get_orbital(orbital_name))

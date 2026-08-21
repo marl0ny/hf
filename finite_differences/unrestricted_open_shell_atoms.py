@@ -12,11 +12,21 @@ atoms = {
     #        'nuclear charge': 3, 'electron count': 3,
     #        'iterations': 10,
     #       },
-    'C^{-}': {'N': 1000, 'extent': 8.0,
-              'nuclear charge': 6, 'electron count': 7,
-              'iterations': 10},
+    # 'B': {'N': 1000, 'extent': 10.0,
+    #       'nuclear charge': 5, 'electron count': 5,
+    #       'iterations': 10},
+    'C': {'N': 1000, 'extent': 10.0,
+          'nuclear charge': 6, 'electron count': 6,
+          'iterations': 10},
+    # 'C^{-}': {'N': 1000, 'extent': 8.0,
+    #           'nuclear charge': 6, 'electron count': 7,
+    #           'iterations': 10},
     # 'N': {'N': 1000, 'extent': 7.5,
     #       'nuclear charge': 7, 'electron count': 7,
+    #       'iterations': 10,
+    #       },
+    # 'F': {'N': 1000, 'extent': 7.5,
+    #       'nuclear charge': 9, 'electron count': 9,
     #       'iterations': 10,
     #       },
     # 'O+': {'N': 1000, 'extent': 7.5,
@@ -86,7 +96,9 @@ for name in atoms.keys():
     plt.savefig(f'{file_name}_orbitals.png')
     plt.show()
     plt.close()
-    print(27.211386245 * system.get_total_energy())
+    total_energy = system.get_total_energy()
+    print(total_energy)
+    print(27.211386245 * total_energy, 'eV')
     with open(f"../data/{atom['nuclear charge']}p"
               + f"{atom['electron count']}e_fd.json", "w") as f:
         json.dump(orbitals_dict, f)
