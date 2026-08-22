@@ -93,7 +93,8 @@ TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
 	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
-	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp
+	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
+	./integrals/boys_function.cpp
 MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 # VISUALIZATION_3D_SOURCES = ./visualization_3d/volume_render.cpp \
 # 	./visualization_3d/planar_slice.cpp ./visualization_3d/line_arrows3d.cpp \
@@ -109,7 +110,8 @@ MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
 	orbitals_description.o molecular_geometry.o array_helpers.o
 SPATIAL_OBJECTS = spatial.o
-INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o
+INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
+	boys_function.o
 MATRIX_COMPUTATIONS_OBJECTS = eigenvalues_eigenvectors.o
 # VISUALIZATION_3D_OBJECTS = ./volume_render.o \
 # 	./planar_slice.o ./line_arrows3d.o \

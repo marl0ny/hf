@@ -45,7 +45,7 @@ void compute_eigenvalues_eigenvectors(
     MatrixXcd eigenvectors = solver.eigenvectors();
     // std::cout << eigenvectors.rows() << ", " 
     // << eigenvectors.cols() << std::endl;
-    for (int i = 0; i < eigenvectors_array.row_size(); i++) {
+    for (int i = 0; i < eigenvectors_array.col_size(); i++) {
         // There was a major bug that gave the incorrect energies.
         // It took a long time to realize that its cause was because
         // eigenvectors.innerStride was originally used here.

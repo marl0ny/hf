@@ -144,9 +144,9 @@ orbital_description_data::get_basis_function_array(
                     angular.ind[i] = angular_number;
                 } else if (multiplicity == 5) {
                     if (i == 0)
-                        angular = spatial::UByte4{.ind{0, 2, 0}};
+                        angular = spatial::UByte4{.ind{2, 0, 0}};
                     if (i == 1)
-                        angular = spatial::UByte4{.ind{0, 0, 2}};
+                        angular = spatial::UByte4{.ind{0, 2, 0}};
                     if (i == 2)
                         angular = spatial::UByte4{.ind{1, 1, 0}};
                     if (i == 3)

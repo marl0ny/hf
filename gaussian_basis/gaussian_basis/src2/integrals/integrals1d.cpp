@@ -12,33 +12,14 @@ This is indebted to the following article:
 */
 #include "integrals1d.hpp"
 #include "gaussian3d.hpp"
+#include "boys_function.hpp"
 #include <boost/math/policies/error_handling.hpp>
 #include <cmath>
-#include <boost/math/special_functions/hypergeometric_1F1.hpp>
-#include <boost/math/special_functions/hypergeometric_pFq.hpp>
-#include <stdio.h>
+#include <complex.h>
 
 #define PI 3.141592653589793
 
 using namespace spatial;
-
-/* The Boys function is used to find the Coulomb coefficients, which
-is in turn used to compute integrals involving the Coulomb potential.
-See the section "Nuclear attraction integrals" from this article
-by Joshua Goings:
-    https://joshuagoings.com/2017/04/28/integrals/.
-
-This uses Hypergeometric 1F1 as implemented by the Boost math library:
-https://live.boost.org/doc/libs/master/libs/\
-math/doc/html/math_toolkit/hypergeometric/hypergeometric_1f1.html.
-*/
-double boys_func(double x, int n) {
-    return boost::math::hypergeometric_1F1(
-        (long double)n + (long double)0.5, 
-        (long double)n + (long double)1.5, 
-          (long double)(-x))/(2.0*n + 1.0);
-    // return hyp1f1(n + 0.5, n + 1.5, -x)/(2.0*n + 1.0);
-}
 
 struct OverlapCoeffVals {
     double r21; // Distance from the second to the first Gaussian
@@ -108,7 +89,8 @@ https://joshuagoings.com/2017/04/28/integrals/.
 double coulomb_coefficient(int i, int j, int k, int n,
                            double orb_exp, const Vector &r12) {
     if (i == j && j == k && k == 0) {
-        return pow((-2*orb_exp), n)*boys_func(orb_exp*(dot(r12, r12)), n);
+        return pow((-2*orb_exp), n)
+        *beylkin_sharma::boys(orb_exp*(dot(r12, r12)), n);
     } else if (i < 0 ||  j < 0 || k < 0) {
         return 0.0;
     } else if (j == k && k == 0) {

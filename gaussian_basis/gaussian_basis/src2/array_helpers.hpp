@@ -46,8 +46,12 @@ namespace array_helpers {
         // TODO: create a View1D class or something.
         const double *c_ptr(unsigned int i) const;
         unsigned int row_size() const;
+        unsigned int row_count() const;
         unsigned int col_size() const;
+        unsigned int column_count() const;
     };
+
+    Array2D row_stack(const Array2D &a, const Array2D &b);
 
     class SquareArraySlice;
 

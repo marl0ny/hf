@@ -75,10 +75,10 @@ SquareArray SquareArray::operator-(const SquareArray &m) const {
 }
 
 double SquareArray::reduce(const Array2D &m) const {
-    if (m.row_size() != this->row_size())
-        return 0.0;
+    // if (m.row_size() != this->row_size())
+    //     return 0.0;
     double sum = 0.0;
-    for (int m_ind = 0; m_ind < m.col_size(); m_ind++) {
+    for (int m_ind = 0; m_ind < m.row_count(); m_ind++) {
         for (int i = 0; i < this->row_size(); i++) {
             for (int j = 0; j < this->row_size(); j++) {
                 sum += m(m_ind, j)*m(m_ind, i)*this->operator()(i, j);
@@ -149,8 +149,29 @@ unsigned int Array2D::row_size() const {
     return this->m_row_size;
 }
 
+unsigned int Array2D::row_count() const {
+    return this->m_col_size;
+}
+
 unsigned int Array2D::col_size() const {
     return this->m_col_size;
+}
+
+unsigned int Array2D::column_count() const {
+    return this->m_row_size;
+}
+
+Array2D row_stack(const Array2D &a, const Array2D &b) {
+    int number_of_columns = std::min(a.column_count(), b.column_count());
+    int number_of_rows = a.row_count() + b.row_count();
+    Array2D arr(number_of_rows, number_of_columns);
+    for (int i = 0; i < a.col_size(); i++)
+        for (int j = 0; j < number_of_columns; j++)
+            arr(i, j) = a(i, j);
+    for (int i = 0; i < b.col_size(); i++)
+        for (int j = 0; j < number_of_columns; j++)
+            arr(i + a.col_size(), j) = b(i, j);
+    return arr;
 }
 
 HypercubeArray::HypercubeArray(unsigned int size) {
