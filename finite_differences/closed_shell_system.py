@@ -2,6 +2,7 @@ from spherically_symmetric_system import *
 import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import eigsh, eigs
+from numpy.linalg import eigh
 from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict, List, Union
 
@@ -16,6 +17,7 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
     _exc_exp: dict[str, np.ndarray]
     _apply_right_bound_reg: bool
     _right_bound_reg_final: int
+    _use_np: False
 
     def __init__(self, number_of_points: int, extent: float,
                  nuclear_charge: float, number_of_electrons: int,
@@ -80,6 +82,7 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
                                  + (2.0 / 7.0) * (r_min**2 / r_max**3))
         self._apply_right_bound_reg = False
         self._right_bound_reg_final = 0
+        self._use_np = True
 
 
     def  multiplicity_from_orbital_name(self, orbital_name):
@@ -119,6 +122,7 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
         measure = self.DR * np.exp(self.S * self.DELTA)
         exchange = np.zeros([self.N, self.N])
         for other_orbital_name in orbitals.keys():
+            mul_factor = self._mul_scale_factor(other_orbital_name)
             outer_prod = np.outer(
                 orbitals[other_orbital_name],
                 orbitals[other_orbital_name]
@@ -126,66 +130,9 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
             ang = orbital_name[1]
             other_ang = other_orbital_name[1]
             expansion = self._exc_exp[f'{ang}({other_ang})']
-            exchange += (expansion * outer_prod) @ np.diag(measure)
+            exchange += (mul_factor 
+                         * expansion * outer_prod) @ np.diag(measure)
         return exchange
-    
-        # for other_orbital_name in orbitals.keys():
-        #     outer_prod = np.outer(
-        #         orbitals[other_orbital_name],
-        #         orbitals[other_orbital_name]
-        #     )
-        #     if 's' in orbital_name:
-        #         if 's' in other_orbital_name:
-        #             exchange += outer_prod / self.R_GREATER_THAN
-        #         elif 'p' in other_orbital_name:
-        #             term = outer_prod * self.R_LESS_THAN / \
-        #                         self.R_GREATER_THAN ** 2
-        #             term *= self._mul_scale_factor(other_orbital_name)
-        #             exchange += term
-        #         elif 'd' in other_orbital_name:
-        #             term = outer_prod * \
-        #                 (self.R_LESS_THAN**2 / self.R_GREATER_THAN**3)
-        #             term *= self._mul_scale_factor(other_orbital_name)
-        #             exchange += term
-        #     elif 'p' in orbital_name:
-        #         if 's' in other_orbital_name:
-        #             exchange += outer_prod * self.R_LESS_THAN / \
-        #                         self.R_GREATER_THAN ** 2 / 3.0
-        #         if 'p' in other_orbital_name:
-        #             term = (outer_prod / self.R_GREATER_THAN
-        #                          + 0.4 * outer_prod
-        #                          * self.R_LESS_THAN ** 2 /
-        #                          self.R_GREATER_THAN ** 3
-        #                          )
-        #             exchange += term \
-        #                 * self._mul_scale_factor(other_orbital_name)
-        #         if 'd' in other_orbital_name:
-        #             term = (3.0 / 7.0)  \
-        #                 * (self.R_LESS_THAN**3 / self.R_GREATER_THAN ** 4)
-        #             term += (2.0 / 3.0) \
-        #                 * (self.R_LESS_THAN / self.R_GREATER_THAN ** 2)
-        #             term *= \
-        #                 outer_prod*self._mul_scale_factor(other_orbital_name)
-        #             exchange += term
-        #     elif 'd' in orbital_name:
-        #         r_max = self.R_GREATER_THAN
-        #         r_min = self.R_LESS_THAN
-        #         if 's' in other_orbital_name:
-        #             term = (1.0 / 5.0) * outer_prod * (r_min**2 / r_max**3)
-        #             exchange += term
-        #         if 'p' in other_orbital_name:
-        #             scale_fac = self._mul_scale_factor(other_orbital_name)
-        #             term = scale_fac*outer_prod*(
-        #                 (9.0 / 35.0) * (r_min**3 / r_max**4)
-        #                 + (2.0 / 5.0) * (r_min / r_max**2))
-        #             exchange += term
-        #         if 'd' in other_orbital_name:
-        #             scale_fac = self._mul_scale_factor(other_orbital_name)
-        #             term = scale_fac*outer_prod*((1.0 / r_max)
-        #                 + (2.0 / 7.0) * (r_min**4 / r_max**5)
-        #                 + (2.0 / 7.0) * (r_min**2 / r_max**3))
-        #             exchange += term
-        # return exchange @ int_measure
 
     def _single_iter_set_orbitals(self, repulsion: np.ndarray, 
                                   prev_orbitals: Dict[str, np.ndarray],
@@ -216,8 +163,11 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
             elif 'f' in orbital_name:
                 count = principle_n - 3
             # print(orbital_name, count)
-            eigval, eigvect = eigsh(H, k=count, M=self.M_SPARSE,
-                                    which='LM', sigma=0.0)
+            if self._use_np:
+                eigval, eigvect = eigh(H @ self.INV_M_SPARSE.toarray())
+            else:
+                eigval, eigvect = eigsh(H, k=count, M=self.M_SPARSE,
+                                        which='LM', sigma=0.0)
             for n in range(count):
                 orbital_name2 = f'{1 + n + an}{orbital_name[1]}'
                 # print(orbital_name2, n)

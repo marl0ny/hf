@@ -2,7 +2,7 @@ from spherically_symmetric_system import *
 import numpy as np
 from scipy.sparse.linalg import eigsh
 from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
-from typing import Dict
+from typing import Dict, List
 
 
 def spin_from_orbital_name(orbital_name):
@@ -32,18 +32,25 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
     _outermost_count: int
     _outermost_orbital_name: str
     _all_orbital_names: list
+    _exc_exp: dict[str, np.ndarray]
+    _apply_right_bound_reg: bool
+    _right_bound_reg_final: int
 
     def __init__(self, number_of_points: int, extent: float,
-                 nuclear_charge: float, number_of_electrons: int):
+                 nuclear_charge: float, number_of_electrons: int,
+                 orbital_letters: Union[None, List[str]] = None,
+                 **kw: dict):
 
-        delta = 0.1 * (64 / number_of_points) ** 2
+        # delta = 0.1 * (64 / number_of_points) ** 2
+        delta = (100 / number_of_points) ** 2
         # delta = 5.0 * (64 / number_of_points) ** 2
+        if 'delta' in kw.keys():
+            delta = kw['delta']
         SphericallySymmetricSystemBase.__init__(self, 
                                                 number_of_points, extent,
                                                 nuclear_charge, delta,
                                                 lambda r, nuc: -nuc/r)
-        allowed_number_of_electrons = [1, 2, 3, 4, 5, 6, 7, 8, 10, 
-                                       11, 12, 15, 18, 19, 20]
+        allowed_number_of_electrons = [i for i in range(40)]
         hydrogen_like_orbitals = self.construct_hydrogen_like_orbitals()
         if not any([number_of_electrons == n
                     for n in allowed_number_of_electrons]):
@@ -54,17 +61,16 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
             '2s+', '2s-', '2p+', '2p+', '2p+', '2p-', '2p-', '2p-',
             '3s+', '3s-', '3p+', '3p+', '3p+', '3p-', '3p-', '3p-',
             '4s+', '4s-', 
-            '4d+', '4d+', '4d+', '4d+', '4d+',
-            '4d-', '4d-', '4d-', '4d-', '4d-',
+            '3d+', '3d+', '3d+', '3d+', '3d+',
+            '3d-', '3d-', '3d-', '3d-', '3d-',
             '4p+', '4p+', '4p+', '4p-', '4p-', '4p-']
+        if not (orbital_letters is None):
+            all_orbital_names = orbital_letters
         self._all_orbital_names = all_orbital_names
         self._outermost_orbital_name = all_orbital_names[:number_of_electrons][-1]
         self._outermost_count = len([
             o for o in all_orbital_names[:number_of_electrons]
-            if o[:2] == self._outermost_orbital_name[:2]])
-        print(self._outermost_count)
-        print('Multiplicity scale factor: ',
-              self._mul_scale_factor(self._outermost_orbital_name))
+            if o == self._outermost_orbital_name])
         orbital_designations = set(all_orbital_names[:number_of_electrons])
         for o_name in orbital_designations:
             self.init_orbitals[o_name] \
@@ -72,14 +78,44 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
             self.orbitals[o_name] \
                 = hydrogen_like_orbitals[o_name[:2]]
             self.orbital_energies[o_name] = []
+        self._exc_exp = {}
+        r_max = self.R_GREATER_THAN
+        r_min = self.R_LESS_THAN
+        self._exc_exp['s(s)'] = 1.0 / r_max
+        self._exc_exp['s(p)'] = r_min / r_max ** 2
+        self._exc_exp['s(d)'] = r_min ** 2 / r_max ** 3
+        self._exc_exp['p(s)'] = r_min / r_max ** 2 / 3.0
+        self._exc_exp['p(p)'] = 1.0 / r_max + 0.4 * r_min ** 2 / r_max ** 3
+        self._exc_exp['p(d)'] = ((3.0 / 7.0) * (r_min**3 / r_max ** 4)
+                                    + (2.0 / 3.0) * (r_min / r_max ** 2))
+        self._exc_exp['d(s)'] = (1.0 / 5.0) * (r_min**2 / r_max**3)
+        self._exc_exp['d(p)'] = ((9.0 / 35.0) * (r_min**3 / r_max**4)
+                                    + (2.0 / 5.0) * (r_min / r_max**2))
+        self._exc_exp['d(d)'] = ((1.0 / r_max)
+                                    + (2.0 / 7.0) * (r_min**4 / r_max**5)
+                                    + (2.0 / 7.0) * (r_min**2 / r_max**3))
+        self._apply_right_bound_reg = False
+        self._right_bound_reg_final = 0
 
     def get_spin_up_orbital_names(self):
         return set([o_name for o_name in self.orbitals.keys()
                     if '+' in o_name])
 
     def get_spin_down_orbital_names(self):
-        return set([o_name for o_name in self.orbitals.keys() 
-                    if '-' in o_name])
+            return set([o_name for o_name in self.orbitals.keys() 
+                        if '-' in o_name])
+
+    def get_sorted_orbital_names(self, orbital_names: List[str]) -> List[str]:
+        sorted_orbital_names = []
+        for o in self._all_orbital_names:
+            if o in orbital_names and (not o in sorted_orbital_names):
+                sorted_orbital_names.append(o)
+        return sorted_orbital_names
+
+    def toggle_right_boundary_potential_regulator(
+            self, remove_regulator_at: int = 8):
+        self._apply_right_bound_reg = not self._apply_right_bound_reg
+        self._right_bound_reg_final = remove_regulator_at
 
     def get_repulsion(self, orbital):
         # orbital2 = np.zeros([N+1])
@@ -97,101 +133,74 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
                                                    / self.R)[::-1],
                                                   initial=0.0)[::-1])
 
-    def _mul_scale_factor(self, other_orbital_name: str) -> float:
-        if (self._outermost_orbital_name == other_orbital_name):
-            return self.multiplicity_from_orbital_name(other_orbital_name) \
-                / multiplicity_from_orbital_name(other_orbital_name)
-        return 1.0
-
     def multiplicity_from_orbital_name(self, orbital_name) -> float:
         if orbital_name == self._outermost_orbital_name:
             return self._outermost_count
         return multiplicity_from_orbital_name(orbital_name)
 
+    def _exc_mul_scale_factor(self, other_orbital_name: str) -> float:
+            if (self._outermost_orbital_name == other_orbital_name):
+                return self.multiplicity_from_orbital_name(other_orbital_name) \
+                    / multiplicity_from_orbital_name(other_orbital_name)
+            return 1.0
+
     def get_exchange(self, orbital_name: str,
                      orbitals: Dict[str, np.ndarray]) -> np.ndarray:
+        measure = self.DR * np.exp(self.S * self.DELTA)
         exchange = np.zeros([self.N, self.N])
         for other_orbital_name in orbitals.keys():
             s1 = spin_from_orbital_name(orbital_name)
             s2 = spin_from_orbital_name(other_orbital_name)
-            outer_prod = np.outer(self.DR * np.exp(self.S * self.DELTA)
-                                  * orbitals[other_orbital_name],
-                                  orbitals[other_orbital_name])
-            if 's' in orbital_name:
-                if 's' in other_orbital_name and s1 == s2:
-                    exchange += outer_prod / self.R_GREATER_THAN
-                elif 'p' in other_orbital_name and s1 == s2:
-                    term = outer_prod * self.R_LESS_THAN / \
-                           self.R_GREATER_THAN ** 2
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
-                elif 'd' in other_orbital_name and s1 == s2:
-                    term = outer_prod * \
-                        (self.R_LESS_THAN**2 / self.R_GREATER_THAN**3)
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
-            elif 'p' in orbital_name:
-                if 's' in other_orbital_name and s1 == s2:
-                    exchange += outer_prod * self.R_LESS_THAN / \
-                                self.R_GREATER_THAN ** 2 / 3.0
-                if 'p' in other_orbital_name and s1 == s2:
-                    term = (outer_prod / self.R_GREATER_THAN
-                            + 0.4 * outer_prod
-                            * self.R_LESS_THAN ** 2 /
-                            self.R_GREATER_THAN ** 3)
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
-                if 'd' in other_orbital_name and s1 == s2:
-                    term = (3.0 / 7.0) * outer_prod \
-                        * (self.R_LESS_THAN**3 / self.R_GREATER_THAN ** 4)
-                    term += (2.0 / 3.0) * outer_prod \
-                        * (self.R_LESS_THAN / self.R_GREATER_THAN ** 2)
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
-            elif 'd' in orbital_name:
-                r_max = self.R_GREATER_THAN
-                r_min = self.R_LESS_THAN
-                if 's' in other_orbital_name:
-                    term = (1.0 / 5.0) * outer_prod * (r_min**2 / r_max**3)
-                    exchange += term
-                if 'p' in other_orbital_name:
-                    term = (9.0 / 35.0) * outer_prod * (r_min**3 / r_max**4)
-                    term += (2.0 / 5.0) * outer_prod * (r_min / r_max**2)
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
-                if 'd' in other_orbital_name:
-                    term = outer_prod * (1.0 / r_max)
-                    term += (2.0 / 7.0) * outer_prod * (r_min**4 / r_max**5)
-                    term += (2.0 / 7.0) * outer_prod * (r_min**2 / r_max**3)
-                    term *= self._mul_scale_factor(other_orbital_name)
-                    exchange += term
+            mul_factor = self._exc_mul_scale_factor(other_orbital_name)
+            if (s1 == s2):
+                outer_prod = np.outer(
+                    orbitals[other_orbital_name],
+                    orbitals[other_orbital_name]
+                )
+                ang = orbital_name[1]
+                other_ang = other_orbital_name[1]
+                expansion = self._exc_exp[f'{ang}({other_ang})']
+                exchange += (mul_factor 
+                             * expansion * outer_prod) @ np.diag(measure)
         return exchange
 
     def _single_iter_set_orbitals(self, repulsion: np.ndarray,
-                                  prev_orbitals: Dict[str, np.ndarray]):
+                                  prev_orbitals: Dict[str, np.ndarray],
+                                  iter_count: int):
         spin_up_orbital_names = self.get_spin_up_orbital_names()
         spin_down_orbital_names = self.get_spin_down_orbital_names()
         # print(spin_up_orbital_names)
         # print(spin_down_orbital_names)
         # print(spin_up_orbital_names, '\n', spin_down_orbital_names)
+        V = np.copy(self.V)
+        if (self._apply_right_bound_reg and 
+            iter_count <= self._right_bound_reg_final):
+            V += np.diagflat(self.Z/np.abs(self.R - (self.R[-1] + self.DR)))
         for spin_letter, orbital_names in zip(['+', '-'], 
                                               [spin_up_orbital_names,
                                                spin_down_orbital_names]):
-            for o_name_ in set([get_outermost_letter_name(orbital_names,
-                                                          o_name[1])
-                                for o_name in orbital_names]):
-                orbital_name = o_name_ + spin_letter
+            o_names_set = set([
+                get_outermost_letter_name(orbital_names, o_name[1])
+                for o_name in orbital_names])
+            sorted_o_names = self.get_sorted_orbital_names(
+                [o + spin_letter for o in o_names_set])
+            # if self.verbose:
+            #     print('Computing energies for:', *sorted_o_names)
+            for o_name_ in sorted_o_names:
+                orbital_name = o_name_
                 # if self.verbose:
                 #     print(orbital_name)
                 exchange = self.get_exchange(orbital_name, prev_orbitals)
                 an = angular_number_from_orbital_name(orbital_name)
                 H = self.T1 + self.M @ ((an * (an + 1) / 2) *
-                                        self.T2 + self.V
+                                        self.T2 + V
                                         + repulsion - exchange)
                 principle_n = get_principle_from_orbital_name(orbital_name)
                 count = principle_n
                 if 'p' in orbital_name:
                     count = principle_n - 1
+                if 'd' in orbital_name:
+                    count = principle_n - 2
                 eigval, eigvect = eigsh(H, k=count, M=self.M_SPARSE,
                                         which='LM', sigma=0.0)
                 for n in range(count):
@@ -205,30 +214,18 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
                         self.orbitals[orbital_name2] \
                             = self.normalize(eigvect.T[n])
 
-    def single_iter(self, iter_count):
+    def single_iter(self, iter_count: int):
         if self.verbose:
             print('Iteration Count: ', iter_count)
         repulsion = np.zeros([self.N, self.N])
-        orbital_count = self.number_of_electrons
-        orbital_names = []
         orbitals_keys = self.orbitals.keys()
-        for o in self._all_orbital_names:
-            if not o[:2] in orbital_names and o in orbitals_keys:
-                orbital_names.append(o[:2])
-        for o_name in orbital_names:
-            apparent_mult = 2*self.multiplicity_from_orbital_name(o_name)
-            mult = orbital_count if \
-                (orbital_count - apparent_mult) < 0 else apparent_mult
-            o_name2 = (f"{o_name}{'+'}"
-                       if f"{o_name}{'+'}" in self.orbitals
-                       else f"{o_name}{'-'}")
-            repulsion += mult * self.get_repulsion(self.orbitals[o_name2])
-            orbital_count -= mult
-            # print(o_name)
-            # print(f'Remaining orbitals {orbital_count}')
+        for o_name in self.get_sorted_orbital_names(list(orbitals_keys)):
+            mul = self.multiplicity_from_orbital_name(o_name)
+            print(f'{o_name} multiplicity: ', mul)
+            repulsion += mul * self.get_repulsion(self.orbitals[o_name])
         orbitals_copy = {name: self.orbitals[name].copy()
                          for name in self.orbitals.keys()}
-        self._single_iter_set_orbitals(repulsion, orbitals_copy)
+        self._single_iter_set_orbitals(repulsion, orbitals_copy, iter_count)
 
     def solve(self, n_iterations, verbose=False):
         self.verbose = verbose
@@ -278,15 +275,16 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
     def get_repulsion_energy(self):
         orbitals = self.orbitals
         repulsion_energy = 0.0
-        orbital_names = list(orbitals.keys())
+        orbital_names = self.get_sorted_orbital_names(list(orbitals.keys()))
         for orbital_name_i in orbital_names:
             for j in range(len(orbital_names)):
                 orbital_name_j = orbital_names[j]
-                spin_mul = 2
                 angular_mul_i = \
                     self.multiplicity_from_orbital_name(orbital_name_i)
                 angular_mul_j = \
                     self.multiplicity_from_orbital_name(orbital_name_j)
+                print(f'{orbital_name_i}, {orbital_name_j}: ',
+                      angular_mul_i, angular_mul_j)
                 orbital_i = orbitals[orbital_name_i]
                 orbital_j = orbitals[orbital_name_j]
                 orbital_from0_i = np.zeros([self.N + 1])

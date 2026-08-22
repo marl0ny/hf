@@ -110,7 +110,8 @@ if __name__ == '__main__':
     p_count = int(re.search(r'[0-9]+p', filename).group(0)[:-1])
     gauss_data = {}
     show_r_scaled_plots = True
-    for o in data.keys():
+    cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    for i, o in enumerate(data.keys()):
         r_ = np.array(data[o]['r'])
         values = np.array(data[o]['values'])
         gauss_data[o] = fit_to_orbital(o, number_of_gaussians, r_, values)
@@ -119,11 +120,11 @@ if __name__ == '__main__':
                         gauss_data[o]['exponents']):
             gauss_sum += r_**get_angular_number(o)*gaussian(r_, c, e)
         if show_r_scaled_plots:
-            plt.plot(r_, r_*values / r_, label=f'Original: {o}')
-            plt.plot(r_, r_*gauss_sum, label=f'Gaussian fit: {o}')
+            plt.plot(r_, abs(values), label=f'Original: {o}', color=cols[i], linestyle='--')
+            plt.plot(r_, abs(r_*gauss_sum), label=f'Gaussian fit: {o}', color=cols[i])
         else:
-            plt.plot(r_, values/r_, label=f'Original: {o}')
-            plt.plot(r_, gauss_sum, label=f'Gaussian fit: {o}')
+            plt.plot(r_, values/r_, label=f'Original: {o}', color=cols[i], linestyle='--')
+            plt.plot(r_, gauss_sum, label=f'Gaussian fit: {o}', color=cols[i])
     plt.legend()
     plt.show()
     plt.close()

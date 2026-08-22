@@ -2,6 +2,7 @@ from open_shell_system import *
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+from time import perf_counter
 
 atoms = {
     # 'H': {'N': 1024, 'extent': 17.0,
@@ -12,54 +13,75 @@ atoms = {
     #        'nuclear charge': 3, 'electron count': 3,
     #        'iterations': 10,
     #       },
-    # 'B': {'N': 1000, 'extent': 10.0,
+    # 'B': {'N': 1450, 'extent': 14.5,
     #       'nuclear charge': 5, 'electron count': 5,
     #       'iterations': 10},
-    'C': {'N': 1000, 'extent': 10.0,
-          'nuclear charge': 6, 'electron count': 6,
-          'iterations': 10},
-    # 'C^{-}': {'N': 1000, 'extent': 8.0,
-    #           'nuclear charge': 6, 'electron count': 7,
-    #           'iterations': 10},
-    # 'N': {'N': 1000, 'extent': 7.5,
+    # 'C': {'N': 1828, 'extent': 9.0,
+    #       'nuclear charge': 6, 'electron count': 6,
+    #       'iterations': 10},
+    # 'N': {'N': 1828, 'extent': 7.5,
     #       'nuclear charge': 7, 'electron count': 7,
     #       'iterations': 10,
+    #       # delta = (100 / number_of_points) ** 2
     #       },
+    # 'O': {'N': 1000, 'extent': 7.0,
+    #        'nuclear charge': 8, 'electron count': 8,
+    #        'iterations': 10,
+    #        },
     # 'F': {'N': 1000, 'extent': 7.5,
     #       'nuclear charge': 9, 'electron count': 9,
-    #       'iterations': 10,
+    #       'iterations': 12,
     #       },
-    # 'O+': {'N': 1000, 'extent': 7.5,
-    #           'nuclear charge': 8, 'electron count': 7,
-    #           'iterations': 10,
-    #           },
     # 'Na': {'N': 1000, 'extent': 12.0,
     #        'nuclear charge': 11, 'electron count': 11,
     #        'iterations': 12
     #       },
+    'Al': {'N': 1828, 'extent': 13.0,
+           'nuclear charge': 13, 'electron count': 13,
+           'iterations': 12,
+           },
+    # 'Si': {'N': 1400, 'extent': 13.5,
+    #        'nuclear charge': 14, 'electron count': 14,
+    #        'iterations': 12,
+    #        },
     # 'P': {'N': 1400, 'extent': 8.0,
     #       'nuclear charge': 15, 'electron count': 15,
     #       'iterations': 12,
     #       },
-    # 'S+': {'N': 1400, 'extent': 9.5,
-    #        'nuclear charge': 16, 'electron count': 15,
+    # 'S': {'N': 1400, 'extent': 7.5,
+    #        'nuclear charge': 16, 'electron count': 16,
     #        'iterations': 12,
     #         },
+    # 'Cl': {'N': 1400, 'extent': 7.0,
+    #        'nuclear charge': 17, 'electron count': 17,
+    #        'iterations': 12,
+    #        },
     # 'K': {'N': 1500, 'extent': 14.0,
     #       'nuclear charge': 19, 'electron count': 19,
     #       'iterations': 12,
     #       # -16121.354305388597
     #       # -5.281611735804714
     #      },
+    # 'Mn': {'N': 1024, 'extent': 12.0,
+    #        'nuclear charge': 25, 'electron count': 25,
+    #        'iterations': 12,
+    #        },
+    # 'As': {'N': 512, 'extent': 9.0,
+    #        'nuclear charge': 33, 'electron count': 33,
+    #        'iterations': 12}
 }
 
 
 for name in atoms.keys():
+    t1 = perf_counter()
     atom = atoms[name]
     system = UnrestrictedSystem(atom['N'], atom['extent'],
                                 atom['nuclear charge'],
                                 atom['electron count'])
     system.solve(n_iterations=atom['iterations'], verbose=True)
+    if atom['electron count'] >= 25:
+        system.toggle_right_boundary_potential_regulator(
+            remove_regulator_at=8)
     plt.title(r'Hartree-Fock Orbital Energies for ${'
               + name + '}$')
     plt.xlabel('Iteration Count')
@@ -102,4 +124,5 @@ for name in atoms.keys():
     with open(f"../data/{atom['nuclear charge']}p"
               + f"{atom['electron count']}e_fd.json", "w") as f:
         json.dump(orbitals_dict, f)
-
+    t2 = perf_counter()
+    print('Time taken:', t2 - t1, "s")

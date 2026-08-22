@@ -137,6 +137,9 @@ if __name__ == '__main__':
     parser.add_argument('-1s', required=False, help=help_str.format('1s'))
     parser.add_argument('-2s', required=False, help=help_str.format('2s'))
     parser.add_argument('-2p', required=False, help=help_str.format('2p'))
+    parser.add_argument('-3s', required=False, help=help_str.format('3s'))
+    parser.add_argument('-3p', required=False, help=help_str.format('3p'))
+    parser.add_argument('-3d', required=False, help=help_str.format('3d'))
     args_dict = vars(parser.parse_args())
     filename = args_dict['filename']
     groupings_dict = {}
@@ -144,7 +147,7 @@ if __name__ == '__main__':
     p_count = int(re.search(r'[0-9]+p', filename).group(0)[:-1])
     g_count = int(re.search(r'[0-9]+gaussians', 
                             filename).group(0).strip('gaussians'))
-    for name in ['1s', '2s', '2p']:
+    for name in ['1s', '2s', '2p', '3s', '3p', '3d']:
         if args_dict[name] is not None:
             groupings_dict[name] = [int(e) for e in 
                                     str(args_dict[name]).split(',')]

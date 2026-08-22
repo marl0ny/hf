@@ -3,6 +3,7 @@ from post_hf_closed_shell_system import *
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+from time import perf_counter
 
 
 atoms = {
@@ -18,10 +19,10 @@ atoms = {
     #        'nuclear charge': 6, 'electron count': 6,
     #        'iterations': 15,
     #        },
-    # 'O': {'N': 1024, 'extent': 7.0,
-    #        'nuclear charge': 8, 'electron count': 8,
-    #        'iterations': 15,
-    #        },
+    'O': {'N': 1024, 'extent': 7.0,
+           'nuclear charge': 8, 'electron count': 8,
+           'iterations': 15,
+           },
     # 'Ne': {'N': 1400, 'extent': 5.0,
     #        'nuclear charge': 10, 'electron count': 10,
     #        'iterations': 20,
@@ -104,18 +105,18 @@ atoms = {
     #        },
 
     ## TODO: these do not work properly yet! #################################
-    'Pd': {'N': 1024, 'extent': 7.5,
-           'nuclear charge': 46, 'electron count': 46,
-           'iterations': 15,
-           'orbital_letters':
-               ['1s',
-                '2s', '2p', '2p', '2p',
-                '3s', '3p', '3p', '3p',
-                '4s', '3d', '3d', '3d', '3d', '3d',
-                '4p', '4p', '4p',
-                '4d', '4d', '4d', '4d', '4d'],
-            'delta': 0.15**2
-           },
+    # 'Pd': {'N': 1024, 'extent': 7.5,
+    #        'nuclear charge': 46, 'electron count': 46,
+    #        'iterations': 15,
+    #        'orbital_letters':
+    #            ['1s',
+    #             '2s', '2p', '2p', '2p',
+    #             '3s', '3p', '3p', '3p',
+    #             '4s', '3d', '3d', '3d', '3d', '3d',
+    #             '4p', '4p', '4p',
+    #             '4d', '4d', '4d', '4d', '4d'],
+    #         'delta': 0.15**2
+    #        },
     # 'Cd': {'N': 1400, 'extent': 9.0,
     #        'nuclear charge': 48, 'electron count': 48,
     #        'iterations': 15,
@@ -145,6 +146,7 @@ atoms = {
 }
 
 for name in atoms.keys():
+    t1 = perf_counter()
     atom = atoms[name]
     # system = ClosedShellSystemWithPostHF(atom['N'], atom['extent'],
     #                            atom['nuclear charge'],
@@ -216,3 +218,5 @@ for name in atoms.keys():
     with open(f"../data/{atom['nuclear charge']}p"
               + f"{atom['electron count']}e_fd.json", "w") as f:
         json.dump(orbitals_dict, f)
+    t2 = perf_counter()
+    print("Time taken:", t2 - t1, "s")
