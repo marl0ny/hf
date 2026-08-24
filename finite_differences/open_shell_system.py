@@ -1,6 +1,7 @@
 from spherically_symmetric_system import *
 import numpy as np
 from scipy.sparse.linalg import eigsh
+from numpy.linalg import eigh
 from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict, List
 
@@ -35,6 +36,7 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
     _exc_exp: dict[str, np.ndarray]
     _apply_right_bound_reg: bool
     _right_bound_reg_final: int
+    _use_np: bool
 
     def __init__(self, number_of_points: int, extent: float,
                  nuclear_charge: float, number_of_electrons: int,
@@ -96,6 +98,7 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
                                     + (2.0 / 7.0) * (r_min**2 / r_max**3))
         self._apply_right_bound_reg = False
         self._right_bound_reg_final = 0
+        self._use_np = True
 
     def get_spin_up_orbital_names(self):
         return set([o_name for o_name in self.orbitals.keys()
@@ -201,8 +204,11 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
                     count = principle_n - 1
                 if 'd' in orbital_name:
                     count = principle_n - 2
-                eigval, eigvect = eigsh(H, k=count, M=self.M_SPARSE,
-                                        which='LM', sigma=0.0)
+                if self._use_np:
+                    eigval, eigvect = eigh(H @ self.INV_M_SPARSE.toarray())
+                else:
+                    eigval, eigvect = eigsh(H, k=count, M=self.M_SPARSE,
+                                            which='LM', sigma=0.0)
                 for n in range(count):
                     orbital_name2 = f'{1 + n + an}{orbital_name[1:]}'
                     self.orbital_energies[orbital_name2].append(

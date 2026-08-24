@@ -1,7 +1,7 @@
 from spherically_symmetric_system import *
 import numpy as np
 import scipy.sparse as sparse
-from scipy.sparse.linalg import eigsh, eigs
+from scipy.sparse.linalg import eigsh
 from numpy.linalg import eigh
 from scipy.integrate import cumulative_trapezoid, simpson, trapezoid
 from typing import Dict, List, Union
@@ -14,10 +14,10 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
     """
     _outermost_count: int
     _outermost_orbital_name: str
-    _exc_exp: dict[str, np.ndarray]
+    _exc_r_powers: dict[str, np.ndarray]
     _apply_right_bound_reg: bool
     _right_bound_reg_final: int
-    _use_np: False
+    _use_np: bool
 
     def __init__(self, number_of_points: int, extent: float,
                  nuclear_charge: float, number_of_electrons: int,
@@ -64,20 +64,21 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
         # plt.plot(self.R, np.diag(self.V))
         # plt.show()
         # plt.close()
-        self._exc_exp = {}
+        self._exc_r_powers = {}
         r_max = self.R_GREATER_THAN
         r_min = self.R_LESS_THAN
-        self._exc_exp['s(s)'] = 1.0 / r_max
-        self._exc_exp['s(p)'] = r_min / r_max ** 2
-        self._exc_exp['s(d)'] = r_min ** 2 / r_max ** 3
-        self._exc_exp['p(s)'] = r_min / r_max ** 2 / 3.0
-        self._exc_exp['p(p)'] = 1.0 / r_max + 0.4 * r_min ** 2 / r_max ** 3
-        self._exc_exp['p(d)'] = ((3.0 / 7.0) * (r_min**3 / r_max ** 4)
+        self._exc_r_powers['s(s)'] = 1.0 / r_max
+        self._exc_r_powers['s(p)'] = r_min / r_max ** 2
+        self._exc_r_powers['s(d)'] = r_min ** 2 / r_max ** 3
+        self._exc_r_powers['p(s)'] = r_min / r_max ** 2 / 3.0
+        self._exc_r_powers['p(p)'] = \
+            1.0 / r_max + 0.4 * r_min ** 2 / r_max ** 3
+        self._exc_r_powers['p(d)'] = ((3.0 / 7.0) * (r_min**3 / r_max ** 4)
                                  + (2.0 / 3.0) * (r_min / r_max ** 2))
-        self._exc_exp['d(s)'] = (1.0 / 5.0) * (r_min**2 / r_max**3)
-        self._exc_exp['d(p)'] = ((9.0 / 35.0) * (r_min**3 / r_max**4)
+        self._exc_r_powers['d(s)'] = (1.0 / 5.0) * (r_min**2 / r_max**3)
+        self._exc_r_powers['d(p)'] = ((9.0 / 35.0) * (r_min**3 / r_max**4)
                                  + (2.0 / 5.0) * (r_min / r_max**2))
-        self._exc_exp['d(d)'] = ((1.0 / r_max)
+        self._exc_r_powers['d(d)'] = ((1.0 / r_max)
                                  + (2.0 / 7.0) * (r_min**4 / r_max**5)
                                  + (2.0 / 7.0) * (r_min**2 / r_max**3))
         self._apply_right_bound_reg = False
@@ -106,6 +107,23 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
                                                    / self.R)[::-1],
                                                   initial=0.0)[::-1])
 
+    def get_repulsion_from_distribution(
+        self, dist: np.ndarray) -> np.ndarray:
+        # orbital2 = np.zeros([N+1])
+        # orbital2[1::] = np.conj(orbital)*orbital
+        # integrand1 =
+        return np.diagflat(cumulative_trapezoid(self.DR
+                                                * np.exp(self.S
+                                                            * self.DELTA)
+                                                * dist,
+                                                initial=0.0) / self.R
+                            + cumulative_trapezoid((self.DR
+                                                    * np.exp(self.S
+                                                            * self.DELTA)
+                                                    * dist
+                                                    / self.R)[::-1],
+                                                    initial=0.0)[::-1])
+
     def _mul_scale_factor(self, other_orbital_name: str) -> float:
         if (self._outermost_orbital_name == other_orbital_name):
             return self.multiplicity_from_orbital_name(other_orbital_name) \
@@ -129,9 +147,10 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
             )
             ang = orbital_name[1]
             other_ang = other_orbital_name[1]
-            expansion = self._exc_exp[f'{ang}({other_ang})']
-            exchange += (mul_factor 
-                         * expansion * outer_prod) @ np.diag(measure)
+            r_factors_expansion = self._exc_r_powers[f'{ang}({other_ang})']
+            exchange += (mul_factor
+                         * r_factors_expansion
+                         * outer_prod) @ np.diag(measure)
         return exchange
 
     def _single_iter_set_orbitals(self, repulsion: np.ndarray, 
@@ -262,6 +281,33 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
             potential_energy += 2.0 * n * integral
         return potential_energy
 
+    # def _compute_repulsion_exchange_term(self,
+    #                                      name_a: str, name_b: str, 
+    #                                      name_c: str, name_d: str) -> float:
+    #     orbital_a, orbital_b = self.orbitals[name_a], self.orbitals[name_b]
+    #     orbital_c, orbital_d = self.orbitals[name_c], self.orbitals[name_d]
+    #     mul_a = self.multiplicity_from_orbital_name(name_a)
+    #     mul_b = self.multiplicity_from_orbital_name(name_b)
+    #     mul_c = self.multiplicity_from_orbital_name(name_c)
+    #     mul_d = self.multiplicity_from_orbital_name(name_d)
+    #     repulsion = self.get_repulsion_from_distribution(orbital_c*orbital_d)
+    #     integrand = np.zeros([self.N + 1])
+    #     integrand = self.DR_0 * np.exp(self.S_0 * self.DELTA)
+    #     integrand[1::] *= (repulsion @ (orbital_a * orbital_b))
+    #     return mul_a*mul_b*mul_c*mul_d*simpson(integrand)
+
+    # def compute_repulsion_exchange_energy(self):
+    #     sum = 0.0
+    #     orbital_names = self.orbitals.keys()
+    #     for oi in orbital_names:
+    #         for oj in orbital_names:
+    #             repulsion = \
+    #                 self._compute_repulsion_exchange_term(oi, oi, oj, oj)
+    #             exchange = \
+    #                 self._compute_repulsion_exchange_term(oi, oj, oj, oi)
+    #             sum += (repulsion - exchange)/2.0
+    #     return sum
+
     def get_repulsion_energy(self) -> float:
         orbitals = self.orbitals
         repulsion_energy = 0.0
@@ -317,7 +363,9 @@ class ClosedShellSystem(SphericallySymmetricSystemBase):
         return (self.get_kinetic_energy()
                 + self.get_potential_energy()
                 + self.get_repulsion_energy() / 2.0
-                - self.get_exchange_energy() / 2.0)
+                - self.get_exchange_energy() / 2.0
+                # + self.compute_repulsion_exchange_energy()
+                )
 
 
 if __name__ == '__main__':

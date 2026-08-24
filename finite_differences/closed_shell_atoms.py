@@ -10,26 +10,38 @@ atoms = {
     # 'He': {'N': 1024, 'extent': 7.0,
     #        'nuclear charge': 2, 'electron count': 2,
     #        'iterations': 20,
+    #        # Fully spherically symmetric
+    #        # -2.8624957111495077
     #        },
-    # 'Be': {'N': 1024, 'extent': 10.0,
+    # 'Be': {'N': 1400, 'extent': 10.75,
     #        'nuclear charge': 4, 'electron count': 4,
-    #        'iterations': 10,
+    #        'iterations': 20,
+    #        # Fully spherically symmetric
+    #        # -14.573995502919988
     #        },
     # 'C': {'N': 512, 'extent': 11.0,
     #        'nuclear charge': 6, 'electron count': 6,
     #        'iterations': 15,
+    #       },
+    # 'O': {'N': 1400, 'extent': 7.0,
+    #        'nuclear charge': 8, 'electron count': 8,
+    #        'iterations': 15,
     #        },
-    'O': {'N': 1024, 'extent': 7.0,
-           'nuclear charge': 8, 'electron count': 8,
-           'iterations': 15,
-           },
-    # 'Ne': {'N': 1400, 'extent': 5.0,
+    'Ne': {'N': 512, 'extent': 5.5,
+           'nuclear charge': 10, 'electron count': 10,
+           'iterations': 15},
+    # 'Ne': {'N': 1828, 'extent': 5.25,
     #        'nuclear charge': 10, 'electron count': 10,
-    #        'iterations': 20,
+    #        'iterations': 15,
+    #        # Fully spherically symmetric
+    #        # -128.55391465196834
     #        },
-    # 'Mg': {'N': 1400, 'extent': 12.0,
+    # 'Mg': {'N': 2600, 'extent': 9.25,
     #        'nuclear charge': 12, 'electron count': 12,
-    #        'iterations': 10,
+    #        'iterations': 12,
+    #        # Fully spherically symmetric
+    #        # -199.51443003479284
+    #        'delta': 0.025**2
     #        },
     # 'Si': {'N': 1024, 'extent': 13.5,
     #        'nuclear charge': 14, 'electron count': 14,
@@ -39,12 +51,16 @@ atoms = {
     #       'nuclear charge': 16, 'electron count': 16,
     #       'iterations': 15,
     #       },
-    # 'Ar': {'N': 1400, 'extent': 7.0,
+    # 'Ar': {'N': 2048, 'extent': 6.0,
     #        'nuclear charge': 18, 'electron count': 18,
-    #        'iterations': 10,
+    #        'iterations': 12,
+    #        # Fully spherically symmetric
+    #        # -526.4429151268422
+    #        'delta': 0.04**2
     #        },
     # 'Ca': {'N': 1400, 'extent': 12.0,
     #        'nuclear charge': 20, 'electron count': 20,
+    #        # Fully spherically symmetric
     #        'iterations': 12,
     #        },
     # 'Ti': {'N': 1024, 'extent': 11.0,
@@ -68,6 +84,7 @@ atoms = {
     # 'Zn': {'N': 1024, 'extent': 9.0,
     #        'nuclear charge': 30, 'electron count': 30,
     #        'iterations': 15
+    #        # Fully spherically symmetric
     #        },
     # 'Ge': {'N': 1024, 'extent': 9.0,
     #         'nuclear charge': 32, 'electron count': 32,
@@ -80,10 +97,13 @@ atoms = {
     #        'nuclear charge': 34, 'electron count': 34,
     #        'iterations': 15,
     #        },
-    # 'Kr': {'N': 1400, 'extent': 7.75,
+    # 'Kr': {'N': 1828, 'extent': 7.5,
     #         'nuclear charge': 36, 'electron count': 36,
-    #         'iterations': 15,
-    #         }
+    #         'iterations': 17,
+    #         'delta': 0.05**2
+    #        # Fully spherically symmetric
+    #         # -2736.627738653648
+    #         },
     # 'Sr': {'N': 1828, 'extent': 14.5,
     #        'nuclear charge': 38, 'electron count': 38,
     #        'iterations': 15,
@@ -133,14 +153,16 @@ atoms = {
     #        # -6521.673794329942
     #        'iterations': 15,
     #        },
-    # 'Xe': {'N': 1024, 'extent': 8.5,
+    # 'Xe': {'N': 1828, 'extent': 8.5,
     #        'nuclear charge': 54, 'electron count': 54,
     #        'iterations': 15,
-    #        'delta': (0.146484375) ** 2,
+    #        'delta': 0.035 ** 2,
+    #        # Fully spherically symmetric
     #        },
     # 'Ba': {'N': 1024, 'extent': 16.0,
     #        'nuclear charge': 56, 'electron count': 56,
     #        'iterations': 12,
+    #        # Fully spherically symmetric
     #        },
 
 }
@@ -164,7 +186,7 @@ for name in atoms.keys():
                                **kw
                                # orbital_letters=['1s', '2p', '2p', '2p']
                                )
-    if atom['electron count'] > 20 or name in ['C', 'O', 'Si', 'S']:
+    if atom['electron count'] > 20 or name in ['C', 'Si', 'S']:
         print(name)
         system.toggle_right_boundary_potential_regulator(
             remove_regulator_at=8)

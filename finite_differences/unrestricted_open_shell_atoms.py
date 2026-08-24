@@ -16,13 +16,25 @@ atoms = {
     # 'B': {'N': 1450, 'extent': 14.5,
     #       'nuclear charge': 5, 'electron count': 5,
     #       'iterations': 10},
+    # 'C+': {'N': 1828, 'extent': 9.0,
+    #           'nuclear charge': 6, 'electron count': 5,
+    #           'iterations': 10},
     # 'C': {'N': 1828, 'extent': 9.0,
     #       'nuclear charge': 6, 'electron count': 6,
     #       'iterations': 10},
-    # 'N': {'N': 1828, 'extent': 7.5,
+    'N+': {'N': 1828, 'extent': 7.0,
+              'nuclear charge': 7, 'electron count': 6,
+              'iterations': 10,
+              # delta = (100 / number_of_points) ** 2
+              # -53.672706355326625
+              # -1460.508743449259 eV
+              },
+    # 'N': {'N': 1828, 'extent': 7.0,
     #       'nuclear charge': 7, 'electron count': 7,
     #       'iterations': 10,
     #       # delta = (100 / number_of_points) ** 2
+    #       # -54.40516560484707
+    #       # -1480.4399749966826 eV
     #       },
     # 'O': {'N': 1000, 'extent': 7.0,
     #        'nuclear charge': 8, 'electron count': 8,
@@ -36,17 +48,27 @@ atoms = {
     #        'nuclear charge': 11, 'electron count': 11,
     #        'iterations': 12
     #       },
-    'Al': {'N': 1828, 'extent': 13.0,
-           'nuclear charge': 13, 'electron count': 13,
-           'iterations': 12,
-           },
+    # 'Al': {'N': 1828, 'extent': 13.0,
+    #        'nuclear charge': 13, 'electron count': 13,
+    #        'iterations': 12,
+    #        },
     # 'Si': {'N': 1400, 'extent': 13.5,
     #        'nuclear charge': 14, 'electron count': 14,
     #        'iterations': 12,
     #        },
-    # 'P': {'N': 1400, 'extent': 8.0,
+    # 'P+': {'N': 512, 'extent': 5.0,
+    #           'nuclear charge': 15, 'electron count': 14,
+    #           'iterations': 12,
+    #           'delta': 0.02**2
+    #           # 195
+    #           # -340.19782939419156
+    #           },
+    # 'P': {'N': 512, 'extent': 5.0,
     #       'nuclear charge': 15, 'electron count': 15,
     #       'iterations': 12,
+    #       'delta': 0.02**2
+    #       # 195
+    #       # -340.19782939419156
     #       },
     # 'S': {'N': 1400, 'extent': 7.5,
     #        'nuclear charge': 16, 'electron count': 16,
@@ -75,9 +97,13 @@ atoms = {
 for name in atoms.keys():
     t1 = perf_counter()
     atom = atoms[name]
+    kw = {}
+    if 'delta' in atom:
+        kw['delta'] = atom['delta']
     system = UnrestrictedSystem(atom['N'], atom['extent'],
                                 atom['nuclear charge'],
-                                atom['electron count'])
+                                atom['electron count'],
+                                **kw)
     system.solve(n_iterations=atom['iterations'], verbose=True)
     if atom['electron count'] >= 25:
         system.toggle_right_boundary_potential_regulator(
