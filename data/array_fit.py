@@ -41,6 +41,8 @@ exponent values.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
+from typing import Dict, Callable
+import json
 
 
 def gaussian(x: np.ndarray, amp: float, orb_exp: float) -> np.ndarray:
@@ -58,7 +60,6 @@ def get_angular_number(orbital_name: str) -> int:
     if letter == 'f':
         return 3
 
-
 def fit_to_orbital(which: str, number_of: int,
                    r: np.ndarray, u: np.ndarray, params=None):
     an = get_angular_number(which)
@@ -73,10 +74,31 @@ def fit_to_orbital(which: str, number_of: int,
     if params is None:
         params = []
         for _ in range(number_of):
-            params.extend([1.0, 1.0])
+            params.extend([np.random.rand(), np.random.rand()])
+    params = np.array(params)
 
     data = least_squares(fit_function, params)
-    print(data['optimality'])
+    print(which, ':', data['optimality'])
+    redos = 0
+    params_curr = params.copy()
+    opt_curr = data['optimality']
+    delta = 1.0
+    # Use Metropolis-Hastings if optimality is not satisfied.
+    while (data['optimality'] > 1e-5 and redos < 100):
+        print(f'Redoing fit ({redos}) ...')
+        params_next = params_curr + \
+            delta*(2.0*np.random.rand(len(params_curr)) - 1.0)/2.0
+        data = least_squares(fit_function, params_next)
+        opt_next = data['optimality']
+        if (opt_next <= opt_curr or 
+            np.random.rand() <= opt_curr/opt_next):
+            opt_curr = opt_next
+            params_curr = params_next
+        redos += 1
+        if (redos == 99):
+            print('Giving up redos!')
+    if redos > 0:
+        print(which, ':', data['optimality'])
     ret_val = {"coefficients": [], "exponents": []}
     for k in range(len(data['x']) // 2):
         c2 = data['x'][2*k]
@@ -85,32 +107,14 @@ def fit_to_orbital(which: str, number_of: int,
         ret_val["exponents"].append(exp_orb2)
     return ret_val
 
-
-if __name__ == '__main__':
-
-    import sys
-    import json
-    import re
-
-    filename = '10p10e_fd.json'
-    number_of_gaussians = 4
-
-    print(sys.argv)
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-    if len(sys.argv) > 2:
-        number_of_gaussians = int(sys.argv[2])
-
-    string = ''
-    with open(filename, 'r') as f:
-        for line in f:
-            string += line
-        data = json.loads(string)
-    e_count = int(re.search(r'[0-9]+e', filename).group(0)[:-1])
-    p_count = int(re.search(r'[0-9]+p', filename).group(0)[:-1])
+def plot_save_data(p_count: int, e_count: int, data: Dict[str, np.ndarray],
+                   number_of_gaussians: int):
     gauss_data = {}
     show_r_scaled_plots = True
     cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    _, axes = plt.subplots(len(data.keys()), 1)
+    if len(data.keys()) == 1:
+        axes = [axes]
     for i, o in enumerate(data.keys()):
         r_ = np.array(data[o]['r'])
         values = np.array(data[o]['values'])
@@ -120,16 +124,68 @@ if __name__ == '__main__':
                         gauss_data[o]['exponents']):
             gauss_sum += r_**get_angular_number(o)*gaussian(r_, c, e)
         if show_r_scaled_plots:
-            plt.plot(r_, abs(values), label=f'Original: {o}', color=cols[i], linestyle='--')
-            plt.plot(r_, abs(r_*gauss_sum), label=f'Gaussian fit: {o}', color=cols[i])
+            axes[i].plot(r_, values, 
+                         label=f'Original: {o}', 
+                         color=cols[i % len(cols)], linestyle='--')
+            axes[i].plot(r_, r_*gauss_sum, 
+                         label=f'Gaussian fit: {o}', color=cols[i % len(cols)])
+            axes[i].set_xlabel(o)
+            # legend = axes[i].legend()
         else:
-            plt.plot(r_, values/r_, label=f'Original: {o}', color=cols[i], linestyle='--')
-            plt.plot(r_, gauss_sum, label=f'Gaussian fit: {o}', color=cols[i])
-    plt.legend()
+            axes[i].plot(r_, values/r_, 
+                         label=f'Original: {o}',
+                         color=cols[i % len(cols)], linestyle='--')
+            axes[i].plot(r_, gauss_sum, label=f'Gaussian fit: {o}',
+                         color=cols[i % len(cols)])
+            axes[i].set_xlabel(o)
+            axes[i].legend()
+    axes[0].set_title(f'{p_count}p{e_count}e orbitals')
+    axes[len(axes) - 1].set_xlabel('r')
+    # pl.legend()
     plt.show()
     plt.close()
-    import json
     with open(f'../data/{p_count}p{e_count}e-'
-              f'{number_of_gaussians}gaussians.json',
-              'w') as f:
+                f'{number_of_gaussians}gaussians.json',
+                'w') as f:
         json.dump(gauss_data, f)
+
+
+if __name__ == '__main__':
+
+    import sys
+    import re
+
+    filename = '10p10e_fd.json'
+    number_of_gaussians = 6
+
+    print(sys.argv)
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+    elif len(sys.argv) > 2:
+        number_of_gaussians = int(sys.argv[2])
+    elif len(sys.argv) == 1:
+        filenames = [f'./fd/{i}p{i}e_fd.json' for i in range(2, 9)]
+        for i, f_name in enumerate(filenames):
+            if i >= 18:
+                number_of_gaussians = 5
+            print(f_name)
+            string = ''
+            with open(f_name, 'r') as f:
+                for line in f:
+                    string += line
+                data = json.loads(string)
+                print('number of gaussiangs', number_of_gaussians)
+                e_count = int(re.search(r'[0-9]+e', f_name).group(0)[:-1])
+                p_count = int(re.search(r'[0-9]+p', f_name).group(0)[:-1])
+                plot_save_data(p_count, e_count, data, number_of_gaussians)
+        sys.exit()
+
+
+    string = ''
+    with open(filename, 'r') as f:
+        for line in f:
+            string += line
+        data = json.loads(string)
+    e_count = int(re.search(r'[0-9]+e', filename).group(0)[:-1])
+    p_count = int(re.search(r'[0-9]+p', filename).group(0)[:-1])
+    plot_save_data(p_count, e_count, data, number_of_gaussians)

@@ -10,3 +10,5 @@
 *.o
 !requirements.txt
 /build
+/**/four-gaussians/*
+/**/gb/*

@@ -13,12 +13,12 @@ atoms = {
     #        # Fully spherically symmetric
     #        # -2.8624957111495077
     #        },
-    # 'Be': {'N': 1400, 'extent': 10.75,
-    #        'nuclear charge': 4, 'electron count': 4,
-    #        'iterations': 20,
-    #        # Fully spherically symmetric
-    #        # -14.573995502919988
-    #        },
+    'Be': {'N': 1400, 'extent': 10.75,
+           'nuclear charge': 4, 'electron count': 4,
+           'iterations': 20,
+           # Fully spherically symmetric
+           # -14.573995502919988
+           },
     # 'C': {'N': 512, 'extent': 11.0,
     #        'nuclear charge': 6, 'electron count': 6,
     #        'iterations': 15,
@@ -27,9 +27,9 @@ atoms = {
     #        'nuclear charge': 8, 'electron count': 8,
     #        'iterations': 15,
     #        },
-    'Ne': {'N': 512, 'extent': 5.5,
-           'nuclear charge': 10, 'electron count': 10,
-           'iterations': 15},
+    # 'Ne': {'N': 512, 'extent': 5.5,
+    #        'nuclear charge': 10, 'electron count': 10,
+    #        'iterations': 15},
     # 'Ne': {'N': 1828, 'extent': 5.25,
     #        'nuclear charge': 10, 'electron count': 10,
     #        'iterations': 15,

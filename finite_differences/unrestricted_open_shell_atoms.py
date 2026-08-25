@@ -22,13 +22,13 @@ atoms = {
     # 'C': {'N': 1828, 'extent': 9.0,
     #       'nuclear charge': 6, 'electron count': 6,
     #       'iterations': 10},
-    'N+': {'N': 1828, 'extent': 7.0,
-              'nuclear charge': 7, 'electron count': 6,
-              'iterations': 10,
+    # 'N+': {'N': 1828, 'extent': 7.0,
+    #           'nuclear charge': 7, 'electron count': 6,
+    #           'iterations': 10,
               # delta = (100 / number_of_points) ** 2
               # -53.672706355326625
               # -1460.508743449259 eV
-              },
+    #          },
     # 'N': {'N': 1828, 'extent': 7.0,
     #       'nuclear charge': 7, 'electron count': 7,
     #       'iterations': 10,
@@ -78,12 +78,13 @@ atoms = {
     #        'nuclear charge': 17, 'electron count': 17,
     #        'iterations': 12,
     #        },
-    # 'K': {'N': 1500, 'extent': 14.0,
-    #       'nuclear charge': 19, 'electron count': 19,
-    #       'iterations': 12,
-    #       # -16121.354305388597
-    #       # -5.281611735804714
-    #      },
+    'K': {'N': 1828, 'extent': 11.0,
+          'nuclear charge': 19, 'electron count': 19,
+          'iterations': 12,
+          'delta': 0.045**2
+          # -596.2795776541122
+          # -16225.59389755152 eV
+         },
     # 'Mn': {'N': 1024, 'extent': 12.0,
     #        'nuclear charge': 25, 'electron count': 25,
     #        'iterations': 12,

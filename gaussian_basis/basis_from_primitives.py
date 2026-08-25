@@ -140,6 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('-3s', required=False, help=help_str.format('3s'))
     parser.add_argument('-3p', required=False, help=help_str.format('3p'))
     parser.add_argument('-3d', required=False, help=help_str.format('3d'))
+    parser.add_argument('-4s', required=False, help=help_str.format('4s'))
     args_dict = vars(parser.parse_args())
     filename = args_dict['filename']
     groupings_dict = {}
@@ -147,7 +148,7 @@ if __name__ == '__main__':
     p_count = int(re.search(r'[0-9]+p', filename).group(0)[:-1])
     g_count = int(re.search(r'[0-9]+gaussians', 
                             filename).group(0).strip('gaussians'))
-    for name in ['1s', '2s', '2p', '3s', '3p', '3d']:
+    for name in ['1s', '2s', '2p', '3s', '3p', '3d', '4s']:
         if args_dict[name] is not None:
             groupings_dict[name] = [int(e) for e in 
                                     str(args_dict[name]).split(',')]
@@ -163,8 +164,11 @@ if __name__ == '__main__':
 
     with open(filename, 'r') as f:
         primitives_dict = json.load(f)
+    primitives_dict = {o[:2]: primitives_dict[o] for o in primitives_dict if o != '-'}
+    print(primitives_dict.keys())
 
     new_dict = {}
+    print(groupings_dict)
     for name in primitives_dict:
         orbital_data0 = primitives_dict[name]
         coefficients = orbital_data0['coefficients']
@@ -197,12 +201,13 @@ if __name__ == '__main__':
     
     new_filename = f'{p_count}p{e_count}e'
     for name in groupings_dict:
-        new_filename += '_' + name
-        tmp = [str(e) + 'g' if e > 9 else str(e) 
-               for e in groupings_dict[name]]
-        for e in tmp:
-            new_filename += e
-    new_filename = '../data/' + new_filename + '.json'
+        if name in primitives_dict:
+            new_filename += '_' + name
+            tmp = [str(e) + 'g' if e > 9 else str(e) 
+                for e in groupings_dict[name]]
+            for e in tmp:
+                new_filename += e
+    new_filename = '../data/gb/' + new_filename + '.json'
     with open(new_filename, 'w') as f:
         json.dump(new_dict, f, indent=4)
 
@@ -221,35 +226,34 @@ if __name__ == '__main__':
                                        np.array(coefficients),
                                        np.array(exponents))
         print(name, orbital_norm)
+    # for e in $(find ../data/four-gaussians/*); do python3 -m basis_from_primitives $e; done
 
-    import matplotlib.pyplot as plt
-    with open('../data/10p10e_fd.json', 'r') as f:
-        data = json.load(f)
-    show_r_scaled_plots = True
-    cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
-    for i, o in enumerate(data.keys()):
-        r_ = np.array(data[o]['r'])
-        dr = r_[1] - r_[0]
-        values = np.array(data[o]['values'])
-        values = values/np.sqrt(dr*np.dot(values, np.conj(values)))
-        gauss_sum = np.zeros([len(r_)])
-        for basis_func_dict in new_dict[o]:
-            co = basis_func_dict['coefficient']
-            for c, e in zip(basis_func_dict['primitives']['coefficients'],
-                            basis_func_dict['primitives']['exponents']):
-                gauss_sum += r_**get_angular_number(o)*gaussian(r_, co*c, e)
-        # for c, e in zip(gauss_data[o]['coefficients'],
-        #                 gauss_data[o]['exponents']):
-        #     gauss_sum += r_**get_angular_number(o)*gaussian(r_, c, e)
-        if show_r_scaled_plots:
-            plt.plot(r_, values*np.amax(np.abs(r_*gauss_sum))/
-                                        np.max(np.abs(values)),
-                     label=f'Original: {o}', color=cols[i])
-            plt.plot(r_, r_*gauss_sum, label=f'Gaussian fit: {o}',
-                     color=cols[i], linestyle='--')
-        else:
-            # plt.plot(r_, values/r_, label=f'Original: {o}')
-            plt.plot(r_, gauss_sum, label=f'Gaussian fit: {o}')
-    plt.legend()
-    plt.show()
-    plt.close()
+    # import matplotlib.pyplot as plt
+    # with open('../data/10p10e_fd.json', 'r') as f:
+    #     data = json.load(f)
+    # show_r_scaled_plots = True
+    # cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    # for i, o in enumerate(data.keys()):
+    #     r_ = np.array(data[o]['r'])
+    #     dr = r_[1] - r_[0]
+    #     values = np.array(data[o]['values'])
+    #     values = values/np.sqrt(dr*np.dot(values, np.conj(values)))
+    #     gauss_sum = np.zeros([len(r_)])
+    #     if o in new_dict:
+    #         for basis_func_dict in new_dict[o]:
+    #             co = basis_func_dict['coefficient']
+    #             for c, e in zip(basis_func_dict['primitives']['coefficients'],
+    #                             basis_func_dict['primitives']['exponents']):
+    #                 gauss_sum += r_**get_angular_number(o)*gaussian(r_, co*c, e)
+    #     if show_r_scaled_plots:
+    #         plt.plot(r_, values*np.amax(np.abs(r_*gauss_sum))/
+    #                                     np.max(np.abs(values)),
+    #                  label=f'Original: {o}', color=cols[i])
+    #         plt.plot(r_, r_*gauss_sum, label=f'Gaussian fit: {o}',
+    #                  color=cols[i], linestyle='--')
+    #     else:
+    #         # plt.plot(r_, values/r_, label=f'Original: {o}')
+    #         plt.plot(r_, gauss_sum, label=f'Gaussian fit: {o}')
+    # plt.legend()
+    # plt.show()
+    # plt.close()
