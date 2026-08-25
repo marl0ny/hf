@@ -90,6 +90,7 @@ double coulomb_coefficient(int i, int j, int k, int n,
                            double orb_exp, const Vector &r12) {
     if (i == j && j == k && k == 0) {
         return pow((-2*orb_exp), n)
+        // *from_boost_library::boys(orb_exp*(dot(r12, r12)), n);
         *beylkin_sharma::boys(orb_exp*(dot(r12, r12)), n);
     } else if (i < 0 ||  j < 0 || k < 0) {
         return 0.0;

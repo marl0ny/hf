@@ -18,18 +18,23 @@ static unsigned int get_angular_number(const std::string &orbital_letter) {
     return 0;
 }
 
+#define S_MUL 1
+#define P_MUL 3
+#define D_MUL 6
+#define F_MUL 10
+
 static unsigned int get_angular_multiplicity(const std::string &orbital_letter) {
     if (orbital_letter.substr(1) == "s") {
-        return 1;
+        return S_MUL;
     }
     else if (orbital_letter.substr(1) == "p") {
-        return 3;
+        return P_MUL;
     }
     else if (orbital_letter.substr(1) == "d") {
-        return 5;
+        return D_MUL;
     }
     else if (orbital_letter.substr(1) == "d") {
-        return 7;
+        return F_MUL;
     }
     return 0;
 }
@@ -76,20 +81,22 @@ orbital_description_data::get_basis_function_array(
         for (int i = 0; i < multiplicity; i++) {
             spatial::UByte4 angular
                  = spatial::UByte4{.ind{0, 0, 0}};
-            if (multiplicity <= 3) {
+            if (multiplicity <= P_MUL) {
                 angular.ind[i] = angular_number;
-            } else if (multiplicity == 5) {
+            } else if (multiplicity == D_MUL) {
                 if (i == 0)
-                    angular = spatial::UByte4{.ind{0, 2, 0}};
+                    angular = spatial::UByte4{.ind{2, 0, 0}};
                 if (i == 1)
-                    angular = spatial::UByte4{.ind{0, 0, 2}};
+                    angular = spatial::UByte4{.ind{0, 2, 0}};
                 if (i == 2)
-                    angular = spatial::UByte4{.ind{1, 1, 0}};
+                    angular = spatial::UByte4{.ind{0, 0, 2}};
                 if (i == 3)
-                    angular = spatial::UByte4{.ind{1, 0, 1}};
+                    angular = spatial::UByte4{.ind{1, 1, 0}};
                 if (i == 4)
+                    angular = spatial::UByte4{.ind{1, 0, 1}};
+                if (i == 5)
                     angular = spatial::UByte4{.ind{0, 1, 1}};
-            } else if (multiplicity == 7) {
+            } else if (multiplicity == F_MUL) {
                 if (i == 0)
                     angular = spatial::UByte4{.ind{3, 0, 0}};
                 if (i == 1)
@@ -97,11 +104,19 @@ orbital_description_data::get_basis_function_array(
                 if (i == 2)
                     angular = spatial::UByte4{.ind{0, 0, 3}};
                 if (i == 3)
-                    angular = spatial::UByte4{.ind{2, 0, 1}};
+                    angular = spatial::UByte4{.ind{2, 1, 0}};
                 if (i == 4)
-                    angular = spatial::UByte4{.ind{0, 2, 1}};
+                    angular = spatial::UByte4{.ind{1, 2, 0}};
                 if (i == 5)
                     angular = spatial::UByte4{.ind{0, 1, 2}};
+                if (i == 6)
+                    angular = spatial::UByte4{.ind{0, 2, 1}};
+                if (i == 7)
+                    angular = spatial::UByte4{.ind{1, 0, 2}};
+                if (i == 8)
+                    angular = spatial::UByte4{.ind{2, 0, 1}};
+                if (i == 9)
+                    angular = spatial::UByte4{.ind{1, 1, 1}};
             }
             for (auto &basis_function: orbital.basis_functions) {
                 arr.add_basis_function(
@@ -140,20 +155,22 @@ orbital_description_data::get_basis_function_array(
             for (int i = 0; i < multiplicity; i++) {
                 spatial::UByte4 angular
                     = spatial::UByte4{.ind{0, 0, 0}};
-                if (multiplicity <= 3) {
+                if (multiplicity <= P_MUL) {
                     angular.ind[i] = angular_number;
-                } else if (multiplicity == 5) {
+                } else if (multiplicity == D_MUL) {
                     if (i == 0)
                         angular = spatial::UByte4{.ind{2, 0, 0}};
                     if (i == 1)
                         angular = spatial::UByte4{.ind{0, 2, 0}};
                     if (i == 2)
-                        angular = spatial::UByte4{.ind{1, 1, 0}};
+                        angular = spatial::UByte4{.ind{0, 0, 2}};
                     if (i == 3)
-                        angular = spatial::UByte4{.ind{1, 0, 1}};
+                        angular = spatial::UByte4{.ind{1, 1, 0}};
                     if (i == 4)
+                        angular = spatial::UByte4{.ind{1, 0, 1}};
+                    if (i == 5)
                         angular = spatial::UByte4{.ind{0, 1, 1}};
-                } else if (multiplicity == 7) {
+                } else if (multiplicity == F_MUL) {
                     if (i == 0)
                         angular = spatial::UByte4{.ind{3, 0, 0}};
                     if (i == 1)
@@ -161,11 +178,19 @@ orbital_description_data::get_basis_function_array(
                     if (i == 2)
                         angular = spatial::UByte4{.ind{0, 0, 3}};
                     if (i == 3)
-                        angular = spatial::UByte4{.ind{2, 0, 1}};
+                        angular = spatial::UByte4{.ind{2, 1, 0}};
                     if (i == 4)
-                        angular = spatial::UByte4{.ind{0, 2, 1}};
+                        angular = spatial::UByte4{.ind{1, 2, 0}};
                     if (i == 5)
                         angular = spatial::UByte4{.ind{0, 1, 2}};
+                    if (i == 6)
+                        angular = spatial::UByte4{.ind{0, 2, 1}};
+                    if (i == 7)
+                        angular = spatial::UByte4{.ind{1, 0, 2}};
+                    if (i == 8)
+                        angular = spatial::UByte4{.ind{2, 0, 1}};
+                    if (i == 9)
+                        angular = spatial::UByte4{.ind{1, 1, 1}};
                 }
                 for (auto &basis_function: orbital.basis_functions) {
                     spatial::Vector position = o.position;
