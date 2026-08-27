@@ -63,7 +63,11 @@ def get_angular_number(orbital_name: str) -> int:
 def fit_to_orbital(which: str, number_of: int,
                    r: np.ndarray, u: np.ndarray, params=None):
     an = get_angular_number(which)
-
+    tol = 1e-6
+    redos_limit = 100
+    if which == '4s' or which == '3d' or which == '4p':
+        tol = 1e-6
+        redos_limit = 250
     def fit_function(parameters: list) -> np.ndarray:
         gauss_list = []
         for j in range(len(parameters)//2):
@@ -82,12 +86,15 @@ def fit_to_orbital(which: str, number_of: int,
     redos = 0
     params_curr = params.copy()
     opt_curr = data['optimality']
-    delta = 1.0
+    delta = np.array(
+        [[1.0, 25.0] for _ in range(number_of)]).flatten()
     # Use Metropolis-Hastings if optimality is not satisfied.
-    while (data['optimality'] > 1e-5 and redos < 100):
+    while (data['optimality'] > tol and redos < redos_limit):
         print(f'Redoing fit ({redos}) ...')
         params_next = params_curr + \
             delta*(2.0*np.random.rand(len(params_curr)) - 1.0)/2.0
+        for i in range(1, len(params_curr), 2):
+            params_next[i] = abs(params_next[i])
         data = least_squares(fit_function, params_next)
         opt_next = data['optimality']
         if (opt_next <= opt_curr or 
@@ -95,7 +102,7 @@ def fit_to_orbital(which: str, number_of: int,
             opt_curr = opt_next
             params_curr = params_next
         redos += 1
-        if (redos == 99):
+        if (redos == redos_limit - 1):
             print('Giving up redos!')
     if redos > 0:
         print(which, ':', data['optimality'])
@@ -110,7 +117,7 @@ def fit_to_orbital(which: str, number_of: int,
 def plot_save_data(p_count: int, e_count: int, data: Dict[str, np.ndarray],
                    number_of_gaussians: int):
     gauss_data = {}
-    show_r_scaled_plots = True
+    show_r_scaled_plots = False
     cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
     _, axes = plt.subplots(len(data.keys()), 1)
     if len(data.keys()) == 1:
@@ -118,6 +125,12 @@ def plot_save_data(p_count: int, e_count: int, data: Dict[str, np.ndarray],
     for i, o in enumerate(data.keys()):
         r_ = np.array(data[o]['r'])
         values = np.array(data[o]['values'])
+        if o == '3d':
+            count = len(values)//5
+            dr = r_[-1] - r_[-2]
+            values = np.append(values, np.zeros([count]))
+            r_after = np.linspace(r_[-1] + dr, r_[-1] + dr*count, count)
+            r_ = np.append(r_, r_after)
         gauss_data[o] = fit_to_orbital(o, number_of_gaussians, r_, values)
         gauss_sum = np.zeros([len(r_)])
         for c, e in zip(gauss_data[o]['coefficients'],
@@ -129,16 +142,14 @@ def plot_save_data(p_count: int, e_count: int, data: Dict[str, np.ndarray],
                          color=cols[i % len(cols)], linestyle='--')
             axes[i].plot(r_, r_*gauss_sum, 
                          label=f'Gaussian fit: {o}', color=cols[i % len(cols)])
-            axes[i].set_xlabel(o)
-            # legend = axes[i].legend()
+            axes[i].set_ylabel(o)
         else:
             axes[i].plot(r_, values/r_, 
                          label=f'Original: {o}',
                          color=cols[i % len(cols)], linestyle='--')
             axes[i].plot(r_, gauss_sum, label=f'Gaussian fit: {o}',
                          color=cols[i % len(cols)])
-            axes[i].set_xlabel(o)
-            axes[i].legend()
+            axes[i].set_ylabel(o)
     axes[0].set_title(f'{p_count}p{e_count}e orbitals')
     axes[len(axes) - 1].set_xlabel('r')
     # pl.legend()
@@ -156,7 +167,7 @@ if __name__ == '__main__':
     import re
 
     filename = '10p10e_fd.json'
-    number_of_gaussians = 6
+    number_of_gaussians = 4
 
     print(sys.argv)
     if len(sys.argv) > 1:

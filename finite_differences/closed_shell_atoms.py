@@ -13,12 +13,12 @@ atoms = {
     #        # Fully spherically symmetric
     #        # -2.8624957111495077
     #        },
-    'Be': {'N': 1400, 'extent': 10.75,
-           'nuclear charge': 4, 'electron count': 4,
-           'iterations': 20,
-           # Fully spherically symmetric
-           # -14.573995502919988
-           },
+    # 'Be': {'N': 1400, 'extent': 10.75,
+    #        'nuclear charge': 4, 'electron count': 4,
+    #        'iterations': 20,
+    #        # Fully spherically symmetric
+    #        # -14.573995502919988
+    #        },
     # 'C': {'N': 512, 'extent': 11.0,
     #        'nuclear charge': 6, 'electron count': 6,
     #        'iterations': 15,
@@ -63,40 +63,51 @@ atoms = {
     #        # Fully spherically symmetric
     #        'iterations': 12,
     #        },
-    # 'Ti': {'N': 1024, 'extent': 11.0,
+    # 'Ti': {'N': 1828, 'extent': 7.25,
     #        'nuclear charge': 22, 'electron count': 22,
-    #        'iterations': 17
+    #        'iterations': 21,
+    #        # -846.0505051754807
+    #        'delta': 0.105**2
     #        },
-    # 'Cr': {'N': 1828, 'extent': 12.0,
+    # 'Cr': {'N': 1828, 'extent': 8.75,
     #        'nuclear charge': 24, 'electron count': 24,
-    #        'iterations': 12
+    #        'iterations': 21,
+    #        'delta': 0.105**2
+    #        # -1038.3516511556718
+    #        },
+    # 'Fe': {'N': 2400, 'extent': 7.75,
+    #        'nuclear charge': 26, 'electron count': 26,
+    #        'iterations': 21,
+    #        'delta': 0.105**2,
+    #        # -1258.6203513093235
     #        },
 
     ## TODO: these do not work properly yet! #################################
-    # 'Fe': {'N': 1024, 'extent': 12.0,
-    #        'nuclear charge': 26, 'electron count': 26,
-    #        'iterations': 15
-    #        },
-    # 'Ni': {'N': 1024, 'extent': 10.0,
+    # 'Ni': {'N': 1828, 'extent': 8.25,
     #        'nuclear charge': 28, 'electron count': 28,
-    #        'iterations': 15
+    #        'delta': 0.05**2,
+    #        'iterations': 21
     #        },
-    # 'Zn': {'N': 1024, 'extent': 9.0,
+    # 'Zn': {'N': 1828, 'extent': 8.25,
     #        'nuclear charge': 30, 'electron count': 30,
-    #        'iterations': 15
+    #        'iterations': 21,
+    #        'delta': 0.105**2,
     #        # Fully spherically symmetric
     #        },
-    # 'Ge': {'N': 1024, 'extent': 9.0,
+    # 'Ge': {'N': 1400, 'extent': 9.0,
     #         'nuclear charge': 32, 'electron count': 32,
-    #         'iterations': 15,
+    #         'iterations': 21,
+    #         'delta': 0.105**2,
     #         },
     ##########################################################################
 
 
-    # 'Se': {'N': 1400, 'extent': 8.5,
-    #        'nuclear charge': 34, 'electron count': 34,
-    #        'iterations': 15,
-    #        },
+    'Se': {'N': 2400, 'extent': 8.0,
+           'nuclear charge': 34, 'electron count': 34,
+           'iterations': 21,
+           'delta': 0.04**2
+           # -2391.220427776233
+           },
     # 'Kr': {'N': 1828, 'extent': 7.5,
     #         'nuclear charge': 36, 'electron count': 36,
     #         'iterations': 17,
@@ -187,6 +198,7 @@ for name in atoms.keys():
                                # orbital_letters=['1s', '2p', '2p', '2p']
                                )
     if atom['electron count'] > 20 or name in ['C', 'Si', 'S']:
+        # TODO: Not necessary for Titanium.
         print(name)
         system.toggle_right_boundary_potential_regulator(
             remove_regulator_at=8)

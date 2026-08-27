@@ -5,9 +5,10 @@ import json
 from time import perf_counter
 
 atoms = {
-    # 'H': {'N': 1024, 'extent': 17.0,
+    # 'H': {'N': 2048, 'extent': 17.0,
     #       'nuclear charge': 1, 'electron count': 1,
     #       'iterations': 20,
+    #       'delta': 0.035**2
     #      },
     # 'Li': {'N': 1024, 'extent': 14.0,
     #        'nuclear charge': 3, 'electron count': 3,
