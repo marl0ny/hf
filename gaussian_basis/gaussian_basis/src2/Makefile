@@ -90,7 +90,7 @@ DEPENDENCIES = ${DATA_DEPENDENCIES} ${GENERATED_DEPENDENCIES}
 all: ${TARGET}
 
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
-	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp
+	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp converge.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
@@ -108,7 +108,7 @@ MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 # BMP_SOURCES = ./bmp/bmp.cpp
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
-	orbitals_description.o molecular_geometry.o array_helpers.o
+	orbitals_description.o molecular_geometry.o array_helpers.o converge.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o

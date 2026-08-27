@@ -4,7 +4,9 @@
 #include "molecular_geometry.hpp"
 #include "array_helpers.hpp"
 #include "eigenvalues_eigenvectors.hpp"
+#include "converge.hpp"
 
+#include <iostream>
 
 void iteration(
     array_helpers::Array1D &energies,
@@ -27,6 +29,18 @@ void iteration(
     compute_eigenvalues_eigenvectors(
         energies, next_orbitals, overlap, fock);
 
+}
+
+void iteration(
+    array_helpers::Array1D &energies,
+    const array_helpers::SquareArray &overlap,
+    const array_helpers::SquareArray &kinetic_nuclear,
+    array_helpers::Array1D &energies_next,
+    array_helpers::Array2D &orbitals_next
+) {
+    compute_eigenvalues_eigenvectors(
+        energies_next, orbitals_next, 
+        overlap, kinetic_nuclear);
 }
 
 void iteration(
@@ -384,6 +398,8 @@ void closed_shell_element_example(int z) {
         {{position, z}}};
     OrbitalsData descr;
     switch (z) {
+        case 1:
+        descr = atomic_data_descriptions::ORB_1P1E_1S21;
         case 2:
         descr = atomic_data_descriptions::ORB_2P2E_1S4;
         break;
@@ -403,7 +419,7 @@ void closed_shell_element_example(int z) {
         descr = atomic_data_descriptions::ORB_7P7E_1S4_2S4_2P4;
         break;
         case 8:
-        descr = atomic_data_descriptions::ORB_8P8E_1S4_2S4_2P4;
+        descr = atomic_data_descriptions::ORB_8P8E_1S5_2S5_2P5;
         break;
         case 9:
         descr = atomic_data_descriptions::ORB_9P9E_1S4_2S4_2P4;
@@ -441,6 +457,22 @@ void closed_shell_element_example(int z) {
         case 20:
         descr = atomic_data_descriptions::ORB_20P20E_1S4_2S4_2P4_3S4_3P4_4S4;
         break;
+        case 22:
+        descr = 
+            atomic_data_descriptions::ORB_22P22E_1S4_2S4_2P4_3S4_3P4_3D211_4S211;
+        break;
+        case 24:
+        descr = 
+            atomic_data_descriptions::ORB_24P24E_1S4_2S4_2P4_3S4_3P4_3D4_4S4;
+        break;
+        case 26:
+        descr = 
+            atomic_data_descriptions::ORB_26P26E_1S4_2S4_2P4_3S4_3P4_3D4_4S4;
+        break;
+        case 34:
+        descr = 
+            atomic_data_descriptions::ORB_34P34E_1S5_2S5_2P5_3S5_3P5_3D2111_4S2111_4P2111;
+        break;
     }
 
     orbital_description_data::PositionedOrbitalsData 
@@ -449,7 +481,8 @@ void closed_shell_element_example(int z) {
         {element});
     int n = arr.get_number_of_basis_functions();
     // printf("Number of basis functions: %d.\n", n);
-    // arr.print();
+    if (z == 22)
+        arr.print();
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
@@ -477,11 +510,14 @@ void closed_shell_element_example(int z) {
             }
         }
     }
+    int count = z/2;
+    if (z == 1)
+        count = 1;
     array_helpers::SquareArray h = kinetic + nuclear;
-    array_helpers::Array1D energies(z/2);
+    array_helpers::Array1D energies(count);
     array_helpers::Array2D orbitals
         = orbital_description_data::get_orbital_basis_function_coefficients(
-            z/2, {element});
+            count, {element});
     array_helpers::Array2D orbitals_final
         = array_helpers::Array2D(orbitals.row_size(), orbitals.row_size());
     array_helpers::Array1D energies_final(orbitals.row_size());
@@ -499,9 +535,11 @@ void closed_shell_element_example(int z) {
         if (i == 19)
             iteration(energies_final, orbitals_final, overlap, h,
                 repulsion_exchange, orbitals);
-        /* for (int i = 0; i < energies_final.size(); i++)
-            printf("%g ", energies_final(i));
-        printf("\n");*/
+        // if (i == 19 || i == 1) {
+        //     printf("Orbital energies:\n");
+        //     for (int k = 0; k < energies.size(); k++)
+        //         printf("%g \n", energies_final(k));
+        // }
     }
     double ke = get_kinetic_energy(kinetic, orbitals);
     double pe = get_nuclear_potential_energy(nuclear, orbitals);
@@ -526,9 +564,9 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
     OrbitalsData descr;
     int u_count, d_count;
     switch (z) {
-        // case 1:
-        // u_count = 1, d_count = 0;
-        // descr = atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21;
+        case 1:
+        u_count = 1, d_count = 0;
+        descr = atomic_data_descriptions::ORB_1P1E_1S21;
         case 2:
         u_count = 1, d_count = 1;
         descr = atomic_data_descriptions::ORB_2P2E_1S4;
@@ -555,7 +593,7 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
         break;
         case 8:
         u_count = 5, d_count = 3;
-        descr = atomic_data_descriptions::ORB_8P8E_1S4_2S4_2P4;
+        descr = atomic_data_descriptions::ORB_8P8E_1S5_2S5_2P5;
         break;
         case 9:
         u_count = 5, d_count = 4;
@@ -605,6 +643,16 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
         u_count = 10, d_count = 10;
         descr = atomic_data_descriptions::ORB_20P20E_1S4_2S4_2P4_3S4_3P4_4S4;
         break;
+        case 22:
+        u_count = 12, d_count = 10;
+        descr = 
+            atomic_data_descriptions::ORB_22P22E_1S4_2S4_2P4_3S4_3P4_3D211_4S211;
+        break;
+        case 26:
+        u_count = 15, d_count = 11;
+        descr = 
+            atomic_data_descriptions::ORB_26P26E_1S4_2S4_2P4_3S4_3P4_3D4_4S4;
+        break;
     }
     orbital_description_data::PositionedOrbitalsData 
     element {descr, position};
@@ -650,18 +698,26 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
     // for (int i = 5; i < overlap.row_size(); i++)
     //     orbitals(4, i) = 1.0;
     for (int i = 0; i < 20; i++) {
-        iteration(
-            energies_up, orbitals_up, 
-            energies_down, orbitals_down,
-            overlap, 
-            h, repulsion_exchange,
-            orbitals_up, orbitals_down);
-        // for (int i = 0; i < energies_up.size(); i++) {
-        //     printf("up: %g\n", energies_up(i));
-        //     if (i < energies_down.size())
-        //         printf("down: %g\n", energies_down(i));
-        // }
-        // printf("\n");
+        if (z == 1) {
+            iteration(
+                energies_up, overlap, h,
+                energies_up, orbitals_up);
+        } else {
+            iteration(
+                energies_up, orbitals_up, 
+                energies_down, orbitals_down,
+                overlap, 
+                h, repulsion_exchange,
+                orbitals_up, orbitals_down);
+        }
+        if (i == 19) {
+            printf("Orbital energies:\n");
+            for (int k = 0; k < energies_up.size(); k++) {
+                printf("%g \n", energies_up(k));
+                if (d_count > 0 && k < energies_down.size())
+                    printf("%g \n", energies_down(k));
+            }
+        }
     }
     array_helpers::Array2D orbitals = array_helpers::row_stack(
         orbitals_up, orbitals_down);
@@ -682,7 +738,11 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
     double ex_down = get_exchange_energy(repulsion_exchange, orbitals_down);
     // printf("Kinetic Energy: %g\n", ke);
     // printf("Nuclear Energy: %g\n", pe);
-    printf("Total energy: %g\n", ke + pe + (re - ex_up - ex_down)/2.0);
+    if (z == 1) {
+        printf("Total energy: %g\n", ke + pe);
+    } else {
+        printf("Total energy: %g\n", ke + pe + (re - ex_up - ex_down)/2.0);
+    }
     // for (int i = 0; i < orbitals.col_size(); i++) {
     //     for (int j = 0; j < orbitals.row_size(); j++) {
     //         printf("%g ", orbitals(i, j));
@@ -870,20 +930,21 @@ void h2_example() {
 
 void h2o_example() {
     orbital_description_data::PositionedOrbitalsData h1
-        { atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21,
-         // atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
+        { // atomic_data_descriptions::ORB_1P1E_1S22,
+         atomic_data_descriptions::ORB_1P1E_1S21,
         // atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
             {.t=0.0, -1.93044664,  0.82666546,  0.0}}; 
     orbital_description_data::PositionedOrbitalsData h2
-        { atomic_data_descriptions::ORB_1P1E_1S21_2S21_2P21,
-         // atomic_data_descriptions::ORB_1P1E_1S22_2S22_2P22,
+        {  // atomic_data_descriptions::ORB_1P1E_1S22,
+         atomic_data_descriptions::ORB_1P1E_1S21,
         // atomic_data_descriptions::ORB_1P1E_1S4_2S4_2P4,
             {.t=0.0, 0.82666546, -1.93044664,  0.0}}; 
     orbital_description_data::PositionedOrbitalsData o 
         {// atomic_data_descriptions::ORB_10P10E_1S5_2S311_2P311,
          // atomic_data_descriptions::ORB_8P8E_1S5_2S32_2P32,
          // atomic_data_descriptions::ORB_8P8E_1S4_2S4_2P4,
-          atomic_data_descriptions::ORB_8P8E_1S6_2S6_2P3111,
+         atomic_data_descriptions::ORB_8P8E_1S5_2S5_2P5,
+         // atomic_data_descriptions::ORB_8P8E_1S6_2S6_2P3111,
             {.ind{0.0, 0.0, 0.0, 0.0}}};
     NuclearChargesArray nuclear_charges = NuclearChargesArray({
         {{.t=0.0, -1.93044664,  0.82666546,  0.0}, 1},
@@ -969,17 +1030,105 @@ void h2o_example() {
     }
 }
 
+void benzene_example() {
+    // Should be less that -226!
+    int n_electrons = 42;
+    std::vector<orbital_description_data::PositionedOrbitalsData> hydrogens;
+    std::vector<orbital_description_data::PositionedOrbitalsData> carbons;
+    NuclearChargesArray nuclear_charges {{}};
+    double pi = 3.141592653589793;
+    for (int i = 0; i < 6; i++) {
+        double angle = pi/3.0;
+        double r_c = 2.6;
+        double r_h = 4.6;
+        spatial::Vector c_pos {
+            .t=0.0, .x=r_c*cos(i*angle), .y=r_c*sin(i*angle), .z=0.0};
+        spatial::Vector h_pos {
+            .t=0.0, .x=r_h*cos(i*angle), .y=r_h*sin(i*angle), .z=0.0};
+        carbons.push_back(
+            orbital_description_data::PositionedOrbitalsData
+            {
+                atomic_data_descriptions::ORB_6P6E_1S4_2S4_2P211,
+                c_pos
+            }
+        );
+        hydrogens.push_back(
+            orbital_description_data::PositionedOrbitalsData
+            {
+                atomic_data_descriptions::ORB_1P1E_1S21,
+                h_pos
+            }
+        );
+        nuclear_charges.push_back({h_pos, 1});
+        nuclear_charges.push_back({c_pos, 6});
+    }
+    std::vector<orbital_description_data::PositionedOrbitalsData> atoms;
+    for (const PositionedOrbitalsData &c: carbons)
+        atoms.push_back(c);
+    for (const PositionedOrbitalsData &h: hydrogens)
+        atoms.push_back(h);
+    BasisFunctionArray arr = orbital_description_data::get_basis_function_array(
+        atoms);
+    int n = arr.get_number_of_basis_functions();
+    std::cout << "Number of basis functions: " << n << std::endl;
+    // arr.print();
+    array_helpers::SquareArray overlap(n);
+    array_helpers::SquareArray kinetic(n);
+    array_helpers::SquareArray nuclear(n);
+    array_helpers::HypercubeArray repulsion_exchange(n);
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            overlap(i, j) = arr.overlap(i, j);
+            kinetic(i, j) = arr.kinetic(i, j);
+            nuclear(i, j) = arr.nuclear(i, j, nuclear_charges);
+            for (int k = 0; k < n; k++) {
+                for (int l = k; l < n; l++) {
+                    repulsion_exchange(i, j, k, l) 
+                        = arr.repulsion_exchange(i, j, k, l);
+                    if (l > k) {
+                        repulsion_exchange(i, j, l, k)
+                            = repulsion_exchange(i, j, k, l);
+                    }
+                }
+            }
+            if (j > i) {
+                overlap(j, i) = overlap(i, j);
+                kinetic(j, i) = kinetic(i, j);
+                nuclear(j, i) = nuclear(i, j);
+                repulsion_exchange(j, i, repulsion_exchange(i, j));
+            }
+        }
+    }
+    array_helpers::SquareArray h = kinetic + nuclear;
+    array_helpers::Array1D energies(n_electrons/2);
+    array_helpers::Array2D orbitals
+        = orbital_description_data::get_orbital_basis_function_coefficients(
+        n_electrons/2, atoms);
+    converge::closed(
+        energies, orbitals, n_electrons/2, overlap,
+        h, repulsion_exchange, 20);
+    double ke = get_kinetic_energy(kinetic, orbitals);
+    double pe = get_nuclear_potential_energy(nuclear, orbitals);
+    double re = get_repulsion_exchange_energy(repulsion_exchange, orbitals);
+    double ne = nuclear_charges.get_energy();
+    printf("Nuclear energy: %g\n", ne);
+    printf("Total energy: %g\n", ke + pe + re + ne);
+}
+
 void co2_example() {
     orbital_description_data::PositionedOrbitalsData o1
-        {atomic_data_descriptions::ORB_8P8E_1S5_2S32_2P32,
+        {// atomic_data_descriptions::ORB_8P8E_1S5_2S32_2P32,
          // atomic_data_descriptions::ORB_8P8E_1S6_2S6_2P3111,
+         atomic_data_descriptions::ORB_8P8E_1S5_2S5_2P5,
             {.ind{0.0, -2.2, 0.0, 0.0}}};
     orbital_description_data::PositionedOrbitalsData o2
-        {atomic_data_descriptions::ORB_8P8E_1S5_2S32_2P32,
+        {// atomic_data_descriptions::ORB_8P8E_1S5_2S32_2P32,
          // atomic_data_descriptions::ORB_8P8E_1S6_2S6_2P3111,
+         atomic_data_descriptions::ORB_8P8E_1S5_2S5_2P5,
             {.ind{0.0, 2.2, 0.0, 0.0}}};
     orbital_description_data::PositionedOrbitalsData c
-        {atomic_data_descriptions::ORB_7P7E_1S6_2S42_2P42,
+        {// atomic_data_descriptions::ORB_7P7E_1S6_2S42_2P42,
+         atomic_data_descriptions::ORB_6P6E_1S4_2S4_2P211,
             {.ind{0.0, 0.0, 0.0, 0.0}}};
     NuclearChargesArray nuclear_charges = NuclearChargesArray({
         {{.t=0.0, -2.2, 0.0,  0.0}, 8},
@@ -1040,13 +1189,16 @@ void co2_example() {
         }
         printf("\n");
     }
-    for (int i = 0; i < 20; i++) {
-        iteration(energies, orbitals, overlap, h, 
-            repulsion_exchange, orbitals);
-        for (int i = 0; i < energies.size(); i++)
-            printf("%g ", energies(i));
-        printf("\n");
-    }
+    converge::closed(
+        energies, orbitals, 11, overlap,
+        h, repulsion_exchange, 20);
+    // for (int i = 0; i < 20; i++) {
+    //     iteration(energies, orbitals, overlap, h, 
+    //         repulsion_exchange, orbitals);
+    //     for (int i = 0; i < energies.size(); i++)
+    //         printf("%g ", energies(i));
+    //     printf("\n");
+    // }
     double ke = get_kinetic_energy(kinetic, orbitals);
     double pe = get_nuclear_potential_energy(nuclear, orbitals);
     double re = get_repulsion_exchange_energy(repulsion_exchange, orbitals);
@@ -1151,6 +1303,8 @@ void o2_example() {
 
 
 int main() {
+    struct timespec frame_time[2];
+    clock_gettime(CLOCK_MONOTONIC, &frame_time[0]);
     // array_helpers::test1();
     // array_helpers::test2();
     // array_helpers::test3();
@@ -1162,6 +1316,7 @@ int main() {
     // array_helpers::test9();
     // h2_example();
     // h2o_example();
+    benzene_example();
     // co2_example();
     // o2_example();
     // si_example();
@@ -1170,14 +1325,18 @@ int main() {
     // c_unrestricted_example();
     // closed_shell_element_example(18);
     // h2o_example();
-    for (int i = 2; i <= 20; i++) {
-        printf("Atomic number: %d:\n", i);
-        printf("Closed:\n");
-        closed_shell_element_example(i);
-        printf("Unrestricted Open:\n");
-        unrestricted_element_example(i);
-        printf("\n");
-    }
-
+    // for (int i = 1; i <= 20; i++) {
+    //     printf("Atomic number: %d:\n", i);
+    //     printf("Closed:\n");
+    //     closed_shell_element_example(i);
+    //     printf("Unrestricted Open:\n");
+    //     unrestricted_element_example(i);
+    //     puts("############################################################");
+    // }
+    // closed_shell_element_example(34);
+    // unrestricted_element_example(22);
+    clock_gettime(CLOCK_MONOTONIC, &frame_time[1]);
+    double delta_t = frame_time[1].tv_sec - frame_time[0].tv_sec;
+    std::cout << "Time taken: " << delta_t << "s \n";
     return 0;
 }
