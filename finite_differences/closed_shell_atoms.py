@@ -91,27 +91,27 @@ atoms = {
     #        'delta': 0.105**2,
     #        # Fully spherically symmetric
     #        },
-    'Ge': {'N': 2400, 'extent': 7.5,
-            'nuclear charge': 32, 'electron count': 32,
-            'iterations': 26,
-            'delta': 0.105**2,
-            # previous
-            # -2068.752943474861
-            # -56293.635390375086 eV
-            },
+    # 'Ge': {'N': 2400, 'extent': 7.5,
+    #         'nuclear charge': 32, 'electron count': 32,
+    #         'iterations': 26,
+    #         'delta': 0.105**2,
+    #         # previous
+    #         # -2068.752943474861
+    #         # -56293.635390375086 eV
+    #         },
     # 'Se': {'N': 2400, 'extent': 8.0,
     #        'nuclear charge': 34, 'electron count': 34,
     #        'iterations': 21,
     #        'delta': 0.04**2
     #        # -2391.220427776233
     #        },
-    # 'Kr': {'N': 1828, 'extent': 7.5,
-    #         'nuclear charge': 36, 'electron count': 36,
-    #         'iterations': 17,
-    #         'delta': 0.05**2
-    #        # Fully spherically symmetric
-    #         # -2736.627738653648
-    #         },
+    'Kr': {'N': 2400, 'extent': 7.5,
+            'nuclear charge': 36, 'electron count': 36,
+            'iterations': 21,
+            'delta': 0.05**2
+           # Fully spherically symmetric
+            # -2736.627738653648
+            },
     # 'Sr': {'N': 1828, 'extent': 14.5,
     #        'nuclear charge': 38, 'electron count': 38,
     #        'iterations': 15,

@@ -100,12 +100,17 @@ atoms = {
     #       # -940.8915102478887
     #       # -25602.962299996674 eV
     #       },
-    'Mn': {'N': 2400, 'extent': 8.0,
-           'nuclear charge': 25, 'electron count': 25,
-           'iterations': 21,
-           'delta': 0.105**2
-           # -1147.4367763200848
-           # -31223.3453121635 eV
+    # 'Mn': {'N': 2400, 'extent': 8.0,
+    #        'nuclear charge': 25, 'electron count': 25,
+    #        'iterations': 21,
+    #        'delta': 0.105**2
+    #        # -1147.4367763200848
+    #        # -31223.3453121635 eV
+    #        },
+    'Co': {'N': 2400, 'extent': 7.725,
+           'nuclear charge': 27, 'electron count': 27,
+           'iterations': 27,
+           'delta': 0.09**2,
            },
     # 'As': {'N': 512, 'extent': 9.0,
     #        'nuclear charge': 33, 'electron count': 33,
@@ -125,8 +130,12 @@ for name in atoms.keys():
                                 **kw)
     system.solve(n_iterations=atom['iterations'], verbose=True)
     if atom['electron count'] >= 25:
-        system.toggle_right_boundary_potential_regulator(
-            remove_regulator_at=8)
+        if name in ['Co']:
+            system.toggle_right_boundary_potential_regulator(
+                                    remove_regulator_at=16)
+        else:
+            system.toggle_right_boundary_potential_regulator(
+                remove_regulator_at=8)
     plt.title(r'Hartree-Fock Orbital Energies for ${'
               + name + '}$')
     plt.xlabel('Iteration Count')

@@ -76,9 +76,21 @@ def fit_to_orbital(which: str, number_of: int,
         return (u/r - sum(gauss_list)).flatten()
 
     if params is None:
+        with open('./34p34e-6gaussians.json', 'r') as f:
+            contents = ''.join([line for line in f])
+        print(contents)
+        data = json.loads(contents)
+        print(data)
+        coefficients = data[which]['coefficients']
+        exponents = data[which]['exponents']
         params = []
-        for _ in range(number_of):
-            params.extend([np.random.rand(), np.random.rand()])
+        for k in range(number_of):
+                    params.extend([
+                        coefficients[k],
+                        exponents[k]
+                    ])
+        # for _ in range(number_of):
+        #     params.extend([np.random.rand(), np.random.rand()])
     params = np.array(params)
 
     data = least_squares(fit_function, params)
@@ -174,6 +186,8 @@ if __name__ == '__main__':
         filename = sys.argv[1]
     elif len(sys.argv) > 2:
         number_of_gaussians = int(sys.argv[2])
+        # if len(sys.argv) == 3:
+        #     pass
     elif len(sys.argv) == 1:
         filenames = [f'./fd/{i}p{i}e_fd.json' for i in range(2, 9)]
         for i, f_name in enumerate(filenames):
