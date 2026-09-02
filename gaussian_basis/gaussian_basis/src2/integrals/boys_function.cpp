@@ -41,9 +41,9 @@ static const std::complex<double> WEIGHTS[26] = {
     std::complex(-8.906604773310075, 0.0), std::complex(0.7234994580508529, 0.0),
 };
 
-static double boys_func_recurse_upwards(double x, int n);
+static inline double boys_func_recurse_upwards(double x, int n);
 
-static double boys_func_recurse_to_zero(double x, int n);
+static inline double boys_func_recurse_to_zero(double x, int n);
 
 /* Please look at "A fast algorithm for computing the Boys function"
 by Gregory Beylkin and Sandeep Sharma, which is where this
@@ -69,7 +69,7 @@ double beylkin_sharma::boys(double x, int n) {
 /* See "A fast algorithm for computing the Boys function"
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (3) for recursing to the maximum n value. */
-static double boys_func_recurse_upwards(double x, int n) {
+static inline double boys_func_recurse_upwards(double x, int n) {
     std::complex c_val = 0.0;
     for (int i = 0; i < 13; i++) {
         std::complex exp_val = WEIGHTS[2*i];
@@ -112,7 +112,7 @@ static double boys_func_recurse_upwards(double x, int n) {
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (4) for the n = 0 base case, and (2) for the recursion relation
 that goes to zero. */
-static double boys_func_recurse_to_zero(double x, int n) {
+static inline double boys_func_recurse_to_zero(double x, int n) {
     double val = sqrt(PI)*std::erf(sqrt(x))/(2.0*sqrt(x));
     for (int n_iter = 1; n_iter <= n; n_iter++)
         val = ((n_iter - 0.5)/x)*val - 0.5*exp(-x)/x;

@@ -33,7 +33,7 @@ INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
 # 	-I/opt/homebrew/include -I${PWD}/visualization_3d -I${PWD}/matrix \
 # 	 -I${PWD}/parse -I${PWD}/user_edit  -I${PWD}/bmp\
 # 	 -I${PWD}/imgui
-LIBS = -ldl -L/opt/homebrew/lib -lglfw\
+LIBS = -ldl -L/opt/homebrew/lib -lglfw -lpthread\
        -framework CoreVideo -framework OpenGL -framework IOKit \
        -framework Cocoa -framework Carbon
 else
@@ -42,7 +42,7 @@ INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
 	-I/opt/homebrew/lib
 # 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers -I${PWD}/visualization_3d \
 # 	 -I${PWD}/matrix -I${PWD}/parse -I${PWD}/user_edit -I${PWD}/bmp
-LIBS = -lm -lGL -lGLEW -lglfw
+LIBS = -lm -lGL -lGLEW -lglfw -lpthread
 endif
 
 ##############################################################################
@@ -62,7 +62,7 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 
 TARGET = ${PWD}/program
-FLAGS = -O2 -g
+FLAGS = -O3 -g -ffast-math
 FLAGS2 = 
 CPP_COMPILE = clang++ -std=c++17
 
@@ -90,7 +90,8 @@ DEPENDENCIES = ${DATA_DEPENDENCIES} ${GENERATED_DEPENDENCIES}
 all: ${TARGET}
 
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
-	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp converge.cpp
+	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp \
+	converge.cpp build_arrays.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
@@ -108,7 +109,8 @@ MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 # BMP_SOURCES = ./bmp/bmp.cpp
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
-	orbitals_description.o molecular_geometry.o array_helpers.o converge.o
+	orbitals_description.o molecular_geometry.o array_helpers.o \
+	build_arrays.o converge.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o

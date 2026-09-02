@@ -1,7 +1,8 @@
 #include "converge.hpp"
+#include <pthread.h>
 
 
-void converge::closed_iteration(
+void converge::iteration(
     array_helpers::Array1D &energies,
     array_helpers::Array2D &next_orbitals,
     const array_helpers::SquareArray &overlap,
@@ -24,7 +25,7 @@ void converge::closed_iteration(
 
 }
 
-void converge::open_iteration(
+void converge::iteration(
     array_helpers::Array1D &energies_u,
     array_helpers::Array2D &next_orbitals_u,
     array_helpers::Array1D &energies_d,
@@ -62,7 +63,9 @@ void converge::open_iteration(
         energies_d, next_orbitals_d, overlap, fock_d);
 }
 
-void single_electron_iteration(
+
+
+void single_electron_solve(
     array_helpers::Array1D &energies_next,
     array_helpers::Array2D &orbitals_next,
     const array_helpers::SquareArray &overlap,
@@ -98,41 +101,6 @@ struct OpenSystem {
     array_helpers::Array2D down_orbitals;
 };
 
-void fill_arrays(
-    array_helpers::SquareArray &overlap,
-    array_helpers::SquareArray &kinetic,
-    array_helpers::SquareArray &nuclear,
-    array_helpers::HypercubeArray &repulsion_exchange,
-    const BasisFunctionArray &basis_functions,
-    const NuclearChargesArray &nuclear_charges
-) {
-    int n = basis_functions.get_number_of_basis_functions();
-    for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
-            overlap(i, j) = basis_functions.overlap(i, j);
-            kinetic(i, j) = basis_functions.kinetic(i, j);
-            nuclear(i, j) = basis_functions.nuclear(
-                i, j, nuclear_charges);
-            for (int k = 0; k < n; k++) {
-                for (int l = k; l < n; l++) {
-                    repulsion_exchange(i, j, k, l) 
-                        = basis_functions.repulsion_exchange(i, j, k, l);
-                    if (l > k) {
-                        repulsion_exchange(i, j, l, k)
-                            = repulsion_exchange(i, j, k, l);
-                    }
-                }
-            }
-            if (j > i) {
-                overlap(j, i) = overlap(i, j);
-                kinetic(j, i) = kinetic(i, j);
-                nuclear(j, i) = nuclear(i, j);
-                repulsion_exchange(j, i, repulsion_exchange(i, j));
-            }
-        }
-    }
-}
-
 void converge::closed(
     array_helpers::Array1D &energies,
     array_helpers::Array2D &orbitals,
@@ -145,29 +113,75 @@ void converge::closed(
     array_helpers::Array1D energies_iter(occupied_count);
     array_helpers::Array2D orbitals_iter(
         occupied_count, orbitals.row_size());
-    // for (int i = 0; i < occupied_count; i++) {
-    //     energies_iter(i) = energies(i);
-    //     for (int j = 0; j < orbitals.row_size(); j++)
-    //         orbitals_iter(i, j) = orbitals(i, j);
-    // }
-    single_electron_iteration(
+    single_electron_solve(
         energies_iter, orbitals_iter,
         overlap, kinetic_nuclear);
     for (int i = 0; i < n_iterations; i++) {
         if (i == n_iterations - 1) {
-            closed_iteration(energies, orbitals, overlap,
-                kinetic_nuclear,
-                repulsion_exchange,
+            iteration(energies, orbitals,
+                overlap, kinetic_nuclear, repulsion_exchange,
                 orbitals_iter);
         } else {
-            closed_iteration(energies_iter, orbitals_iter,
-                overlap, kinetic_nuclear, 
-                repulsion_exchange, orbitals_iter);
+            iteration(energies_iter, orbitals_iter,
+                overlap, kinetic_nuclear, repulsion_exchange,
+                orbitals_iter);
         }
         if (verbose) {
             printf("Iteration: %d\n", i);
             for (int k = 0; k < energies_iter.size(); k++)
                 printf("%g\n", energies_iter(k));
+            printf(
+                "############################################################\n");
+        }
+    }
+}
+
+void converge::open(
+    array_helpers::Array1D &energies_up,
+    array_helpers::Array2D &orbitals_up,
+    int occupied_up_count,
+    array_helpers::Array1D &energies_down,
+    array_helpers::Array2D &orbitals_down,
+    int occupied_down_count,
+    const array_helpers::SquareArray &overlap,
+    const array_helpers::SquareArray &kinetic_nuclear,
+    const array_helpers::HypercubeArray &repulsion_exchange,
+    int n_iterations, bool verbose) {
+    array_helpers::Array1D energies_up_iter(occupied_up_count);
+    array_helpers::Array2D orbitals_up_iter(
+        occupied_up_count, orbitals_up.row_size());
+    array_helpers::Array1D energies_down_iter(occupied_down_count);
+    array_helpers::Array2D orbitals_down_iter(
+        occupied_down_count, orbitals_down.row_size());
+    single_electron_solve(
+        energies_up_iter, orbitals_up_iter,
+        overlap, kinetic_nuclear);
+    single_electron_solve(
+        energies_down_iter, orbitals_down_iter,
+        overlap, kinetic_nuclear);
+    for (int i = 0; i < n_iterations; i++) {
+        if (i == n_iterations - 1) {
+            iteration(
+                energies_up, orbitals_up, 
+                energies_down, orbitals_down,
+                overlap, kinetic_nuclear, repulsion_exchange,
+                orbitals_up_iter, orbitals_down_iter);
+        } else {
+            iteration(
+                energies_up_iter, orbitals_up_iter, 
+                energies_down_iter, orbitals_down_iter,
+                overlap, kinetic_nuclear, repulsion_exchange,
+                orbitals_up_iter, orbitals_down_iter);
+        }
+        if (verbose) {
+            printf("Iteration: %d\n", i);
+            int max_size = std::max(occupied_up_count, occupied_down_count);
+            for (int k = 0; k < max_size; k++) {
+                if (k < energies_up_iter.size())
+                    printf("%g\n", energies_up_iter(k));
+                if (k < energies_down_iter.size())
+                    printf("%g\n", energies_down_iter(k));
+            }
             printf(
                 "############################################################\n");
         }
