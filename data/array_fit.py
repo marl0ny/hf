@@ -167,7 +167,7 @@ if __name__ == '__main__':
     import re
 
     filename = '10p10e_fd.json'
-    number_of_gaussians = 4
+    number_of_gaussians = 6
 
     print(sys.argv)
     if len(sys.argv) > 1:

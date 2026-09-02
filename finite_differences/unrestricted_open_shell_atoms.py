@@ -79,17 +79,34 @@ atoms = {
     #        'nuclear charge': 17, 'electron count': 17,
     #        'iterations': 12,
     #        },
-    'K': {'N': 1828, 'extent': 11.0,
-          'nuclear charge': 19, 'electron count': 19,
-          'iterations': 12,
-          'delta': 0.045**2
-          # -596.2795776541122
-          # -16225.59389755152 eV
-         },
-    # 'Mn': {'N': 1024, 'extent': 12.0,
-    #        'nuclear charge': 25, 'electron count': 25,
-    #        'iterations': 12,
+    # 'K': {'N': 1828, 'extent': 11.0,
+    #       'nuclear charge': 19, 'electron count': 19,
+    #       'iterations': 12,
+    #       'delta': 0.045**2
+    #       # -596.2795776541122
+    #       # -16225.59389755152 eV
+    #      },
+    # 'Sc': {'N': 2400, 'extent': 9.0,
+    #        'nuclear charge': 21, 'electron count': 21,
+    #        'iterations': 21,
+    #        'delta': 0.105**2
+    #        # -758.0012205286561
+    #        # -20626.263985986683 eV
     #        },
+    # 'V': {'N': 2400, 'extent': 7.5,
+    #       'nuclear charge': 23, 'electron count': 23,
+    #       'iterations': 21,
+    #       'delta': 0.105**2
+    #       # -940.8915102478887
+    #       # -25602.962299996674 eV
+    #       },
+    'Mn': {'N': 2400, 'extent': 8.0,
+           'nuclear charge': 25, 'electron count': 25,
+           'iterations': 21,
+           'delta': 0.105**2
+           # -1147.4367763200848
+           # -31223.3453121635 eV
+           },
     # 'As': {'N': 512, 'extent': 9.0,
     #        'nuclear charge': 33, 'electron count': 33,
     #        'iterations': 12}
