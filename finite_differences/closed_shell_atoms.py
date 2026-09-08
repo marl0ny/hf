@@ -105,13 +105,13 @@ atoms = {
     #        'delta': 0.04**2
     #        # -2391.220427776233
     #        },
-    'Kr': {'N': 2400, 'extent': 7.5,
-            'nuclear charge': 36, 'electron count': 36,
-            'iterations': 21,
-            'delta': 0.05**2
-           # Fully spherically symmetric
-            # -2736.627738653648
-            },
+    # 'Kr': {'N': 2400, 'extent': 7.5,
+    #         'nuclear charge': 36, 'electron count': 36,
+    #         'iterations': 21,
+    #         'delta': 0.05**2
+    #        # Fully spherically symmetric
+    #         # -2736.627738653648
+    #         },
     # 'Sr': {'N': 1828, 'extent': 14.5,
     #        'nuclear charge': 38, 'electron count': 38,
     #        'iterations': 15,

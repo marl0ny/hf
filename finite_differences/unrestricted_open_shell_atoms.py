@@ -5,11 +5,11 @@ import json
 from time import perf_counter
 
 atoms = {
-    # 'H': {'N': 2048, 'extent': 17.0,
-    #       'nuclear charge': 1, 'electron count': 1,
-    #       'iterations': 20,
-    #       'delta': 0.035**2
-    #      },
+    'H': {'N': 2400, 'extent': 15.0,
+          'nuclear charge': 1, 'electron count': 1,
+          'iterations': 20,
+          'delta': 0.035**2
+         },
     # 'Li': {'N': 1024, 'extent': 14.0,
     #        'nuclear charge': 3, 'electron count': 3,
     #        'iterations': 10,
@@ -17,19 +17,9 @@ atoms = {
     # 'B': {'N': 1450, 'extent': 14.5,
     #       'nuclear charge': 5, 'electron count': 5,
     #       'iterations': 10},
-    # 'C+': {'N': 1828, 'extent': 9.0,
-    #           'nuclear charge': 6, 'electron count': 5,
-    #           'iterations': 10},
     # 'C': {'N': 1828, 'extent': 9.0,
     #       'nuclear charge': 6, 'electron count': 6,
     #       'iterations': 10},
-    # 'N+': {'N': 1828, 'extent': 7.0,
-    #           'nuclear charge': 7, 'electron count': 6,
-    #           'iterations': 10,
-              # delta = (100 / number_of_points) ** 2
-              # -53.672706355326625
-              # -1460.508743449259 eV
-    #          },
     # 'N': {'N': 1828, 'extent': 7.0,
     #       'nuclear charge': 7, 'electron count': 7,
     #       'iterations': 10,
@@ -57,19 +47,12 @@ atoms = {
     #        'nuclear charge': 14, 'electron count': 14,
     #        'iterations': 12,
     #        },
-    # 'P+': {'N': 512, 'extent': 5.0,
-    #           'nuclear charge': 15, 'electron count': 14,
-    #           'iterations': 12,
-    #           'delta': 0.02**2
-    #           # 195
-    #           # -340.19782939419156
-    #           },
-    # 'P': {'N': 512, 'extent': 5.0,
+    # 'P': {'N': 1828, 'extent': 8.0,
     #       'nuclear charge': 15, 'electron count': 15,
     #       'iterations': 12,
-    #       'delta': 0.02**2
-    #       # 195
-    #       # -340.19782939419156
+    #       'delta': 0.04**2
+    #        #   -340.277058448542
+    #        #   -9259.410467755717 eV
     #       },
     # 'S': {'N': 1400, 'extent': 7.5,
     #        'nuclear charge': 16, 'electron count': 16,
@@ -107,14 +90,47 @@ atoms = {
     #        # -1147.4367763200848
     #        # -31223.3453121635 eV
     #        },
-    'Co': {'N': 2400, 'extent': 7.725,
-           'nuclear charge': 27, 'electron count': 27,
-           'iterations': 27,
-           'delta': 0.09**2,
-           },
-    # 'As': {'N': 512, 'extent': 9.0,
+    # 'Co': {'N': 2400, 'extent': 7.0,
+    #         'nuclear charge': 27, 'electron count': 27,
+    #         'iterations': 27,
+    #         'delta': 0.115**2,
+    #         # Previous:
+    #         # -1378.0361593189602
+    #         # -37498.27419080459 eV
+    #         'init_functions': '../data/28p28e_fd.json', 
+    #         },
+    # 'Cu': {'N': 2400, 'extent': 7.6,
+    #        'nuclear charge': 29, 'electron count': 29,
+    #        'iterations': 27,
+    #        'delta': 0.105**2,
+    #        # -1634.6117996565097
+    #        # -44480.05304108784 eV
+    #        'init_functions': '../data/28p28e_fd.json', 
+    #        },
+    # 'Ga': {'N': 2400, 'extent': 7.6,
+    #        'nuclear charge': 31, 'electron count': 31,
+    #        'iterations': 27,
+    #        'delta': 0.105**2,
+    #        'init_functions': '../data/32p32e_fd.json', 
+    #         # -1918.0307057823225
+    #         # -52192.27436481273 eV
+    #        },
+    # 'As': {'N': 2400, 'extent': 7.5,
     #        'nuclear charge': 33, 'electron count': 33,
-    #        'iterations': 12}
+    #        'iterations': 27,
+    #        'delta': 0.075**2,
+    #        # -2227.8368705693747
+    #        # -60622.52957591533 eV
+    #        'init_functions': '../data/34p34e_fd.json', 
+    #        },
+    # 'Br': {'N': 2400, 'extent': 7.5,
+    #        'nuclear charge': 35, 'electron count': 35,
+    #        'iterations': 27,
+    #        'delta': 0.05**2,
+    #        # -2564.0735015218957
+    #        # -69771.9944104819 eV
+    #        'init_functions': '../data/36p36e_fd.json', 
+    #        },
 }
 
 
@@ -124,18 +140,23 @@ for name in atoms.keys():
     kw = {}
     if 'delta' in atom:
         kw['delta'] = atom['delta']
+    if 'init_functions' in atoms:
+        kw['init_functions'] = atom['init_functions']
     system = UnrestrictedSystem(atom['N'], atom['extent'],
                                 atom['nuclear charge'],
                                 atom['electron count'],
                                 **kw)
-    system.solve(n_iterations=atom['iterations'], verbose=True)
     if atom['electron count'] >= 25:
-        if name in ['Co']:
+        if name in ['Co', 'Ni', 'Cu']:
             system.toggle_right_boundary_potential_regulator(
                                     remove_regulator_at=16)
+        elif name in ['Ga', 'Co']:
+            system.toggle_right_boundary_potential_regulator(
+                                    remove_regulator_at=20)
         else:
             system.toggle_right_boundary_potential_regulator(
                 remove_regulator_at=8)
+    system.solve(n_iterations=atom['iterations'], verbose=True)
     plt.title(r'Hartree-Fock Orbital Energies for ${'
               + name + '}$')
     plt.xlabel('Iteration Count')

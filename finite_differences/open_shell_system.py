@@ -74,12 +74,33 @@ class UnrestrictedSystem(SphericallySymmetricSystemBase):
             o for o in all_orbital_names[:number_of_electrons]
             if o == self._outermost_orbital_name])
         orbital_designations = set(all_orbital_names[:number_of_electrons])
-        for o_name in orbital_designations:
-            self.init_orbitals[o_name] \
-                = hydrogen_like_orbitals[o_name[:2]].copy()
-            self.orbitals[o_name] \
-                = hydrogen_like_orbitals[o_name[:2]]
-            self.orbital_energies[o_name] = []
+
+        if 'init_functions' in kw:
+            import json
+            with open(kw['init_functions'], 'r') as f:
+                contents = ''.join([line for line in f])
+            init_orbitals = json.loads(contents)
+            for o_name in orbital_designations:
+                if o_name[0:2] in init_orbitals \
+                    or o_name[0:2] in init_orbitals:
+                    o = o_name[0:2]
+                    self.init_orbitals[o_name] \
+                        = init_orbitals[o]
+                    self.orbitals[o_name] \
+                        = init_orbitals[o]
+                else:
+                    self.init_orbitals[o_name] \
+                        = hydrogen_like_orbitals[o_name[:2]].copy()
+                    self.orbitals[o_name] \
+                        = hydrogen_like_orbitals[o_name[:2]]
+                self.orbital_energies[o_name] = []
+        else:
+            for o_name in orbital_designations:
+                self.init_orbitals[o_name] \
+                    = hydrogen_like_orbitals[o_name[:2]].copy()
+                self.orbitals[o_name] \
+                    = hydrogen_like_orbitals[o_name[:2]]
+                self.orbital_energies[o_name] = []
         self._exc_exp = {}
         r_max = self.R_GREATER_THAN
         r_min = self.R_LESS_THAN

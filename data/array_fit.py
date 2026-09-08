@@ -45,6 +45,11 @@ from typing import Dict, Callable
 import json
 
 
+REFERENCE_FILE_NAME: str = './15p15e-4gaussians.json'
+TOL = 1e-6
+GAUSSIAN_COUNT = 6
+
+
 def gaussian(x: np.ndarray, amp: float, orb_exp: float) -> np.ndarray:
     return amp*np.exp(-orb_exp*x**2)
 
@@ -63,10 +68,10 @@ def get_angular_number(orbital_name: str) -> int:
 def fit_to_orbital(which: str, number_of: int,
                    r: np.ndarray, u: np.ndarray, params=None):
     an = get_angular_number(which)
-    tol = 1e-6
+    tol = TOL
     redos_limit = 100
     if which == '4s' or which == '3d' or which == '4p':
-        tol = 1e-6
+        tol = TOL
         redos_limit = 250
     def fit_function(parameters: list) -> np.ndarray:
         gauss_list = []
@@ -76,21 +81,26 @@ def fit_to_orbital(which: str, number_of: int,
         return (u/r - sum(gauss_list)).flatten()
 
     if params is None:
-        with open('./34p34e-6gaussians.json', 'r') as f:
+        with open(REFERENCE_FILE_NAME, 'r') as f:
             contents = ''.join([line for line in f])
-        print(contents)
+        # print(contents)
         data = json.loads(contents)
-        print(data)
-        coefficients = data[which]['coefficients']
-        exponents = data[which]['exponents']
+        # print(data)
+        which2 = which
+        # print(which2)
+        # print(data.keys())
+        if '1s+' not in data and (which[-1] == '+' or which[-1] == '-'):
+            which2 = which[:-1]
+        # print(which2)
+        if which2 in data:
+            coefficients = data[which2]['coefficients']
+            exponents = data[which2]['exponents']
+        else:
+            coefficients = [np.random.rand() for _ in range(number_of)]
+            exponents = [np.random.rand() for _ in range(number_of)]
         params = []
         for k in range(number_of):
-                    params.extend([
-                        coefficients[k],
-                        exponents[k]
-                    ])
-        # for _ in range(number_of):
-        #     params.extend([np.random.rand(), np.random.rand()])
+            params.extend([coefficients[k], exponents[k]])
     params = np.array(params)
 
     data = least_squares(fit_function, params)
@@ -179,7 +189,7 @@ if __name__ == '__main__':
     import re
 
     filename = '10p10e_fd.json'
-    number_of_gaussians = 6
+    number_of_gaussians = GAUSSIAN_COUNT
 
     print(sys.argv)
     if len(sys.argv) > 1:
