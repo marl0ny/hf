@@ -174,6 +174,399 @@ Array2D row_stack(const Array2D &a, const Array2D &b) {
     return arr;
 }
 
+Symmetric4::Symmetric4(unsigned int size) {
+    this->m_size = size;
+    unsigned int size2 = (size*(size + 1))/2;
+    this->m_data = std::vector<double>(
+        (size2*(size2 + 1))/2, 0.0);
+}
+
+unsigned int Symmetric4::get_data_index(
+    unsigned int a, unsigned int b,
+    unsigned int c, unsigned int d) const {
+    // 
+    unsigned int n = this->m_size;
+    unsigned int symmetric_size2 = (n*(n + 1))/2;
+    unsigned int symmetric_size4 = this->get_size();
+    if (b < a)
+        std::swap(a, b);
+    if (d < c)
+        std::swap(c, d);
+    unsigned int ind_ab 
+        = symmetric_size2 - ((n - a)*((n - a) + 1))/2 + (b - a);
+    unsigned int ind_cd
+        = symmetric_size2 - ((n - c)*((n - c) + 1))/2 + (d - c);
+    if (ind_cd < ind_ab)
+        std::swap(ind_ab, ind_cd);
+    
+    return (symmetric_size4 
+        - ((symmetric_size2 - ind_ab)*((symmetric_size2 - ind_ab) + 1))/2
+        + (ind_cd - ind_ab));
+}
+
+unsigned int Symmetric4::get_size() const {
+    return this->m_data.size();
+}
+
+unsigned int Symmetric4::get_1d_index_from_4d(
+    unsigned int a, unsigned int b,
+    unsigned int c, unsigned int d) const {
+    return this->get_data_index(a, b, c, d);
+}
+
+void Symmetric4::set_4d_index_from_1d(
+    unsigned int &a, unsigned int &b,
+    unsigned int &c, unsigned int &d, int index) const {
+    index = 0.0;
+    unsigned int total_size = this->get_size();
+    unsigned int n = this->m_size;
+    unsigned int size2 = (n*(n + 1))/2;
+    unsigned int ind2 = total_size - index;
+    unsigned int ab = floor(size2
+         + sqrt(-8.0*ind2 + 8.0*total_size + 1.0)/2.0 + 1.0/2.0);
+    
+    // ind2 = size4 - ((size2 - ab)*((size2 - ab) + 1))/2;
+    // 2*ind2 = 2*size4 - ((size2 - ab)*((size2 - ab) + 1))
+    // 2*ind2 - 2*size4 = -((size2 - ab)*((size2 - ab) + 1))
+    // 2*ind2 - 2*size4 = -(size2^2 )
+
+}
+
+double Symmetric4::operator()(
+    unsigned int a, unsigned int b,
+    unsigned int c, unsigned int d) const {
+    // 
+    return this->m_data[this->get_data_index(a, b, c, d)];
+}
+
+double &Symmetric4::operator()(
+    unsigned int a, unsigned int b,
+    unsigned int c, unsigned int d) {
+    // 
+    return this->m_data[this->get_data_index(a, b, c, d)];
+}
+
+unsigned int Symmetric4::row_size() const {
+    return m_size;
+}
+
+//
+//
+//
+//
+
+
+SquareArray Symmetric4::reduce(
+        unsigned int sum_label_a, unsigned int sum_label_b,
+        const SquareArray &a, const SquareArray &b) const {
+    SquareArray res(this->row_size());
+    sum_label_a = sum_label_a % 4;
+    sum_label_b = sum_label_b % 4;
+    if (sum_label_a == sum_label_b)
+        return res;
+    unsigned int final_labels[2] = {0, 0};
+    unsigned int final_labels_index = 0;
+    for (int indices_label = 0; indices_label < 4; indices_label++)
+        if (indices_label != sum_label_a && indices_label != sum_label_b)
+            final_labels[final_labels_index++] = indices_label;
+    // std::cout << "Sum label a: " << sum_label_a << std::endl;
+    // std::cout << "Sum label b: " << sum_label_b << std::endl;
+    // std::cout << "Final label 0: " << final_labels[0] << std::endl;
+    // std::cout << "Final label 1: " << final_labels[1] << std::endl;
+    for (int ind0 = 0; ind0 < this->row_size(); ind0++) {
+        for (int ind1 = 0; ind1 < this->row_size(); ind1++) {
+            for (int m_ind = 0; m_ind < this->row_size(); m_ind++) {
+                for (int ind2 = 0; ind2 < this->row_size(); ind2++) {
+                    for (int ind3 = 0; ind3 < this->row_size(); ind3++) {
+                        int sum_index_a = 0, sum_index_b = 1;
+                        int final_index0 = 0, final_index1 = 1;
+                        unsigned int indices[4] = {0, 0, 0, 0};
+                        switch (sum_label_a) {
+                            case 0:
+                            sum_index_a = ind0;
+                            break;
+                            case 1:
+                            sum_index_a = ind1;
+                            break;
+                            case 2:
+                            sum_index_a = ind2;
+                            break;
+                            case 3:
+                            sum_index_a = ind3;
+                            break;
+                            default:
+                            break;
+                        }
+                        switch (sum_label_b) {
+                            case 0:
+                            sum_index_b = ind0;
+                            break;
+                            case 1:
+                            sum_index_b = ind1;
+                            break;
+                            case 2:
+                            sum_index_b = ind2;
+                            break;
+                            case 3:
+                            sum_index_b = ind3;
+                            break;
+                            default:
+                            break;
+                        }
+                        switch (final_labels[0]) {
+                            case 0:
+                            final_index0 = ind0;
+                            break;
+                            case 1:
+                            final_index0 = ind1;
+                            break;
+                            case 2:
+                            final_index0 = ind2;
+                            break;
+                            case 3:
+                            final_index0 = ind3;
+                            break;
+                            default:
+                            break;
+                        }
+                        switch (final_labels[1]) {
+                            case 0:
+                            final_index1 = ind0;
+                            break;
+                            case 1:
+                            final_index1 = ind1;
+                            break;
+                            case 2:
+                            final_index1 = ind2;
+                            break;
+                            case 3:
+                            final_index1 = ind3;
+                            break;
+                            default:
+                            break;
+                        }
+                        indices[sum_label_a] = sum_index_a;
+                        indices[sum_label_b] = sum_index_b;
+                        indices[final_labels[0]] = final_index0;
+                        indices[final_labels[1]] = final_index1;
+                        res(final_index0, final_index1)
+                            += this->operator()(
+                                indices[0], indices[1], 
+                                indices[2], indices[3])
+                                *a(m_ind, sum_index_a)*b(m_ind, sum_index_b);
+                    }
+
+                }
+            }
+        }
+    }
+    return res;
+}
+
+SquareArray Symmetric4::reduce(
+        unsigned int sum_label_a, unsigned int sum_label_b,
+        const Array2D &a, const Array2D &b) const {
+    SquareArray res(this->row_size());
+    sum_label_a = sum_label_a % 4;
+    sum_label_b = sum_label_b % 4;
+    if (sum_label_a == sum_label_b)
+        return res;
+    if (a.row_size() != b.row_size() &&  a.row_size() != this->row_size())
+        return res;
+    unsigned int mat_col_size = a.col_size();
+    unsigned int final_labels[2] = {0, 0};
+    unsigned int final_labels_index = 0;
+    for (int indices_label = 0; indices_label < 4; indices_label++)
+        if (indices_label != sum_label_a && indices_label != sum_label_b)
+            final_labels[final_labels_index++] = indices_label;
+    // std::cout << "Sum label a: " << sum_label_a << std::endl;
+    // std::cout << "Sum label b: " << sum_label_b << std::endl;
+    // std::cout << "Final label 0: " << final_labels[0] << std::endl;
+    // std::cout << "Final label 1: " << final_labels[1] << std::endl;
+    for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+        for (int ind0 = 0; ind0 < this->row_size(); ind0++) {
+            for (int ind1 = 0; ind1 < this->row_size(); ind1++) {
+                for (int ind2 = 0; ind2 < this->row_size(); ind2++) {
+                    for (int ind3 = 0; ind3 < this->row_size(); ind3++) {
+                        int sum_index_a = 0, sum_index_b = 0;
+                        int final_index0 = 0, final_index1 = 0;
+                        unsigned int indices[4] = {0, 0, 0, 0};
+                        switch (sum_label_a) {
+                            case 0: sum_index_a = ind0;
+                            break;
+                            case 1: sum_index_a = ind1;
+                            break;
+                            case 2: sum_index_a = ind2;
+                            break;
+                            case 3: sum_index_a = ind3;
+                            break;
+                            default: break;
+                        }
+                        switch (sum_label_b) {
+                            case 0: sum_index_b = ind0;
+                            break;
+                            case 1: sum_index_b = ind1;
+                            break;
+                            case 2: sum_index_b = ind2;
+                            break;
+                            case 3: sum_index_b = ind3;
+                            break;
+                            default: break;
+                        }
+                        switch (final_labels[0]) {
+                            case 0: final_index0 = ind0;
+                            break;
+                            case 1: final_index0 = ind1;
+                            break;
+                            case 2: final_index0 = ind2;
+                            break;
+                            case 3: final_index0 = ind3;
+                            break;
+                            default: break;
+                        }
+                        switch (final_labels[1]) {
+                            case 0: final_index1 = ind0;
+                            break;
+                            case 1: final_index1 = ind1;
+                            break;
+                            case 2: final_index1 = ind2;
+                            break;
+                            case 3: final_index1 = ind3;
+                            break;
+                            default: break;
+                        }
+                        indices[sum_label_a] = sum_index_a;
+                        indices[sum_label_b] = sum_index_b;
+                        indices[final_labels[0]] = final_index0;
+                        indices[final_labels[1]] = final_index1;
+                        res(final_index0, final_index1)
+                            += this->operator()(
+                                indices[0], indices[1], 
+                                indices[2], indices[3])
+                                *a(m_ind, sum_index_a)*b(m_ind, sum_index_b);
+                    }
+
+                }
+            }
+        }
+    }
+    return res;
+}
+
+double 
+Symmetric4::reduce(
+    int n_label1, int n_label2,
+    const Array2D &n_arr1, const Array2D &n_arr2,
+    int m_label1, int m_label2,
+    const Array2D &m_arr1, const Array2D &m_arr2) const {
+    if (n_arr1.col_size() != n_arr2.col_size())
+        return 0.0;
+    if (n_arr1.row_size() != this->row_size() || 
+        n_arr1.row_size() != n_arr2.row_size())
+        return 0.0;
+    if (m_arr1.col_size() != m_arr2.col_size())
+        return 0.0;
+    if (m_arr1.row_size() != this->row_size() || 
+        m_arr1.row_size() != m_arr2.row_size())
+        return 0.0;
+    unsigned int n_size = n_arr1.col_size();
+    unsigned int m_size = m_arr1.col_size();
+    double sum = 0.0;
+    for (int m = 0; m < m_size; m++) {
+        for (int n = 0; n < n_size; n++) {
+            for (int i = 0; i < this->row_size(); i++) {
+                for (int j = 0; j < this->row_size(); j++) {
+                    for (int k = 0; k < this->row_size(); k++) {
+                        for (int l = 0; l < this->row_size(); l++) {
+                            int m_index1 = (m_label1 == 0)? i: 
+                                ((m_label1 == 1)? j: ((m_label1 == 2)? k: l));
+                            int m_index2 = (m_label2 == 0)? i: 
+                                ((m_label2 == 1)? j: ((m_label2 == 2)? k: l));
+                            int n_index1 = (n_label1 == 0)? i: 
+                                ((n_label1 == 1)? j: ((n_label1 == 2)? k: l));
+                            int n_index2 = (n_label2 == 0)? i: 
+                                ((n_label2 == 1)? j: ((n_label2 == 2)? k: l));
+                            sum += this->operator()(i, j, k, l)
+                                *m_arr1(m, m_index1)*m_arr2(m, m_index2)
+                                *n_arr1(n, n_index1)*n_arr2(n, n_index2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return sum;
+
+}
+
+double Symmetric4::reduce(
+    int n_label1, int n_label2,
+    const Array1D &n_arr1, const Array1D &n_arr2,
+    int m_label1, int m_label2,
+    const Array1D &m_arr1, const Array1D &m_arr2) const {
+    if (n_arr1.size() != this->row_size() || 
+        n_arr1.size() != n_arr2.size())
+        return 0.0;
+    if (m_arr1.size() != this->row_size() || 
+        m_arr1.size() != m_arr2.size())
+        return 0.0;
+    double sum = 0.0;
+    for (int i = 0; i < this->row_size(); i++) {
+        for (int j = 0; j < this->row_size(); j++) {
+            for (int k = 0; k < this->row_size(); k++) {
+                for (int l = 0; l < this->row_size(); l++) {
+                    int m_index1 = (m_label1 == 0)? i: 
+                        ((m_label1 == 1)? j: ((m_label1 == 2)? k: l));
+                    int m_index2 = (m_label2 == 0)? i: 
+                        ((m_label2 == 1)? j: ((m_label2 == 2)? k: l));
+                    int n_index1 = (n_label1 == 0)? i: 
+                        ((n_label1 == 1)? j: ((n_label1 == 2)? k: l));
+                    int n_index2 = (n_label2 == 0)? i: 
+                        ((n_label2 == 1)? j: ((n_label2 == 2)? k: l));
+                    sum += this->operator()(i, j, k, l)
+                        *m_arr1(m_index1)*m_arr2(m_index2)
+                        *n_arr1(n_index1)*n_arr2(n_index2);
+                }
+            }
+        }
+    }
+    return sum;
+}
+
+double Symmetric4::reduce(
+    int n_label1, int n_label2,
+    const double *n_arr1, const double *n_arr2,
+    int m_label1, int m_label2,
+    const double *m_arr1, const double *m_arr2) const {
+    double sum = 0.0;
+    for (int i = 0; i < this->row_size(); i++) {
+        for (int j = 0; j < this->row_size(); j++) {
+            for (int k = 0; k < this->row_size(); k++) {
+                for (int l = 0; l < this->row_size(); l++) {
+                    int m_index1 = (m_label1 == 0)? i: 
+                        ((m_label1 == 1)? j: ((m_label1 == 2)? k: l));
+                    int m_index2 = (m_label2 == 0)? i: 
+                        ((m_label2 == 1)? j: ((m_label2 == 2)? k: l));
+                    int n_index1 = (n_label1 == 0)? i: 
+                        ((n_label1 == 1)? j: ((n_label1 == 2)? k: l));
+                    int n_index2 = (n_label2 == 0)? i: 
+                        ((n_label2 == 1)? j: ((n_label2 == 2)? k: l));
+                    sum += this->operator()(i, j, k, l)
+                        *m_arr1[m_index1]*m_arr2[m_index2]
+                        *n_arr1[n_index1]*n_arr2[n_index2];
+                }
+            }
+        }
+    }
+    return sum;
+}
+
+
+//
+//
+//
+//
+
 HypercubeArray::HypercubeArray(unsigned int size) {
     this->m_size = size;
     this->m_data = std::vector<double>(size*size*size*size, 0.0);
@@ -924,6 +1317,210 @@ void test9() {
                 << res(index[0], index[1]) << " instead.\n";
         }
     }
+}
+
+static void symmetrize(
+    HypercubeArray &arr, int i, int j, int k, int l, double x) {
+    arr(i, j, k, l) = x;
+    arr(j, i, k, l) = x;
+    arr(i, j, l, k) = x;
+    arr(j, i, l, k) = x;
+    arr(k, l, i, j) = x;
+    arr(l, k, i, j) = x;
+    arr(k, l, j, i) = x;
+    arr(l, k, j, i) = x;
+}
+
+void test10() {
+    Symmetric4 arr = Symmetric4(2);
+    arr(0, 0, 0, 0) = 2.0;
+    arr(0, 0, 0, 1) = -1.0;
+    arr(0, 0, 1, 0) = 3.0;
+    arr(0, 0, 1, 1) = 7.0;
+    arr(1, 1, 1, 1) = 2.0;
+    arr(0, 1, 0, 1) = -3.0;
+    HypercubeArray arr2(2);
+    symmetrize(arr2, 0, 0, 0, 0, 2.0);
+    symmetrize(arr2, 0, 0, 0, 1, -1.0);
+    symmetrize(arr2, 0, 0, 1, 0, 3.0);
+    symmetrize(arr2, 0, 0, 1, 1, 7.0);
+    symmetrize(arr2, 1, 1, 1, 1, 2.0);
+    symmetrize(arr2, 0, 1, 0, 1, -3.0);
+    std::vector<std::vector<int>> indices{};
+    for (int i = 0; i < arr.row_size(); i++) {
+        for (int j = 0; j < arr.row_size(); j++) {
+            for (int k = 0; k < arr.row_size(); k++) {
+                for (int l = 0; l < arr.row_size(); l++) {
+                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                        indices.push_back({i, j, k, l});
+                }
+            }
+        }
+    }
+    if (indices.size() != 0) {
+        std::cout << "Test case failed:" << std::endl;
+        std::cout << "Difference(s) at:" << std::endl;
+        for (auto index: indices) {
+            std::cout << index[0] 
+            << ", " << index[1] 
+            << ", " << index[2] << ", " << index[3]
+            << ":" << std::endl;
+            std::cout << "Got " 
+            << arr(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+            std::cout << "Expected " 
+            << arr2(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+
+        }
+    }
+    // for (int i = 0; i < arr.row_size(); i++) {
+    //     for (int j = 0; j < arr.row_size(); j++) {
+    //         std::cout << i << ", " << j << ":" << std::endl;
+    //         for (int k = 0; k < arr.row_size(); k++) {
+    //             for (int l = 0; l < arr.row_size(); l++) {
+    //                 std::cout <<  "(" << i << ", " 
+    //                           << j << ", " << k << ", " << l << ")" 
+    //                     << ": " << arr(i, j, k, l) << ", ";
+    //             }
+    //             std::cout << "\n";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
+}
+
+void test11() {
+    Symmetric4 arr = Symmetric4(2);
+    arr(1, 1, 0, 0) = 2.0;
+    arr(1, 1, 1, 0) = 3.0;
+    arr(1, 1, 1, 1) = 7.0;
+    arr(1, 0, 0, 1) = -3.0;
+    HypercubeArray arr2(2);
+    //
+    arr2(1, 1, 0, 0) = 2.0;
+    arr2(0, 0, 1, 1) = 2.0;
+    //
+    arr2(1, 1, 1, 0) = 3.0;
+    arr2(1, 1, 0, 1) = 3.0;
+    arr2(1, 0, 1, 1) = 3.0;
+    arr2(0, 1, 1, 1) = 3.0;
+    //
+    arr2(1, 1, 1, 1) = 7.0;
+    //
+    arr2(1, 0, 0, 1) = -3.0;
+    arr2(0, 1, 0, 1) = -3.0;
+    arr2(1, 0, 1, 0) = -3.0;
+    arr2(0, 1, 1, 0) = -3.0;
+    std::vector<std::vector<int>> indices{};
+    for (int i = 0; i < arr.row_size(); i++) {
+        for (int j = 0; j < arr.row_size(); j++) {
+            for (int k = 0; k < arr.row_size(); k++) {
+                for (int l = 0; l < arr.row_size(); l++) {
+                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                        indices.push_back({i, j, k, l});
+                }
+            }
+        }
+    }
+    if (indices.size() != 0) {
+        std::cout << "Test case failed:" << std::endl;
+        std::cout << "Difference(s) at:" << std::endl;
+        for (auto index: indices) {
+            std::cout << index[0] 
+            << ", " << index[1] 
+            << ", " << index[2] << ", " << index[3]
+            << ":" << std::endl;
+            std::cout << "Got " 
+            << arr(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+            std::cout << "Expected " 
+            << arr2(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+
+        }
+    }
+    // for (int i = 0; i < arr.row_size(); i++) {
+    //     for (int j = 0; j < arr.row_size(); j++) {
+    //         std::cout << i << ", " << j << ":" << std::endl;
+    //         for (int k = 0; k < arr.row_size(); k++) {
+    //             for (int l = 0; l < arr.row_size(); l++) {
+    //                 std::cout <<  "(" << i << ", " 
+    //                           << j << ", " << k << ", " << l << ")" 
+    //                     << ": " << arr(i, j, k, l) << ", ";
+    //             }
+    //             std::cout << "\n";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
+}
+
+void test12() {
+    Symmetric4 arr = Symmetric4(3);
+    arr(0, 0, 0, 0) = 2.0;
+    arr(0, 0, 0, 1) = -1.0;
+    arr(0, 0, 0, 2) = 6.25;
+    arr(0, 0, 1, 1) = -3.75;
+    arr(0, 0, 1, 2) = 2.5;
+    arr(0, 0, 2, 2) = -5.0;
+    arr(1, 2, 1, 1) = -1.0;
+    arr(2, 2, 1, 0) = -1.1;
+    arr(2, 2, 1, 1) = -1.24;
+    arr(2, 2, 2, 2) = 7.0;
+    HypercubeArray arr2(3);
+    symmetrize(arr2, 0, 0, 0, 0, 2.0);
+    symmetrize(arr2, 0, 0, 0, 1, -1.0);
+    symmetrize(arr2, 0, 0, 0, 2, 6.25);
+    symmetrize(arr2, 0, 0, 1, 1, -3.75);
+    symmetrize(arr2, 0, 0, 1, 2, 2.5);
+    symmetrize(arr2, 0, 0, 2, 2, -5.0);
+    symmetrize(arr2, 1, 2, 1, 1, -1.0);
+    symmetrize(arr2, 2, 2, 1, 0, -1.1);
+    symmetrize(arr2, 2, 2, 1, 1, -1.24);
+    symmetrize(arr2, 2, 2, 2, 2, 7.0);
+    std::vector<std::vector<int>> indices{};
+    for (int i = 0; i < arr.row_size(); i++) {
+        for (int j = 0; j < arr.row_size(); j++) {
+            for (int k = 0; k < arr.row_size(); k++) {
+                for (int l = 0; l < arr.row_size(); l++) {
+                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                        indices.push_back({i, j, k, l});
+                }
+            }
+        }
+    }
+    if (indices.size() != 0) {
+        std::cout << "Test case failed:" << std::endl;
+        std::cout << "Difference(s) at:" << std::endl;
+        for (auto index: indices) {
+            std::cout << index[0] 
+            << ", " << index[1] 
+            << ", " << index[2] << ", " << index[3]
+            << ":" << std::endl;
+            std::cout << "Got " 
+            << arr(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+            std::cout << "Expected " 
+            << arr2(index[0], index[1], index[2], index[3]) << ".";
+            std::cout << std::endl;
+
+        }
+    }
+    // for (int i = 0; i < arr.row_size(); i++) {
+    //     for (int j = 0; j < arr.row_size(); j++) {
+    //         std::cout << i << ", " << j << ":" << std::endl;
+    //         for (int k = 0; k < arr.row_size(); k++) {
+    //             for (int l = 0; l < arr.row_size(); l++) {
+    //                 std::cout <<  "(" << i << ", " 
+    //                           << j << ", " << k << ", " << l << ")" 
+    //                     << ": " << arr(i, j, k, l) << ", ";
+    //             }
+    //             std::cout << "\n";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
 }
 
 }

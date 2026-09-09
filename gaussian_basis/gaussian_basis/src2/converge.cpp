@@ -26,6 +26,29 @@ void converge::iteration(
 }
 
 void converge::iteration(
+    array_helpers::Array1D &energies,
+    array_helpers::Array2D &next_orbitals,
+    const array_helpers::SquareArray &overlap,
+    const array_helpers::SquareArray &kinetic_nuclear,
+    const array_helpers::Symmetric4 &repulsion_exchange_tensor,
+    const array_helpers::Array2D &orbitals) {
+    array_helpers::SquareArray
+    repulsion = repulsion_exchange_tensor.reduce(
+        2, 3, orbitals, orbitals
+    );
+    array_helpers::SquareArray
+    exchange = repulsion_exchange_tensor.reduce(
+        1, 3, orbitals, orbitals
+    );
+    array_helpers::SquareArray
+    fock = kinetic_nuclear + (2.0*repulsion - exchange);
+
+    compute_eigenvalues_eigenvectors(
+        energies, next_orbitals, overlap, fock);
+
+}
+
+void converge::iteration(
     array_helpers::Array1D &energies_u,
     array_helpers::Array2D &next_orbitals_u,
     array_helpers::Array1D &energies_d,
@@ -109,6 +132,41 @@ void converge::closed(
     const array_helpers::SquareArray &overlap,
     const array_helpers::SquareArray &kinetic_nuclear,
     const array_helpers::HypercubeArray &repulsion_exchange,
+    int n_iterations, bool verbose) {
+    array_helpers::Array1D energies_iter(occupied_count);
+    array_helpers::Array2D orbitals_iter(
+        occupied_count, orbitals.row_size());
+    single_electron_solve(
+        energies_iter, orbitals_iter,
+        overlap, kinetic_nuclear);
+    for (int i = 0; i < n_iterations; i++) {
+        if (i == n_iterations - 1) {
+            iteration(energies, orbitals,
+                overlap, kinetic_nuclear, repulsion_exchange,
+                orbitals_iter);
+        } else {
+            iteration(energies_iter, orbitals_iter,
+                overlap, kinetic_nuclear, repulsion_exchange,
+                orbitals_iter);
+        }
+        if (verbose) {
+            printf("Iteration: %d\n", i);
+            for (int k = 0; k < energies_iter.size(); k++)
+                printf("%g\n", energies_iter(k));
+            printf(
+                "############################################################\n");
+        }
+    }
+}
+
+void converge::closed(
+    array_helpers::Array1D &energies,
+    array_helpers::Array2D &orbitals,
+    // std::optional<array_helpers::Array2D> &energies_history,
+    int occupied_count,
+    const array_helpers::SquareArray &overlap,
+    const array_helpers::SquareArray &kinetic_nuclear,
+    const array_helpers::Symmetric4 &repulsion_exchange,
     int n_iterations, bool verbose) {
     array_helpers::Array1D energies_iter(occupied_count);
     array_helpers::Array2D orbitals_iter(

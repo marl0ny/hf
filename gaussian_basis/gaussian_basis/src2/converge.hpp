@@ -17,6 +17,14 @@ namespace converge {
         const array_helpers::SquareArray &kinetic_nuclear,
         const array_helpers::HypercubeArray &repulsion_exchange_tensor,
         const array_helpers::Array2D &orbitals);
+    
+    void iteration(
+        array_helpers::Array1D &energies,
+        array_helpers::Array2D &next_orbitals,
+        const array_helpers::SquareArray &overlap,
+        const array_helpers::SquareArray &kinetic_nuclear,
+        const array_helpers::Symmetric4 &repulsion_exchange_tensor,
+        const array_helpers::Array2D &orbitals);
 
     void closed(
         array_helpers::Array1D &energies,
@@ -25,6 +33,15 @@ namespace converge {
         const array_helpers::SquareArray &overlap,
         const array_helpers::SquareArray &kinetic_nuclear,
         const array_helpers::HypercubeArray &repulsion_exchange,
+        int n_iterations, bool verbose=false);
+    
+    void closed(
+        array_helpers::Array1D &energies,
+        array_helpers::Array2D &orbitals,
+        int occupied_count,
+        const array_helpers::SquareArray &overlap,
+        const array_helpers::SquareArray &kinetic_nuclear,
+        const array_helpers::Symmetric4 &repulsion_exchange,
         int n_iterations, bool verbose=false);
     
     void open(

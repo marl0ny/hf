@@ -27,20 +27,21 @@
 
 ifeq ($(shell uname),Darwin)
 INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
-	-I${PWD}/matrix_computations \
-	-I/opt/homebrew/include
-# 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
-# 	-I/opt/homebrew/include -I${PWD}/visualization_3d -I${PWD}/matrix \
-# 	 -I${PWD}/parse -I${PWD}/user_edit  -I${PWD}/bmp\
+	-I${PWD}/matrix_computations -I${PWD}/metropolis \
+	-I/opt/homebrew/include -I${PWD}/bmp\
+	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
+	-I/opt/homebrew/include -I${PWD}/visualization_3d
+# 	 -I${PWD}/parse -I${PWD}/user_edit 
 # 	 -I${PWD}/imgui
 LIBS = -ldl -L/opt/homebrew/lib -lglfw -lpthread\
        -framework CoreVideo -framework OpenGL -framework IOKit \
        -framework Cocoa -framework Carbon
 else
 INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
-	-I${PWD}/matrix_computations \
-	-I/opt/homebrew/lib
-# 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers -I${PWD}/visualization_3d \
+	-I${PWD}/matrix_computations -I${PWD}/metropolis \
+	-I/opt/homebrew/lib -I${PWD}/bmp \
+	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
+    -I${PWD}/visualization_3d
 # 	 -I${PWD}/matrix -I${PWD}/parse -I${PWD}/user_edit -I${PWD}/bmp
 LIBS = -lm -lGL -lGLEW -lglfw -lpthread
 endif
@@ -91,18 +92,19 @@ all: ${TARGET}
 
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
 	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp \
-	converge.cpp build_arrays.cpp
+	converge.cpp build_arrays.cpp compute_energies.cpp simple_examples.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
 	./integrals/boys_function.cpp
 MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
+METROPOLIS_SOURCES = ./metropolis/metropolis.cpp
 # VISUALIZATION_3D_SOURCES = ./visualization_3d/volume_render.cpp \
 # 	./visualization_3d/planar_slice.cpp ./visualization_3d/line_arrows3d.cpp \
 # 	./visualization_3d/conical_arrow3d.cpp ./visualization_3d/cube_outline.cpp \
 # 	./visualization_3d/cursor_outline3d.cpp ./visualization_3d/axes3d.cpp
-# GL_WRAPPER_SOURCES = ./gl_wrappers/gl_wrappers.cpp
-# GLFW_WRAPPER_SOURCES = ./glfw_wrappers/glfw_window.cpp ./glfw_wrappers/interactor.cpp
+GL_WRAPPER_SOURCES = ./gl_wrappers/gl_wrappers.cpp
+GLFW_WRAPPER_SOURCES = ./glfw_wrappers/glfw_window.cpp ./glfw_wrappers/interactor.cpp
 # MATRIX_SOURCES = ./matrix/matrix.cpp
 # PARSE_SOURCES = ./parse/parse.cpp
 # USER_EDIT_SOURCES = ./user_edit/user_edit_glsl.cpp
@@ -110,17 +112,18 @@ MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
 	orbitals_description.o molecular_geometry.o array_helpers.o \
-	build_arrays.o converge.o
+	build_arrays.o converge.o compute_energies.o simple_examples.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o
 MATRIX_COMPUTATIONS_OBJECTS = eigenvalues_eigenvectors.o
+METROPOLIS_OBJECTS = metropolis.o
 # VISUALIZATION_3D_OBJECTS = ./volume_render.o \
 # 	./planar_slice.o ./line_arrows3d.o \
 # 	./conical_arrow3d.o ./cube_outline.o \
 # 	./cursor_outline3d.o axes3d.o
-# GL_WRAPPER_OBJECTS = ./gl_wrappers.o
-# GLFW_WRAPPER_OBJECTS = ./glfw_window.o ./interactor.o
+GL_WRAPPER_OBJECTS = ./gl_wrappers.o
+GLFW_WRAPPER_OBJECTS = ./glfw_window.o ./interactor.o
 # MATRIX_OBJECTS = ./matrix.o
 # PARSE_OBJECTS = ./parse.o
 # USER_EDIT_OBJECTS = ./user_edit_glsl.o
@@ -150,14 +153,17 @@ ${SPATIAL_OBJECTS}: ${SPATIAL_SOURCES} ${DEPENDENCIES}
 ${MATRIX_COMPUTATIONS_OBJECTS}: ${MATRIX_COMPUTATIONS_SOURCES}
 	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_COMPUTATIONS_SOURCES} ${INCLUDE}
 
-# ${VISUALIZATION_3D_OBJECTS}: ${VISUALIZATION_3D_SOURCES} ${DEPENDENCIES}
-# 	${CPP_COMPILE} ${FLAGS} -c ${VISUALIZATION_3D_SOURCES} ${INCLUDE}
+${METROPOLIS_OBJECTS}: ${METROPOLIS_SOURCES}
+	${CPP_COMPILE} ${FLAGS} -c ${METROPOLIS_SOURCES} ${INCLUDE}
 
-# ${GL_WRAPPER_OBJECTS}: ${GL_WRAPPER_SOURCES} ${DEPENDENCIES}
-# 	${CPP_COMPILE} ${FLAGS} -c ${GL_WRAPPER_SOURCES} ${INCLUDE}
+${VISUALIZATION_3D_OBJECTS}: ${VISUALIZATION_3D_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${VISUALIZATION_3D_SOURCES} ${INCLUDE}
 
-# ${GLFW_WRAPPER_OBJECTS}: ${GLFW_WRAPPER_SOURCES} ${DEPENDENCIES}
-# 	${CPP_COMPILE} ${FLAGS} -c ${GLFW_WRAPPER_SOURCES} ${INCLUDE}
+${GL_WRAPPER_OBJECTS}: ${GL_WRAPPER_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${GL_WRAPPER_SOURCES} ${INCLUDE}
+
+${GLFW_WRAPPER_OBJECTS}: ${GLFW_WRAPPER_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${GLFW_WRAPPER_SOURCES} ${INCLUDE}
 
 # ${MATRIX_OBJECTS}: ${MATRIX_SOURCES} ${DEPENDENCIES}
 # 	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_SOURCES} ${INCLUDE}
@@ -168,11 +174,11 @@ ${MATRIX_COMPUTATIONS_OBJECTS}: ${MATRIX_COMPUTATIONS_SOURCES}
 # ${USER_EDIT_OBJECTS}: ${USER_EDIT_SOURCES} ${DEPENDENCIES}
 # 	${CPP_COMPILE} ${FLAGS} -c ${USER_EDIT_SOURCES} ${INCLUDE}
 
-# ${BMP_OBJECTS}: ${BMP_SOURCES} ${DEPENDENCIES}
-# 	${CPP_COMPILE} ${FLAGS} -c ${BMP_SOURCES} ${INCLUDE}
+${BMP_OBJECTS}: ${BMP_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${BMP_SOURCES} ${INCLUDE}
 
-# ${GENERATED_DEPENDENCIES}: ${DATA_DEPENDENCIES} ${GENERATION_SCRIPTS}
-# 	python3 make_parameter_files.py
+${GENERATED_DEPENDENCIES}: ${DATA_DEPENDENCIES} ${GENERATION_SCRIPTS}
+	python3 make_parameter_files.py
 
 # ${IMGUI_OBJECTS}: ${IMGUI_SOURCES}
 # 	clang++ -std=c++17 -O2 -g -c $^ ${INCLUDE}

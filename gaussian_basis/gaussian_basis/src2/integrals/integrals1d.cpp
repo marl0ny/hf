@@ -24,16 +24,18 @@ This is indebted to the following article:
 
 using namespace spatial;
 
+using fp_type = float;
+
 struct OverlapCoeffVals {
-    double r21; // Distance from the second to the first Gaussian
-    double e1, e2; // Orbital exponents on the Gaussians
+    fp_type r21; // Distance from the second to the first Gaussian
+    fp_type e1, e2; // Orbital exponents on the Gaussians
 };
 
-static double overlap_coeff_helper_helper(
-    int n, int a1, int a2, double r, double e1, double e2
+static fp_type overlap_coeff_helper_helper(
+    int n, int a1, int a2, fp_type r, fp_type e1, fp_type e2
 );
 
-static inline double overlap_coeff_helper(
+static inline fp_type overlap_coeff_helper(
     int n, int a1, int a2, const struct OverlapCoeffVals &c) {
 
     if (a1 <= 4 && a2 <= 4) {
@@ -66,19 +68,19 @@ static inline double overlap_coeff_helper(
 Refer to the section "Overlap Integrals" from Joshua Goings' blog post
 here: https://joshuagoings.com/2017/04/28/integrals/.
 */
-double overlap_coefficient(int n, 
+fp_type overlap_coefficient(int n, 
                            Gaussian1D g1, Gaussian1D g2) {
-    double e1 = g1.orbital_exponent();
-    double e2 = g2.orbital_exponent();
-    double r1 = g1.position();
-    double r2 = g2.position();
-    double r21 = r1 - r2;
+    fp_type e1 = g1.orbital_exponent();
+    fp_type e2 = g2.orbital_exponent();
+    fp_type r1 = g1.position();
+    fp_type r2 = g2.position();
+    fp_type r21 = r1 - r2;
     return overlap_coeff_helper(
         n, g1.angular(), g2.angular(), 
         {.r21=r21, .e1=e1, .e2=e2});
 }
 
-double overlap1d(Gaussian1D g1, Gaussian1D g2) {
+fp_type overlap1d(Gaussian1D g1, Gaussian1D g2) {
     return overlap_coefficient(0, g1, g2)
         *sqrt(PI/(g1.orbital_exponent() + g2.orbital_exponent()));
 }
@@ -88,16 +90,16 @@ double overlap1d(Gaussian1D g1, Gaussian1D g2) {
 Refer to the section "Kinetic energy integrals" from Joshua Goings'
 article: https://joshuagoings.com/2017/04/28/integrals/. 
 */
-double laplacian1d(Gaussian1D g1, Gaussian1D g2) {
+fp_type laplacian1d(Gaussian1D g1, Gaussian1D g2) {
     long a2 = g2.angular();
-    double e2 = g2.orbital_exponent();
+    fp_type e2 = g2.orbital_exponent();
     return (a2*(a2-1)*overlap1d(g1, g2-2)
             - 2.0*e2*(2*a2+1)*overlap1d(g1, g2)
             + 4.0*e2*e2*overlap1d(g1, g2+2));
 }
 
-static double coulomb_coefficient_helper(
-    int indices[3], int n, double orb_exp, const spatial::Vector &r12);
+static fp_type coulomb_coefficient_helper(
+    int indices[3], int n, fp_type orb_exp, const spatial::Vector &r12);
 
 /* Compute the Coulomb coefficients. This is used in integrals
 that involve the Coulomb potential, such as the
@@ -106,8 +108,8 @@ nuclear and repulsion-exchange integrals. Refer to the section
 https://joshuagoings.com/2017/04/28/integrals/.
 */
 
-double coulomb_coefficient(int i, int j, int k, int n,
-                           double orb_exp, const Vector &r12) {
+fp_type coulomb_coefficient(int i, int j, int k, int n,
+                           fp_type orb_exp, const Vector &r12) {
     
     if (std::max(i, std::max(j, k)) <= 4) {
         int indices[3] = {i, j, k};
@@ -135,8 +137,8 @@ double coulomb_coefficient(int i, int j, int k, int n,
     }
 }
 /* 
-double coulomb_coefficient(int i, int j, int k, int n,
-                           double orb_exp, const Vector &r12) {
+fp_type coulomb_coefficient(int i, int j, int k, int n,
+                           fp_type orb_exp, const Vector &r12) {
     if (i == j && j == k && k == 0) {
         return pow((-2*orb_exp), n)
         // *from_boost_library::boys(orb_exp*(dot(r12, r12)), n);
@@ -155,19 +157,19 @@ double coulomb_coefficient(int i, int j, int k, int n,
     }
 }*/
 
-static double pw(double a, int b) {
+static fp_type pw(fp_type a, int b) {
     return pow(a, b);
 }
 
-std::map<std::tuple<double, int>, double> s_values {};
+std::map<std::tuple<fp_type, int>, fp_type> s_values {};
 
-static inline double bf(double a, int n) {
-    // std::pair<double, int> key {a, double(n)};
+static inline fp_type bf(fp_type a, int n) {
+    // std::pair<fp_type, int> key {a, fp_type(n)};
     // if (s_values.count(key) > 0) {
     //     // printf("Value computed before.\n");
     //     return s_values.at(key);
     // }
-    // double val = beylkin_sharma::boys(a, n);
+    // fp_type val = beylkin_sharma::boys(a, n);
     // s_values.insert({key, val});
     // return val;
     // return from_boost_library::boys(a, n);
@@ -176,24 +178,24 @@ static inline double bf(double a, int n) {
 
 #define SWAP(a, b, tp) tp tmp = (a); (a) = (b); (b) = (tmp);
 
-static double coulomb_coefficient_helper(
-    int indices[3], int n, double orb_exp, const spatial::Vector &r12) {
+static fp_type coulomb_coefficient_helper(
+    int indices[3], int n, fp_type orb_exp, const spatial::Vector &r12) {
     // printf("%d, %d, %d\n", indices[0], indices[1], indices[2]);
     spatial::Vector s12 {r12};
     // 1 2 3
     if (indices[2] > indices[1]) {
         std::swap(indices[2], indices[1]);
-        SWAP(s12.z, s12.y, double);
+        SWAP(s12.z, s12.y, fp_type);
     }
     // 1 3 2
     if (indices[1] > indices[0]) {
         std::swap(indices[0], indices[1]);
-        SWAP(s12.y, s12.x, double);
+        SWAP(s12.y, s12.x, fp_type);
     }
     // 3 1 2
     if (indices[2] > indices[1]) {
         std::swap(indices[2], indices[1]);
-        SWAP(s12.z, s12.y, double);
+        SWAP(s12.z, s12.y, fp_type);
     }
     // printf("%d, %d, %d\n", indices[0], indices[1], indices[2]);
     // printf("%g, %g, %g\n", s12.x, s12.y, s12.z);
@@ -203,12 +205,12 @@ static double coulomb_coefficient_helper(
     //     puts("Coeff i value greater than one.");
     // }
 
-    double e = orb_exp;
-    double r2 = dot(r12, r12);
-    double val = 0.0;
-    double x = s12.x, y = s12.y, z = s12.z;
-    double x2 = x*x, y2 = y*y, z2 = z*z;
-    double x4 = x2*x2, y4 = y2*y2, z4 = z2*z2;
+    fp_type e = orb_exp;
+    fp_type r2 = dot(r12, r12);
+    fp_type val = 0.0;
+    fp_type x = s12.x, y = s12.y, z = s12.z;
+    fp_type x2 = x*x, y2 = y*y, z2 = z*z;
+    fp_type x4 = x2*x2, y4 = y2*y2, z4 = z2*z2;
 
     int hex_ijk = i*16*16 + j*16 + k;
 
@@ -332,40 +334,40 @@ static double coulomb_coefficient_helper(
 
 }
 
-static double overlap_coeff_helper_helper(
-    int n, int a1, int a2, double r, double e1, double e2
+static fp_type overlap_coeff_helper_helper(
+    int n, int a1, int a2, fp_type r, fp_type e1, fp_type e2
 ) {
-    double r2 = r*r;
-    double r3 = r2*r;
-    double r4 = r2*r2;
-    double r5 = r4*r;
-    double r6 = r3*r3;
-    double r7 = r6*r;
-    double r8 = r7*r;
+    fp_type r2 = r*r;
+    fp_type r3 = r2*r;
+    fp_type r4 = r2*r2;
+    fp_type r5 = r4*r;
+    fp_type r6 = r3*r3;
+    fp_type r7 = r6*r;
+    fp_type r8 = r7*r;
 
-    double e1_2 = e1*e1;
-    double e1_3 = e1_2*e1;
-    double e1_4 = e1_2*e1_2;
-    double e1_5 = e1_4*e1;
-    double e1_6 = e1_3*e1_3;
-    double e1_7 = e1_6*e1;
-    double e1_8 = e1_4*e1_4;
+    fp_type e1_2 = e1*e1;
+    fp_type e1_3 = e1_2*e1;
+    fp_type e1_4 = e1_2*e1_2;
+    fp_type e1_5 = e1_4*e1;
+    fp_type e1_6 = e1_3*e1_3;
+    fp_type e1_7 = e1_6*e1;
+    fp_type e1_8 = e1_4*e1_4;
 
-    double e2_2 = e2*e2;
-    double e2_3 = e2_2*e2;
-    double e2_4 = e2_2*e2_2;
-    double e2_5 = e2_4*e2;
-    double e2_6 = e2_3*e2_3;
-    double e2_7 = e2_6*e2;
-    double e2_8 = e2_4*e2_4;
+    fp_type e2_2 = e2*e2;
+    fp_type e2_3 = e2_2*e2;
+    fp_type e2_4 = e2_2*e2_2;
+    fp_type e2_5 = e2_4*e2;
+    fp_type e2_6 = e2_3*e2_3;
+    fp_type e2_7 = e2_6*e2;
+    fp_type e2_8 = e2_4*e2_4;
 
-    double e1e2_2 = (e1 + e2)*(e1 + e2);
-    double e1e2_3 = e1e2_2*(e1 + e2);
-    double e1e2_4 = e1e2_2*e1e2_2;
-    double e1e2_5 = e1e2_4*(e1 + e2);
-    double e1e2_6 = e1e2_3*e1e2_3;
-    double e1e2_7 = e1e2_6*(e1 + e2);
-    double e1e2_8 = e1e2_4*e1e2_4;
+    fp_type e1e2_2 = (e1 + e2)*(e1 + e2);
+    fp_type e1e2_3 = e1e2_2*(e1 + e2);
+    fp_type e1e2_4 = e1e2_2*e1e2_2;
+    fp_type e1e2_5 = e1e2_4*(e1 + e2);
+    fp_type e1e2_6 = e1e2_3*e1e2_3;
+    fp_type e1e2_7 = e1e2_6*(e1 + e2);
+    fp_type e1e2_8 = e1e2_4*e1e2_4;
 
     int hex_n_a1_a2 = 16*16*n + 16*a1 + a2;
     switch(hex_n_a1_a2) {

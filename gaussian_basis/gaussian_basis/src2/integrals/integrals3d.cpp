@@ -91,7 +91,7 @@ static double repulsion_inner(const Gaussian3D &g2, const Gaussian3D &h2,
     Gaussian1D h2x = h2.get_x();
     Gaussian1D h2y = h2.get_y();
     Gaussian1D h2z = h2.get_z();
-    double eps = 0.0;
+    double eps = 1e-40;
     double eps2 = 1e-40;
     for (int jx = 0; jx < (g2x.angular() + h2x.angular() + 1); jx++) {
         double overlap_x = overlap_coefficient(jx, g2x, h2x);
@@ -146,7 +146,7 @@ double repulsion(const Gaussian3D &g1,
     double orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
     double orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
     struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
-    double eps = 0.0;
+    double eps = 1e-40;
     double eps2 = 1e-40;
     for (int ix = 0; ix < (g1x.angular() + h1x.angular() + 1); ix++) {
         double overlap_x = overlap_coefficient(ix, g1x, h1x);
@@ -177,58 +177,3 @@ double repulsion(const Gaussian3D &g1,
 
     return val*amplitude;
 }
-
-/* double repulsion_v2(const Gaussian3D &g1,
-                    const Gaussian3D &h1,
-                    const Gaussian3D &g2,
-                    const Gaussian3D &h2) {
-    double amplitude = g1.amplitude()*g2.amplitude()
-                        *h1.amplitude()*h2.amplitude();
-    if (amplitude == 0.0)
-        return 0.0;
-    double val = 0.0;
-    Gaussian1D g1x = g1.get_x();
-    Gaussian1D g1y = g1.get_y();
-    Gaussian1D g1z = g1.get_z();
-    Gaussian1D h1x = h1.get_x();
-    Gaussian1D h1y = h1.get_y();
-    Gaussian1D h1z = h1.get_z();
-    Gaussian1D g2x = g2.get_x();
-    Gaussian1D g2y = g2.get_y();
-    Gaussian1D g2z = g2.get_z();
-    Gaussian1D h2x = h2.get_x();
-    Gaussian1D h2y = h2.get_y();
-    Gaussian1D h2z = h2.get_z();
-    double orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
-    double orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
-    double orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
-    struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
-    for (int ix = 0; ix < (g1x.angular() + h1x.angular() + 1); ix++) {
-        // double overlap_x = overlap_coefficient(ix, g1x, h1x);
-        for (int iy = 0; iy < (g1y.angular() + h1y.angular() + 1); iy++) {
-            // double overlap_y = overlap_coefficient(iy, g1y, h1y); 
-            for (int iz = 0; iz < (g1z.angular() + h1z.angular() + 1); iz++) {
-                for (int jx = 0; jx < (g2x.angular() + h2x.angular() + 1); jx++) {
-                    // double overlap_x = overlap_coefficient(jx, g2x, h2x);
-                    for (int jy = 0; jy < (g2y.angular() + h2y.angular() + 1); jy++) {
-                        // double overlap_y = overlap_coefficient(jy, g2y, h2y);
-                        for (int jz = 0; jz < (g2z.angular() + h2z.angular() + 1); jz++) {
-                            val += 2.0*pow(PI, (5.0/2.0)) 
-                                * pow(-1.0, jx + jy + jz)
-                                / (orb_exp1*orb_exp2*sqrt(orb_exp1 + orb_exp2))
-                                * overlap_coefficient(ix, g1x, h1x)
-                                * overlap_coefficient(iy, g1y, h1y)
-                                * overlap_coefficient(iz, g1z, h1z) 
-                                * overlap_coefficient(jx, g2x, h2x)
-                                * overlap_coefficient(jy, g2y, h2y)
-                                * overlap_coefficient(jz, g2z, h2z)
-                                * coulomb_coefficient(ix+jx, iy+jy, iz+jz, 0,
-                                                        orb_exp, r12);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return val*amplitude;
-}*/

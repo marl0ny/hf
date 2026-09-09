@@ -22,8 +22,11 @@ BasisFunctionArray::BasisFunctionArray(
         = std::vector<PrimitiveData>(number_of_primitives);
     m_basis_function_data 
         = std::vector<BasisFunctionData>(number_of_basis_functions);
+    m_shell_data = std::vector<ShellData> (0);
+    m_shell_data.reserve(number_of_basis_functions/4);
     m_primitive_count = 0;
     m_basis_function_count = 0;
+    m_shell_count = 0;
 }
 
 void BasisFunctionArray::add_basis_function(
@@ -31,6 +34,33 @@ void BasisFunctionArray::add_basis_function(
     const std::vector<double> &primitive_amplitudes,
     const std::vector<double> &primitive_exponents
     ) {
+    spatial::Vector prev_pos 
+        = m_basis_function_data[m_basis_function_count - 1].position;
+    spatial::UByte4 prev_angular
+        = m_basis_function_data[m_basis_function_count - 1].angular;
+    unsigned int angular_curr
+        = (unsigned int)(angular.ind[0]) 
+            + (unsigned int)(angular.ind[1])
+            + (unsigned int)(angular.ind[2]) 
+            + (unsigned int)(angular.ind[3]);
+    unsigned int angular_prev_s
+        = (unsigned int)(prev_angular.ind[0])
+            + (unsigned int)(prev_angular.ind[1])
+            + (unsigned int)(prev_angular.ind[2])
+            + (unsigned int)(prev_angular.ind[3]);
+    double diff2 = spatial::dot(prev_pos - position, prev_pos - position);
+    if (m_shell_count == 0 ||
+        diff2 > 1e-20 || angular_prev_s != angular_curr) {
+        m_shell_data.push_back({
+            .angular=angular_curr,
+            .basis_functions.count=1,
+            .basis_functions.offset=(unsigned int)m_basis_function_count,
+            .hash=0
+        });
+        this->m_shell_count++;
+    } else {
+        m_shell_data[m_shell_count - 1].basis_functions.count++;
+    }
     m_basis_function_data[m_basis_function_count].angular = angular;
     m_basis_function_data[m_basis_function_count].position = position;
     m_basis_function_data[m_basis_function_count].primitives.count
@@ -120,26 +150,89 @@ double BasisFunctionArray
 
 double 
 BasisFunctionArray::repulsion_exchange(int a, int b, int c, int d) const {
-    BasisFunctionData basis_func_a = m_basis_function_data[a];
-    BasisFunctionData basis_func_b = m_basis_function_data[b];
-    BasisFunctionData basis_func_c = m_basis_function_data[c];
-    BasisFunctionData basis_func_d = m_basis_function_data[d];
+    const BasisFunctionData &basis_func_a = m_basis_function_data[a];
+    const BasisFunctionData &basis_func_b = m_basis_function_data[b];
+    const BasisFunctionData &basis_func_c = m_basis_function_data[c];
+    const BasisFunctionData &basis_func_d = m_basis_function_data[d];
     double sum = 0.0;
-    int start_index_j = 0, start_index_k = 0, start_index_l = 0;
-    for (int i = 0; i < basis_func_a.primitives.count; i++) {
-        // int start_index_j = (a == b)? i: 0;
-        for (int j = start_index_j;
-             j < basis_func_b.primitives.count; j++) {
-            for (int k = start_index_k;
-                 k < basis_func_c.primitives.count; k++) {
-                for (int l = start_index_l; 
-                     l < basis_func_d.primitives.count; l++) {
+    int start_j = 0, start_l = 0;
+    int count_a = basis_func_a.primitives.count;
+    int count_b = basis_func_b.primitives.count;
+    int count_c = basis_func_c.primitives.count;
+    int count_d = basis_func_d.primitives.count;
+    for (int i = 0; i < count_a; i++) {
+        // start_j = (a == b)? i: 0;
+        for (int j = start_j; j < count_b; j++) {
+            for (int k = 0; k < count_c; k++) {
+                // start_l = (c == d)? k: 0;
+                for (int l = start_l; l < count_d; l++) {
                     double val = repulsion(
                         primitive(basis_func_a, i),
                         primitive(basis_func_b, j),
                         primitive(basis_func_c, k),
                         primitive(basis_func_d, l)
                     );
+                    // if (a == b && start_j > i)
+                    //     val *= 2.0;
+                    // if (c == d && start_l > k)
+                    //     val *= 2.0;
+                    sum += val;
+                }
+            }
+        }
+    }
+    return sum;
+}
+
+
+/* For finding info that explained and motivated the Schwarz
+Inequality's usage in Computational Chemistry, I found this
+article's review of these topics helpful:
+
+"A New Scalable Parallel Algorithm for Fock Matrix Construction"
+Lui X., Patel A., Chow E.
+2014 IEEE 28th International Parallel and Distributed Processing Symposium.
+902-914 (2014).
+
+See Section II D on screening.
+*/
+double 
+BasisFunctionArray::repulsion_exchange(
+    int a, int b, int c, int d,
+    const array_helpers::SquareArray &re_nm_nm) const {
+    if ((a == c && b == d) || (a == d && b == c)) {
+        return re_nm_nm(a, b);
+    }
+    double four_e1 = re_nm_nm(a, b);
+    double four_e2 = re_nm_nm(c, d);
+    if (sqrt(four_e1 * four_e2) < 1e-10)
+        return 0.0;
+    const BasisFunctionData &basis_func_a = m_basis_function_data[a];
+    const BasisFunctionData &basis_func_b = m_basis_function_data[b];
+    const BasisFunctionData &basis_func_c = m_basis_function_data[c];
+    const BasisFunctionData &basis_func_d = m_basis_function_data[d];
+    double sum = 0.0;
+    int start_j = 0, start_l = 0;
+    int count_a = basis_func_a.primitives.count;
+    int count_b = basis_func_b.primitives.count;
+    int count_c = basis_func_c.primitives.count;
+    int count_d = basis_func_d.primitives.count;
+    for (int i = 0; i < count_a; i++) {
+        // start_j = (a == b)? i: 0;
+        for (int j = start_j; j < count_b; j++) {
+            for (int k = 0; k < count_c; k++) {
+                // start_l = (c == d)? k: 0;
+                for (int l = start_l; l < count_d; l++) {
+                    double val = repulsion(
+                        primitive(basis_func_a, i),
+                        primitive(basis_func_b, j),
+                        primitive(basis_func_c, k),
+                        primitive(basis_func_d, l)
+                    );
+                    // if (a == b && start_j > i)
+                    //     val *= 2.0;
+                    // if (c == d && start_l > k)
+                    //     val *= 2.0;
                     sum += val;
                 }
             }
@@ -152,9 +245,56 @@ int BasisFunctionArray::get_number_of_basis_functions() const {
     return m_basis_function_count;
 }
 
+double BasisFunctionArray
+::evaluate_at(int index, const spatial::Vector &r1) const {
+    BasisFunctionData b = m_basis_function_data[index];
+    double val = 0.0;
+    for (int i = 0; i < b.primitives.count; i++) {
+        Gaussian3D g = this->primitive(b, i);
+        spatial::Vector r0 = g.position();
+        spatial::Vector angular = g.angular();
+        double exponent = g.orbital_exponent();
+        double x1 = r1.x, y1 = r1.y, z1 = r1.z;
+        double x0 = r0.x, y0 = r0.y, z0 = r0.z;
+        spatial::Vector r = r1 - r0;
+        val += 
+            pow(x1 - x0, angular.x)
+            *pow(y1 - y0, angular.y)
+            *pow(z1 - z0, angular.z)*
+            exp(-exponent*dot(r, r));
+    }
+    return val;
+}
+
+double BasisFunctionArray::evaluate_at(
+    const array_helpers::Array2D &orbitals,
+    int index, const spatial::Vector &r
+) const {
+    double value = 0.0;
+    for (int i = 0; i < orbitals.row_size(); i++) {
+        double c = orbitals(index, i);
+        if (std::abs(c) > 1e-40)
+            value += c*this->evaluate_at(i, r);
+    }
+    return value;
+}
+
 void BasisFunctionArray::print() const {
-    for (int i = 0; i < m_basis_function_count; i++) {
+    for (int i = 0, shell_ind = 0; i < m_basis_function_count; i++) {
         BasisFunctionData basis_function = m_basis_function_data[i];
+        if (m_shell_data[shell_ind].basis_functions.offset == i) {
+            std::cout << "##############################";
+            std::cout << "##############################" << std::endl;
+            std::cout << "Shell " << shell_ind << std::endl;
+            std::cout << "angular: ";
+            std::cout << m_shell_data[shell_ind].angular << std::endl;
+            std::cout << "position: ";
+            std::cout << basis_function.position.x << ", ";
+            std::cout << basis_function.position.y << ", ";
+            std::cout << basis_function.position.z << std::endl;
+            std::cout << std::endl;
+            shell_ind++;
+        }
         std::cout << "Basis function " << i << std::endl;
         // std::cout >> "coefficient: " << basis_function.
         std::cout << "position: ";
@@ -183,4 +323,6 @@ void BasisFunctionArray::print() const {
         if (i != m_basis_function_count - 1)
             std::cout << "\n";
     }
+    std::cout << "##############################";
+    std::cout << "##############################" << std::endl;
 }

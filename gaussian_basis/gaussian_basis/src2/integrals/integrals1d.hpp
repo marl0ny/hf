@@ -5,16 +5,18 @@
 #ifndef _INTEGRALS1D_
 #define _INTEGRALS1D_
 
-double boys_func(double x, int n);
+using fp_type = float;
 
-double overlap_coefficient(int n, 
+fp_type boys_func(fp_type x, int n);
+
+fp_type overlap_coefficient(int n, 
                            Gaussian1D g1, Gaussian1D g2);
 
-double overlap1d(Gaussian1D g1, Gaussian1D g2);
+fp_type overlap1d(Gaussian1D g1, Gaussian1D g2);
 
-double laplacian1d(Gaussian1D g1, Gaussian1D g2);
+fp_type laplacian1d(Gaussian1D g1, Gaussian1D g2);
 
-double coulomb_coefficient(int i, int j, int k, int n,
-                           double orb_exp, const spatial::Vector &r12);
+fp_type coulomb_coefficient(int i, int j, int k, int n,
+                           fp_type orb_exp, const spatial::Vector &r12);
 
 #endif

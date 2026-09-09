@@ -55,6 +55,56 @@ namespace array_helpers {
 
     class SquareArraySlice;
 
+    class Symmetric4 {
+        unsigned int m_size;
+        std::vector<double> m_data;
+        unsigned int get_data_index(
+            unsigned int a, unsigned int b,
+            unsigned int c, unsigned int d
+        ) const;
+        public:
+        Symmetric4(unsigned int size);
+        unsigned int get_1d_index_from_4d(
+            unsigned int a, unsigned int b,
+            unsigned int c, unsigned int d
+        ) const;
+        void set_4d_index_from_1d(
+            unsigned int &a, unsigned int &b,
+            unsigned int &c, unsigned int &d,
+            int index
+        ) const;
+        unsigned int row_size() const;
+        unsigned int get_size() const;
+        double operator()(
+            unsigned int a, unsigned int b,
+            unsigned int c, unsigned int d
+        ) const;
+        double &operator()(
+            unsigned int a, unsigned int b,
+            unsigned int c, unsigned int d);
+        SquareArray reduce(
+            unsigned int sum_index_a, unsigned int sum_index_b,
+            const SquareArray &a, const SquareArray &b) const;
+        SquareArray reduce(
+            unsigned int sum_index_a, unsigned int sum_index_b,
+            const Array2D &a, const Array2D &b) const;
+        double reduce(
+            int n_label1, int n_label2,
+            const Array2D &n_arr1, const Array2D &n_arr2,
+            int m_label1, int m_label2,
+            const Array2D &m_arr1, const Array2D &m_arr2) const;
+        double reduce(
+            int n_label1, int n_label2,
+            const Array1D &n_arr1, const Array1D &n_arr2,
+            int m_label1, int m_label2,
+            const Array1D &m_arr1, const Array1D &m_arr2) const;
+        double reduce(
+            int n_label1, int n_label2,
+            const double *n_arr1, const double *n_arr2,
+            int m_label1, int m_label2,
+            const double *m_arr1, const double *m_arr2) const;
+    };
+
     class HypercubeArray {
         unsigned int m_size;
         std::vector<double> m_data;
@@ -122,6 +172,9 @@ namespace array_helpers {
     void test7();
     void test8();
     void test9();
+    void test10();
+    void test11();
+    void test12();
 
 };
 
