@@ -60,12 +60,17 @@ class BasisFunctionArray {
         int i, int j, int k, int l,
         const array_helpers::SquareArray &re_abab) const;
     int get_number_of_basis_functions() const;
+
     double evaluate_at(
         int index, const spatial::Vector &r) const;
     double evaluate_at(
         const array_helpers::Array2D &orbitals,
         int index, const spatial::Vector &r
     ) const;
+    int primitive_count_at(int index) const;
+    spatial::Vector get_position(int index) const;
+    spatial::UByte4 get_angular(int index) const;
+    Gaussian3D get_primitive(int ind_bf, int ind_p) const;
     void print() const;
 };
 

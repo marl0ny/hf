@@ -1,0 +1,71 @@
+{
+
+    "link": {
+        "name": "Source", "type": "LinkedLabel", 
+        "value": "https://github.com/marl0ny/hf"},
+    "mouseSelector": {
+        "name": "Mouse usage", "type": "SelectionList", "value": "{0, {\"Rotate only\", \"Place atom\"}}"},
+    "texelSideLength": {
+        "name": "Grid Side Length (Cubic)", "type": "int", "value": 64},
+    "texelSideLengthSelector": {
+        "name": "Grid discretization size", "type": "SelectionList", "value": "{0, {\"64x64x64\", \"128x128x128\", \"256x256x256\"}}"},
+    "dataTexelDimensions3D": {
+        "name": "Volume dimensions", "type": "IVec3", "value": [64, 64, 64]},
+    "presetAtoms": {
+        "name": "Atom dropdown", "type": "SelectionList",
+        "value": "{0, {\"H\", \"He\", \"Li\", \"Be\", \"B\", \"C\", \"N\", \"O\", \"F\", \"Ne\", \"Na\", \"Mg\", \"Al\", \"Si\", \"P\", \"S\", \"Cl\", \"Ar\", \"K\", \"Ca\", \"Sc\", \"Ti\", \"V\", \"Cr\", \"Mn\", \"Fe\", \"Co\", \"Ni\", \"Cu\", \"Zn\", \"Ga\", \"Ge\", \"As\", \"Se\", \"Br\", \"Kr\"}}"
+    },
+    "presetCompoundsDropdown": {
+        "name": "Preset Compounds", "type": "SelectionList", 
+        "value": "{0, {\"Hydrogen molecule\", \"Water\", \"Carbon Dioxide\"}}"
+    },
+    "solve": {
+        "name": "", "type": "Button", "value": "{}"
+    },
+
+    "visualizationControlsStart": {"name": "Visualization Controls", "type": "SubSectionStart", "value": {}},
+
+        "visualizationSelect": {
+            "name": "Visualization select", "type": "SelectionList", "value": "{0, {\"Volume render\", \"Three orthogonal planar slices\"}}"},
+        "usePerspectiveProjection": {
+            "name": "Use perspective projection", "type": "bool", "value": true},
+        "brightness": {
+            "name": "Overall scaling", "type": "float", "value": 0.06, "min": 0.0, "max": 0.5, "step": 0.01},
+
+        "volumeRenderSectionStart": {"name": "Volume Render Controls", "type": "SubSectionStart", "value": {}},
+            "useLinear": {
+                "name": "Linear interpolation", "type": "bool", "value": false},
+            "alphaBrightness": {
+                "name": "Alpha brightness", "type": "float", "value": 2.0, "min": 0.0, "max": 10.0, "step": 0.01},
+            "colorBrightness": {
+                "name": "Color brightness", "type": "float", "value": 1.0, "min": 0.0, "max": 10.0, "step": 0.01},
+            "volumeTexelDimensions3D": {
+                "name": "Volume dimensions", "type": "IVec3", "value": [128, 128, 192], "min": [16, 16, 16], "max": [512, 512, 512], "step": [2, 2, 4]},
+            "__noiseScale": {
+                "name": "Noise sampling strength", "type": "float", "value": 0.25, "min": 0.0, "max": 1.5, "step": 0.01},
+            "applyBlur": {
+                "name": "Enable bloom", "type": "bool", "value": true},
+            "blurSize": {
+                "name": "Bloominess", "type": "int", "value": 5, "min": 0, "max": 10},
+        "volumeRenderSectionEnd": {"name": "Volume Render Controls", "type": "SubSectionEnd", "value": {}},
+
+        "planarSlicesSectionStart": {"name": "Three Orthogonal Planar Slices Controls", "type": "SubSectionStart", "value": {}},
+            "planarNormCoordOffsets": {
+                "name": "Planar slices offsets (in normalized coordinates) for xy, yz, xz", "type": "Vec3", "value": [0.5, 0.5, 0.5], "min": [0.0, 0.0, 0.0], "max": [1.0, 1.0, 1.0], "step": [0.001, 0.001, 0.001]},
+        "planarSlicesSectionEnd": {"name": "Three Orthogonal Planar Slices Controls", "type": "SubSectionEnd", "value": {}},
+
+        "arrows3DLineSectionStart": {"name": "Arrows Plot", "type": "SubSectionStart", "value": {}},
+            "arrowDimensions": {
+                "name": "Arrows dimensions", "type": "IVec3", "value": [8, 8, 8], "min": [8, 8, 8], "max": [128, 128, 128]},
+            "useCones": {
+                "name": "Use conical arrows", "type": "bool", "value": false},
+        "arrows3DLineSectionEnd": {"name": "Arrows Plot", "type": "SubSectionEnd", "value": {}},
+
+    "visualizationControlsEnd": {"name": "Visualization Controls", "type": "SubSectionEnd", "value": {}},
+
+    "takeScreenshots": {"name": "Take screenshots at every frame (uncompressed bitmap)", "type": "BMPRecord", "value": "{false, 1440, 1440}"},
+
+    "canvasHoverDisplay": {"name": "", "type": "HoveringCanvasLabel", "value": {}},
+
+    "dummyValue": {"name": "dummyValue", "type": "int", "value": 0}
+}

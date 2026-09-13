@@ -19,6 +19,8 @@ class NuclearChargesArray {
     spatial::Vector location(int) const;
     void push_back(NuclearCharge c);
     double get_energy();
+    spatial::Vector get_center() const;
+    double furthest_from_center() const;
 };
 
 #endif

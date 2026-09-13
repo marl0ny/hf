@@ -19,9 +19,9 @@ int main() {
     // array_helpers::test11();
     // array_helpers::test12();
     // h2_example();
-    h2o_example();
+    // h2o_example();
     // benzene_example();
-    // co2_example();
+    co2_example();
     // o2_example();
     // for (int i = 1; i <= 20; i++) {
     //     printf("Atomic number: %d:\n", i);

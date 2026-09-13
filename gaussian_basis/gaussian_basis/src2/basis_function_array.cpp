@@ -194,7 +194,10 @@ Lui X., Patel A., Chow E.
 2014 IEEE 28th International Parallel and Distributed Processing Symposium.
 902-914 (2014).
 
-See Section II D on screening.
+See Section II "Background" D on screening. I've only consulted
+this article for this explanation of this background material,
+though perhaps I might try to implement this article's algorithm in the
+future.
 */
 double 
 BasisFunctionArray::repulsion_exchange(
@@ -205,8 +208,10 @@ BasisFunctionArray::repulsion_exchange(
     }
     double four_e1 = re_nm_nm(a, b);
     double four_e2 = re_nm_nm(c, d);
-    if (sqrt(four_e1 * four_e2) < 1e-10)
+    if (sqrt(four_e1 * four_e2) < 1e-10) {
+        // printf("Integral screened (%d, %d, %d, %d)\n", a, b, c, d);
         return 0.0;
+    }
     const BasisFunctionData &basis_func_a = m_basis_function_data[a];
     const BasisFunctionData &basis_func_b = m_basis_function_data[b];
     const BasisFunctionData &basis_func_c = m_basis_function_data[c];
@@ -277,6 +282,26 @@ double BasisFunctionArray::evaluate_at(
             value += c*this->evaluate_at(i, r);
     }
     return value;
+}
+
+int BasisFunctionArray::primitive_count_at(int index) const {
+    BasisFunctionData b = m_basis_function_data[index];
+    return b.primitives.count;
+}
+
+spatial::Vector
+BasisFunctionArray::get_position(int index) const {
+    return m_basis_function_data[index].position;
+}
+
+spatial::UByte4
+BasisFunctionArray::get_angular(int index) const {
+    return m_basis_function_data[index].angular;
+}
+
+Gaussian3D BasisFunctionArray::
+get_primitive(int ind_bf, int ind_p) const {
+    return primitive(m_basis_function_data[ind_bf], ind_p);
 }
 
 void BasisFunctionArray::print() const {

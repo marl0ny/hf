@@ -38,3 +38,22 @@ double NuclearChargesArray::get_energy() {
     }
     return sum;
 }
+
+spatial::Vector NuclearChargesArray::get_center() const {
+    spatial::Vector center {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
+    for (int i = 0; i < this->size(); i++)
+        center = center + this->location(i);
+    return (1.0/this->size())*center;
+}
+
+double NuclearChargesArray::furthest_from_center() const {
+    double dist = 0.0;
+    spatial::Vector center = this->get_center();
+    for (int i = 0; i < this->size(); i++) {
+        spatial::Vector r = this->location(i);
+        double curr = std::sqrt(spatial::dot(r - center, r - center));
+        if (curr > dist)
+            dist = curr;
+    }
+    return dist;
+}

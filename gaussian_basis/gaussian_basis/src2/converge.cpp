@@ -171,6 +171,10 @@ void converge::closed(
     array_helpers::Array1D energies_iter(occupied_count);
     array_helpers::Array2D orbitals_iter(
         occupied_count, orbitals.row_size());
+    // for (int i = 0; i < orbitals.col_size(); i++) {
+    //     for (int j = 0; j < orbitals.row_size(); j++)
+    //         orbitals_iter(i, j) = 1.0;
+    // }
     single_electron_solve(
         energies_iter, orbitals_iter,
         overlap, kinetic_nuclear);

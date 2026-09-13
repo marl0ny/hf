@@ -7,8 +7,10 @@
 #include "build_arrays.hpp"
 #include "converge.hpp"
 #include "compute_energies.hpp"
+#include "orbital_shader_creator.hpp"
 
 #include <iostream>
+#include <string>
 
 /*
  For implementing MP2, 
@@ -79,6 +81,7 @@
 
 
 }*/
+
 
 void closed_shell_element_example(int z) {
     spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
@@ -676,14 +679,15 @@ void benzene_example() {
             orbital_description_data::PositionedOrbitalsData
             {
                 // atomic_data_descriptions::ORB_6P6E_1S5_2S5_2P5,
-                atomic_data_descriptions::ORB_6P6E_1S4_2S4_2P4,
+                // atomic_data_descriptions::ORB_6P6E_1S4_2S4_2P4,
+                atomic_data_descriptions::ORB_6P6E_1S5_2S5_2P5,
                 c_pos
             }
         );
         hydrogens.push_back(
             orbital_description_data::PositionedOrbitalsData
             {
-                atomic_data_descriptions::ORB_1P1E_1S3,
+                atomic_data_descriptions::ORB_1P1E_1S31,
                 // atomic_data_descriptions::ORB_1P1E_1S21,
                 h_pos
             }
@@ -723,7 +727,8 @@ void benzene_example() {
         n_electrons/2, atoms);
     converge::closed(
         energies, orbitals, n_electrons/2, overlap,
-        h, repulsion_exchange, 20);
+        h, repulsion_exchange, 10);
+    write_orbital_to_file(orbitals, arr);
     double ke = compute_energies::kinetic(kinetic, orbitals);
     double pe = compute_energies::nuclear_potential(
         nuclear, orbitals);
@@ -782,17 +787,6 @@ void co2_example() {
     array_helpers::Array2D orbitals
         = orbital_description_data::get_orbital_basis_function_coefficients(
         11, {o1, c, o2});
-    // array_helpers::Array2D orbitals(11, 61);
-    // orbitals(0, 0) = 1.0;
-    // for (int i = 11; i < overlap.row_size(); i++)
-    //     orbitals(10, i) = 0.0;
-
-    // for (int i = 0; i < orbitals.col_size(); i++) {
-    //     for (int j = 0; j < orbitals.row_size(); j++) {
-    //         printf("%g ", orbitals(i, j));
-    //     }
-    //     printf("\n");
-    // }
     converge::closed(
         energies, orbitals, 11, overlap,
         h, repulsion_exchange, 20, true);
@@ -803,6 +797,7 @@ void co2_example() {
     //         printf("%g ", energies(i));
     //     printf("\n");
     // }
+    write_orbital_to_file(orbitals, arr);
     double ke = compute_energies::kinetic(kinetic, orbitals);
     double pe = compute_energies::nuclear_potential(nuclear, orbitals);
     double re = compute_energies::repulsion_exchange(

@@ -92,7 +92,8 @@ all: ${TARGET}
 
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
 	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp \
-	converge.cpp build_arrays.cpp compute_energies.cpp simple_examples.cpp
+	converge.cpp build_arrays.cpp compute_energies.cpp simple_examples.cpp \
+	orbital_shader_creator.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
@@ -112,7 +113,8 @@ GLFW_WRAPPER_SOURCES = ./glfw_wrappers/glfw_window.cpp ./glfw_wrappers/interacto
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
 	orbitals_description.o molecular_geometry.o array_helpers.o \
-	build_arrays.o converge.o compute_energies.o simple_examples.o
+	build_arrays.o converge.o compute_energies.o simple_examples.o \
+	orbital_shader_creator.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o

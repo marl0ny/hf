@@ -219,7 +219,8 @@ orbital_description_data::get_orbital_basis_function_coefficients(
         number_of_basis_functions +=
             orbital_description_data::get_number_of_basis_functions(o);
     }
-    array_helpers::Array2D coeffs(orbital_count, number_of_basis_functions);
+    array_helpers::Array2D coefficients(
+        orbital_count, number_of_basis_functions);
     for (const auto &o: o_arr) {
         for (int orbital_index = 0; 
             orbital_index < o.orbitals.size(); orbital_index++) {
@@ -228,12 +229,13 @@ orbital_description_data::get_orbital_basis_function_coefficients(
             for (int i = 0; i < multiplicity; i++) {
                 for (auto &basis_function: orbital.basis_functions) {
                     double coeff = basis_function.coefficient;
-                    coeffs(std::min(basis_func_index, int(orbital_count-1)),
-                           basis_func_index) = coeff;
+                    coefficients(
+                        std::min(basis_func_index, int(orbital_count-1)),
+                        basis_func_index) = coeff;
                     basis_func_index++;
                 }
             }
         }
     }
-    return coeffs;
+    return coefficients;
 }

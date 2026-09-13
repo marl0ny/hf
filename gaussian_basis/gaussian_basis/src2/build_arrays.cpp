@@ -2,13 +2,13 @@
 
 #include <pthread.h>
 
-#define THREAD_COUNT 0
+// #define THREAD_COUNT 0
 
-// #ifndef __EMSCRIPTEN__
-// #define THREAD_COUNT 10
-// #else
-// #define THREAD_COUNT 1
-// #endif
+#ifndef __EMSCRIPTEN__
+#define THREAD_COUNT 10
+#else
+#define THREAD_COUNT 1
+#endif
 
 struct FillArraysThreadData {
     array_helpers::SquareArray *overlap;
@@ -173,6 +173,7 @@ struct FillArraysThreadData2 {
     array_helpers::SquareArray *kinetic;
     array_helpers::SquareArray *nuclear;
     array_helpers::Symmetric4 *repulsion_exchange;
+    const array_helpers::SquareArray *re_abab;
     const NuclearChargesArray *nuclear_charges;
     const BasisFunctionArray *basis_functions;
     int start, end, n;
@@ -221,7 +222,9 @@ static void *fill_arrays_inner2(void *data) {
                     std::max(outer % n, k): k;
                 for (int l = start; l < n; l++) {
                     double val
-                        = basis_functions->repulsion_exchange(i, j, k, l);
+                        = basis_functions->repulsion_exchange(
+                            i, j, k, l, 
+                            *thread_data->re_abab);
                     repulsion_exchange->operator()(i, j, k, l) = val;
                 }
             }
@@ -245,6 +248,14 @@ void build_arrays::fill(
         int ops_per_thread = op_count / THREAD_COUNT;
         std::vector<pthread_t> threads {THREAD_COUNT};
         std::vector <FillArraysThreadData2> thread_data {THREAD_COUNT};
+        array_helpers::SquareArray re_abab(n);
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                re_abab(i, j) 
+                    = basis_functions.repulsion_exchange(i, j, i, j);
+                re_abab(j, i) = re_abab(i, j);
+            }
+        }
         for (int i = THREAD_COUNT - 1, k = 0, end = n; i >= 0; i--, k++) {
             int start = n - round(sqrt(ops_per_thread + (end - n)*(end - n)));
             start = std::max(0, start);
@@ -257,6 +268,7 @@ void build_arrays::fill(
             thread_data[k].basis_functions = &basis_functions;
             thread_data[k].nuclear_charges = &nuclear_charges;
             thread_data[k].start = start;
+            thread_data[k].re_abab = &re_abab;
             printf("Thread number: %d\n", k);
             printf("Start index: %d\n", start);
             printf("Stop index: %d\n", end);
