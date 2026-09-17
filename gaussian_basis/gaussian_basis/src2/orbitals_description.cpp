@@ -1,6 +1,8 @@
 #include "orbitals_description.hpp"
 #include "basis_function_array.hpp"
 
+#include <string>
+
 
 static unsigned int get_angular_number(const std::string &orbital_letter) {
     if (orbital_letter.substr(1) == "s") {

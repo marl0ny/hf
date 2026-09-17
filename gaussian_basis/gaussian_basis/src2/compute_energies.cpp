@@ -45,6 +45,25 @@ double compute_energies::exchange(
     );
 }
 
+double compute_energies::repulsion(
+    const array_helpers::Symmetric4 &repulsion_exchange,
+    const array_helpers::Array2D &orbitals
+) {
+    return repulsion_exchange.reduce(
+        0, 1, orbitals, orbitals, 2, 3, orbitals, orbitals
+    );
+}
+
+double compute_energies::exchange(
+    const array_helpers::Symmetric4 &repulsion_exchange,
+    const array_helpers::Array2D &orbitals
+) {
+    return repulsion_exchange.reduce(
+        0, 2, orbitals, orbitals, 1, 3, orbitals, orbitals
+    );
+}
+
+
 double compute_energies::repulsion_exchange(
     const array_helpers::HypercubeArray &repulsion_exchange,
     const array_helpers::Array2D &orbitals) {

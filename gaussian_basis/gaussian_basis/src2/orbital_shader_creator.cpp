@@ -72,20 +72,6 @@ float square(vec3 r) {
     return dot(r, r);
 }
 
-float pow(float a, int b) {
-    if (b == 0)
-        return 1.0;
-    else if (b == 1)
-        return a;
-    else if (b == 2)
-        return a*a;
-    else if (b == 3)
-        return a*a*a;
-    else if (b == 4)
-        return a*a*a*a;
-    return pow(a, float(b));
-}
-
 float pow2(float a) {
     return a*a;
 }
@@ -115,9 +101,13 @@ static const std::string MAIN_FUNC
             float orbitalAmplitude = getOrbitalValue(r, i);
             density += orbitalAmplitude*orbitalAmplitude;
         }
-        fragColor = vec4(density, 0.0, 0.0, 1.0);
+        fragColor = vec4(density);
+    } else {
+        fragColor = float(orbitalCount)*val*val*vec4(sign(val), 0.0, -sign(val), 1.0);
+        // fragColor = vec4(val, 0.0, -val, abs(val));
+        if (orbitalIndex >= orbitalCount)
+            fragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
-    fragColor = vec4(val, 0.0, 0.0, 1.0);
 }
 )";
 
@@ -190,6 +180,15 @@ std::string express_orbitals_as_function(
     }
     st += "\n}\n";
     return st;
+}
+
+std::string get_shader_text(
+    const array_helpers::Array2D &orbitals,
+    const BasisFunctionArray &arr
+) {
+    std::string function = express_orbitals_as_function(orbitals, arr);
+    std::string contents = START + function + MAIN_FUNC;
+    return contents;    
 }
 
 void write_orbital_to_file(

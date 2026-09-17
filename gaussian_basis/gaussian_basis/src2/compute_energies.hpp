@@ -31,6 +31,14 @@ namespace compute_energies {
         const array_helpers::HypercubeArray &repulsion_exchange,
         const array_helpers::Array2D &orbitals); 
     
+    double repulsion(
+        const array_helpers::Symmetric4 &repulsion_exchange,
+        const array_helpers::Array2D &orbitals);
+    
+    double exchange(
+        const array_helpers::Symmetric4 &repulsion_exchange,
+        const array_helpers::Array2D &orbitals); 
+    
     double repulsion_exchange(
         const array_helpers::HypercubeArray &repulsion_exchange,
         const array_helpers::Array2D &orbitals);

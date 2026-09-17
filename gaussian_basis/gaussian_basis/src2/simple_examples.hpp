@@ -1,3 +1,6 @@
+#include <map>
+#include "spatial.hpp"
+
 #ifndef _SIMPLE_EXAMPLES_
 #define _SIMPLE_EXAMPLES_
 
@@ -15,6 +18,10 @@ void benzene_example();
 void co2_example();
 
 void o2_example();
+
+void simple_system(
+    std::vector<std::pair<unsigned int, spatial::Vector>> &atoms,
+    bool closed, unsigned int iter_count);
 
 
 #endif

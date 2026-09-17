@@ -9,6 +9,11 @@ std::string express_orbitals_as_function(
     const array_helpers::Array2D &orbitals,
     const BasisFunctionArray &arr);
 
+std::string get_shader_text(
+    const array_helpers::Array2D &orbitals,
+    const BasisFunctionArray &arr
+);
+
 void write_orbital_to_file(
     const array_helpers::Array2D &orbitals,
     const BasisFunctionArray &arr);

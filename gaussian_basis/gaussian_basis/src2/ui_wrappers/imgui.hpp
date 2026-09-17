@@ -82,19 +82,13 @@ void imgui_controls(void *void_params) {
     SimParams *params = (SimParams *)void_params;
     for (auto &e: global_labels)
         params->set(e.first, 0, e.second);
-    if (ImGui::SliderFloat("mass (a.u.)", &params->m, 1.0, 10.0))
-           s_sim_params_set(params->M, params->m);
-    if (ImGui::SliderInt("Steps per frame", &params->stepsPerFrame, 0, 20))
-            s_sim_params_set(params->STEPS_PER_FRAME, params->stepsPerFrame);
     if (ImGui::BeginMenu("Mouse usage")) {
         if (ImGui::MenuItem("Rotate only"))
             s_selection_set(params->MOUSE_SELECTOR, 0);
-        if (ImGui::MenuItem("New wave function"))
+        if (ImGui::MenuItem("Place atom"))
             s_selection_set(params->MOUSE_SELECTOR, 1);
         ImGui::EndMenu();
     }
-    if (ImGui::SliderFloat("Time step (a.u.)", &params->dt, 0.0, 0.25))
-           s_sim_params_set(params->DT, params->dt);
     if (ImGui::BeginMenu("Grid discretization size")) {
         if (ImGui::MenuItem("64x64x64"))
             s_selection_set(params->TEXEL_SIDE_LENGTH_SELECTOR, 0);
@@ -104,96 +98,113 @@ void imgui_controls(void *void_params) {
             s_selection_set(params->TEXEL_SIDE_LENGTH_SELECTOR, 2);
         ImGui::EndMenu();
     }
-    if (ImGui::SliderInt("Particle count upon placement of new wave function", &params->numberOfParticles, 8192, 1048576))
-            s_sim_params_set(params->NUMBER_OF_PARTICLES, params->numberOfParticles);
-    if (ImGui::Checkbox("Show particle trails", &params->showTrails))
-            s_sim_params_set(params->SHOW_TRAILS, params->showTrails);
-    if (ImGui::BeginMenu("Preset V(x, y, z, t)")) {
-        if (ImGui::MenuItem("0"))
-            s_selection_set(params->PRESET_POTENTIAL_DROPDOWN, 0);
-        if (ImGui::MenuItem("abs(a/2.0)*((x/width)^2 + (y/height)^2 + (z/depth)^2)"))
-            s_selection_set(params->PRESET_POTENTIAL_DROPDOWN, 1);
-        if (ImGui::MenuItem("abs(a/2.0)/sqrt(x^2 + y^2 + z^2)"))
-            s_selection_set(params->PRESET_POTENTIAL_DROPDOWN, 2);
-        if (ImGui::MenuItem("(step(-y^2+(height*0.084*s1)^2)+step(y^2-(height*0.126*s2)^2))*step(-x^2+(width*0.04*w)^2)"))
-            s_selection_set(params->PRESET_POTENTIAL_DROPDOWN, 3);
-        if (ImGui::MenuItem("0.5*(tanh(100.0*(sqrt((x/width)^2 + (y/height)^2 + (z/depth)^2) - 0.45)) + 1.0)"))
-            s_selection_set(params->PRESET_POTENTIAL_DROPDOWN, 4);
+    if (ImGui::BeginMenu("Preset Compounds")) {
+        if (ImGui::MenuItem("Hydrogen molecule"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 0);
+        if (ImGui::MenuItem("Water"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 1);
+        if (ImGui::MenuItem("Carbon Dioxide"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 2);
+        if (ImGui::MenuItem("Oxygen Molecule"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 3);
         ImGui::EndMenu();
     }
- ImGui::Text("Enter potential V(x, y, t)");  // name
-    {
-        std::string string_val = std::string(240, '\0');
-        /* if (global_user_text_entries.count(14) > 0) { // i
-            std::string prev = global_user_text_entries.at(14); // i
-            string_val = prev;
-        } else {
-            string_val = std::string(240, '\0');
-        } */
-        if (ImGui::InputText(
-            "[0]", (char *)string_val.c_str(), 240   // k
-            , ImGuiInputTextFlags_EnterReturnsTrue
-            )) {
-            std::string string_val2 = "";
-            for (const char &c: string_val) {
-                if (c != '\0')
-                    string_val2 += c;
-                else
-                    break;
-            }
-            if (string_val2[0] == '\0')
-                string_val2 = "0";
-            if (global_user_text_entries.count(14) == 0) { // i
-                global_user_text_entries.insert({14, {string_val2} }); // i
-            } else {
-                if (global_user_text_entries.at(14).size() <= 0) // i, k
-                    global_user_text_entries.at(14).push_back(string_val2); // i 
-                global_user_text_entries.at(14)[0] = string_val2; // i, k
-            }
-            s_sim_params_set_string(14, 0, string_val2); // i, k
-        }
+    if (ImGui::BeginMenu("Atom dropdown")) {
+        if (ImGui::MenuItem("H"))
+            s_selection_set(params->PRESET_ATOMS, 0);
+        if (ImGui::MenuItem("He"))
+            s_selection_set(params->PRESET_ATOMS, 1);
+        if (ImGui::MenuItem("Li"))
+            s_selection_set(params->PRESET_ATOMS, 2);
+        if (ImGui::MenuItem("Be"))
+            s_selection_set(params->PRESET_ATOMS, 3);
+        if (ImGui::MenuItem("B"))
+            s_selection_set(params->PRESET_ATOMS, 4);
+        if (ImGui::MenuItem("C"))
+            s_selection_set(params->PRESET_ATOMS, 5);
+        if (ImGui::MenuItem("N"))
+            s_selection_set(params->PRESET_ATOMS, 6);
+        if (ImGui::MenuItem("O"))
+            s_selection_set(params->PRESET_ATOMS, 7);
+        if (ImGui::MenuItem("F"))
+            s_selection_set(params->PRESET_ATOMS, 8);
+        if (ImGui::MenuItem("Ne"))
+            s_selection_set(params->PRESET_ATOMS, 9);
+        if (ImGui::MenuItem("Na"))
+            s_selection_set(params->PRESET_ATOMS, 10);
+        if (ImGui::MenuItem("Mg"))
+            s_selection_set(params->PRESET_ATOMS, 11);
+        if (ImGui::MenuItem("Al"))
+            s_selection_set(params->PRESET_ATOMS, 12);
+        if (ImGui::MenuItem("Si"))
+            s_selection_set(params->PRESET_ATOMS, 13);
+        if (ImGui::MenuItem("P"))
+            s_selection_set(params->PRESET_ATOMS, 14);
+        if (ImGui::MenuItem("S"))
+            s_selection_set(params->PRESET_ATOMS, 15);
+        if (ImGui::MenuItem("Cl"))
+            s_selection_set(params->PRESET_ATOMS, 16);
+        if (ImGui::MenuItem("Ar"))
+            s_selection_set(params->PRESET_ATOMS, 17);
+        if (ImGui::MenuItem("K"))
+            s_selection_set(params->PRESET_ATOMS, 18);
+        if (ImGui::MenuItem("Ca"))
+            s_selection_set(params->PRESET_ATOMS, 19);
+        if (ImGui::MenuItem("Sc"))
+            s_selection_set(params->PRESET_ATOMS, 20);
+        if (ImGui::MenuItem("Ti"))
+            s_selection_set(params->PRESET_ATOMS, 21);
+        if (ImGui::MenuItem("V"))
+            s_selection_set(params->PRESET_ATOMS, 22);
+        if (ImGui::MenuItem("Cr"))
+            s_selection_set(params->PRESET_ATOMS, 23);
+        if (ImGui::MenuItem("Mn"))
+            s_selection_set(params->PRESET_ATOMS, 24);
+        if (ImGui::MenuItem("Fe"))
+            s_selection_set(params->PRESET_ATOMS, 25);
+        if (ImGui::MenuItem("Co"))
+            s_selection_set(params->PRESET_ATOMS, 26);
+        if (ImGui::MenuItem("Ni"))
+            s_selection_set(params->PRESET_ATOMS, 27);
+        if (ImGui::MenuItem("Cu"))
+            s_selection_set(params->PRESET_ATOMS, 28);
+        if (ImGui::MenuItem("Zn"))
+            s_selection_set(params->PRESET_ATOMS, 29);
+        if (ImGui::MenuItem("Ga"))
+            s_selection_set(params->PRESET_ATOMS, 30);
+        if (ImGui::MenuItem("Ge"))
+            s_selection_set(params->PRESET_ATOMS, 31);
+        if (ImGui::MenuItem("As"))
+            s_selection_set(params->PRESET_ATOMS, 32);
+        if (ImGui::MenuItem("Se"))
+            s_selection_set(params->PRESET_ATOMS, 33);
+        if (ImGui::MenuItem("Br"))
+            s_selection_set(params->PRESET_ATOMS, 34);
+        if (ImGui::MenuItem("Kr"))
+            s_selection_set(params->PRESET_ATOMS, 35);
+        ImGui::EndMenu();
     }
-    if (global_user_text_entries.count(14) > 0) // i
-        ImGui::Text(
-            (char *)global_user_text_entries.at(14)[0].c_str()); // i, k
-    // name, i, i, k, i, i, i, k, i, i, k, i, k, i, i, k
-  
-    if (global_user_defined_variables_in_use.count(14) > 0
-        ) { // i
-        std::set<std::string> variables 
-            = global_user_defined_variables_in_use.at(14);  // i
-        if (variables.size() > 0) {
-            for (std::string e: variables) {
-                float value = global_user_defined_variables.at(14).at(e); // i
-                if (ImGui::SliderFloat(e.c_str(), &value, -5.0, 5.0)) {
-                    s_sim_params_set_user_float_param(14, e, value); // i
-                    global_user_defined_variables.at(14).at(e) = value;  // i
-                }
-            }  
-        }
+    if (ImGui::SliderInt("Max # of SCF steps", &params->maxNumberOfIterations, 0, 30))
+            s_sim_params_set(params->MAX_NUMBER_OF_ITERATIONS, params->maxNumberOfIterations);
+    if (ImGui::Button("Solve"))
+           s_button_pressed(params->SOLVE);
+    if (ImGui::Button("Clear"))
+           s_button_pressed(params->CLEAR);
+    if (ImGui::BeginMenu("Method type")) {
+        if (ImGui::MenuItem("All shells closed"))
+            s_selection_set(params->SHELL_METHOD_TYPE, 0);
+        if (ImGui::MenuItem("Unrestricted"))
+            s_selection_set(params->SHELL_METHOD_TYPE, 1);
+        ImGui::EndMenu();
     }
-    if (ImGui::TreeNode("Initialize New Wave Function Controls")) {
-    if (ImGui::SliderFloat("Size", &params->sigma, 0.01, 0.1))
-           s_sim_params_set(params->SIGMA, params->sigma);
-    ImGui::Text("Wave number, w.r.t. simulation domain");
-    if (ImGui::SliderInt("wavenumber[0]", &params->wavenumber.ind[0], -16, 16))
-            s_sim_params_set(params->WAVENUMBER, params->wavenumber);
-    if (ImGui::SliderInt("wavenumber[1]", &params->wavenumber.ind[1], -16, 16))
-            s_sim_params_set(params->WAVENUMBER, params->wavenumber);
-    if (ImGui::SliderInt("wavenumber[2]", &params->wavenumber.ind[2], -16, 16))
-            s_sim_params_set(params->WAVENUMBER, params->wavenumber);
-    ImGui::Text("Position (norm. coord.)");
-    if (ImGui::SliderFloat("position[0]", &params->position.ind[0], 0.0, 1.0))
-           s_sim_params_set(params->POSITION, params->position);
-    if (ImGui::SliderFloat("position[1]", &params->position.ind[1], 0.0, 1.0))
-           s_sim_params_set(params->POSITION, params->position);
-    if (ImGui::SliderFloat("position[2]", &params->position.ind[2], 0.0, 1.0))
-           s_sim_params_set(params->POSITION, params->position);
-    if (ImGui::Button("Initialize new wave function"))
-           s_button_pressed(params->INITIALIZE_NEW_WAVE_FUNCTION_BUTTON);
-    ImGui::TreePop();
-    }
- 
+    if (ImGui::SliderFloat("Zoom out level", &params->sizeScale, 0.5, 10.0))
+           s_sim_params_set(params->SIZE_SCALE, params->sizeScale);
+    if (ImGui::Checkbox("Show total electron density", &params->showDensity))
+            s_sim_params_set(params->SHOW_DENSITY, params->showDensity);
+    if (ImGui::SliderInt("Which orbital", &params->whichOrbitalSliderVal, 0, 20))
+            s_sim_params_set(params->WHICH_ORBITAL_SLIDER_VAL, params->whichOrbitalSliderVal);
+    if (ImGui::SliderInt("Particle count upon reset", &params->numberOfParticles, 8192, 1048576))
+            s_sim_params_set(params->NUMBER_OF_PARTICLES, params->numberOfParticles);
     if (ImGui::TreeNode("Visualization Controls")) {
     if (ImGui::BeginMenu("Visualization select")) {
         if (ImGui::MenuItem("Volume render"))

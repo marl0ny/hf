@@ -28,9 +28,10 @@
 ifeq ($(shell uname),Darwin)
 INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
 	-I${PWD}/matrix_computations -I${PWD}/metropolis \
-	-I/opt/homebrew/include -I${PWD}/bmp\
+	-I/opt/homebrew/include -I${PWD}/bmp -I${PWD}/matrix \
 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
-	-I/opt/homebrew/include -I${PWD}/visualization_3d
+	-I/opt/homebrew/include -I${PWD}/visualization_3d \
+	-I${PWD}/imgui
 # 	 -I${PWD}/parse -I${PWD}/user_edit 
 # 	 -I${PWD}/imgui
 LIBS = -ldl -L/opt/homebrew/lib -lglfw -lpthread\
@@ -41,7 +42,7 @@ INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
 	-I${PWD}/matrix_computations -I${PWD}/metropolis \
 	-I/opt/homebrew/lib -I${PWD}/bmp \
 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
-    -I${PWD}/visualization_3d
+    -I${PWD}/visualization_3d -I${PWD}/matrix
 # 	 -I${PWD}/matrix -I${PWD}/parse -I${PWD}/user_edit -I${PWD}/bmp
 LIBS = -lm -lGL -lGLEW -lglfw -lpthread
 endif
@@ -62,30 +63,31 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 ##############################################################################
 
-TARGET = ${PWD}/program
-FLAGS = -O3 -g -ffast-math
-FLAGS2 = 
-CPP_COMPILE = clang++ -std=c++17
+# TARGET = ${PWD}/program
+# FLAGS = -O3 -g -ffast-math
+# FLAGS2 = 
+# CPP_COMPILE = clang++ -std=c++17
 
-# TARGET = main.js
-# FLAGS = -std=c++17 -Os -O2
-# FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
-# 	-s ALLOW_MEMORY_GROWTH=1 -s LLD_REPORT_UNDEFINED \
-# 	-lembind --embed-file shaders
-# CPP_COMPILE = emcc
-# LIBS = 
-# IMGUI_SOURCES =
-# IMGUI_OBJECTS = 
+TARGET = main.js
+FLAGS = -std=c++17 -O3 -ffast-math
+FLAGS_NO_OPT = -std=c++17 -O0 -ffast-math
+FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
+	-s ALLOW_MEMORY_GROWTH=1 -s LLD_REPORT_UNDEFINED \
+	-lembind --embed-file shaders
+CPP_COMPILE = emcc
+LIBS = 
+IMGUI_SOURCES =
+IMGUI_OBJECTS = 
 
 ##############################################################################
 ##############################################################################
 ##############################################################################
 
 DATA_DEPENDENCIES = \
-	# parameters.json
+	parameters.json
 GENERATION_SCRIPTS = make_parameter_files.py
 GENERATED_DEPENDENCIES = \
-	# parameters.hpp sliders.js
+	parameters.hpp sliders.js
 DEPENDENCIES = ${DATA_DEPENDENCIES} ${GENERATED_DEPENDENCIES}
 
 all: ${TARGET}
@@ -93,55 +95,58 @@ all: ${TARGET}
 TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
 	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp \
 	converge.cpp build_arrays.cpp compute_energies.cpp simple_examples.cpp \
-	orbital_shader_creator.cpp
+	orbital_shader_creator.cpp simple_system.cpp simulation.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
 	./integrals/boys_function.cpp
 MATRIX_COMPUTATIONS_SOURCES = ./matrix_computations/eigenvalues_eigenvectors.cpp
 METROPOLIS_SOURCES = ./metropolis/metropolis.cpp
-# VISUALIZATION_3D_SOURCES = ./visualization_3d/volume_render.cpp \
-# 	./visualization_3d/planar_slice.cpp ./visualization_3d/line_arrows3d.cpp \
-# 	./visualization_3d/conical_arrow3d.cpp ./visualization_3d/cube_outline.cpp \
-# 	./visualization_3d/cursor_outline3d.cpp ./visualization_3d/axes3d.cpp
+VISUALIZATION_3D_SOURCES = ./visualization_3d/volume_render.cpp \
+	./visualization_3d/planar_slice.cpp ./visualization_3d/line_arrows3d.cpp \
+	./visualization_3d/conical_arrow3d.cpp ./visualization_3d/cube_outline.cpp \
+	./visualization_3d/cursor_outline3d.cpp ./visualization_3d/axes3d.cpp \
+	./visualization_3d/quads_scatter3d.cpp
 GL_WRAPPER_SOURCES = ./gl_wrappers/gl_wrappers.cpp
 GLFW_WRAPPER_SOURCES = ./glfw_wrappers/glfw_window.cpp ./glfw_wrappers/interactor.cpp
-# MATRIX_SOURCES = ./matrix/matrix.cpp
+MATRIX_SOURCES = ./matrix/matrix.cpp
 # PARSE_SOURCES = ./parse/parse.cpp
 # USER_EDIT_SOURCES = ./user_edit/user_edit_glsl.cpp
-# BMP_SOURCES = ./bmp/bmp.cpp
+BMP_SOURCES = ./bmp/bmp.cpp
 
 TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
 	orbitals_description.o molecular_geometry.o array_helpers.o \
 	build_arrays.o converge.o compute_energies.o simple_examples.o \
-	orbital_shader_creator.o
+	orbital_shader_creator.o simple_system.o simulation.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o
 MATRIX_COMPUTATIONS_OBJECTS = eigenvalues_eigenvectors.o
 METROPOLIS_OBJECTS = metropolis.o
-# VISUALIZATION_3D_OBJECTS = ./volume_render.o \
-# 	./planar_slice.o ./line_arrows3d.o \
-# 	./conical_arrow3d.o ./cube_outline.o \
-# 	./cursor_outline3d.o axes3d.o
+VISUALIZATION_3D_OBJECTS = ./volume_render.o \
+	./planar_slice.o ./line_arrows3d.o \
+	./conical_arrow3d.o ./cube_outline.o \
+	./cursor_outline3d.o axes3d.o ./quads_scatter3d.o
 GL_WRAPPER_OBJECTS = ./gl_wrappers.o
 GLFW_WRAPPER_OBJECTS = ./glfw_window.o ./interactor.o
-# MATRIX_OBJECTS = ./matrix.o
+MATRIX_OBJECTS = ./matrix.o
 # PARSE_OBJECTS = ./parse.o
 # USER_EDIT_OBJECTS = ./user_edit_glsl.o
-# BMP_OBJECTS = ./bmp.o
+BMP_OBJECTS = ./bmp.o
 
 OBJECTS = ${TOP_LEVEL_OBJECTS} \
 	${SPATIAL_OBJECTS} ${INTEGRALS_OBJECTS} \
-	${MATRIX_COMPUTATIONS_OBJECTS}
-# 	${VISUALIZATION_3D_OBJECTS} \
-# 	${GL_WRAPPER_OBJECTS} ${GLFW_WRAPPER_OBJECTS} ${MATRIX_OBJECTS} \
-# 	${PARSE_OBJECTS} ${USER_EDIT_OBJECTS} ${BMP_OBJECTS} ${IMGUI_OBJECTS}
+	${MATRIX_COMPUTATIONS_OBJECTS} \
+	${VISUALIZATION_3D_OBJECTS} \
+	${GL_WRAPPER_OBJECTS} ${GLFW_WRAPPER_OBJECTS} \
+	${BMP_OBJECTS} ${MATRIX_OBJECTS} \
+ 	${IMGUI_OBJECTS} \
+#	${PARSE_OBJECTS} ${USER_EDIT_OBJECTS}
 
 SHADERS := $(wildcard ./shaders/**/*.frag) $(wildcard ./shaders/**/*.vert)
 
 ${TARGET}: ${OBJECTS} ${SHADERS}
-	${CPP_COMPILE} ${FLAGS} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
+	${CPP_COMPILE} ${FLAGS_NO_OPT} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
 
 ${TOP_LEVEL_OBJECTS}: ${TOP_LEVEL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${TOP_LEVEL_SOURCES} ${INCLUDE}
@@ -167,8 +172,8 @@ ${GL_WRAPPER_OBJECTS}: ${GL_WRAPPER_SOURCES} ${DEPENDENCIES}
 ${GLFW_WRAPPER_OBJECTS}: ${GLFW_WRAPPER_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${GLFW_WRAPPER_SOURCES} ${INCLUDE}
 
-# ${MATRIX_OBJECTS}: ${MATRIX_SOURCES} ${DEPENDENCIES}
-# 	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_SOURCES} ${INCLUDE}
+${MATRIX_OBJECTS}: ${MATRIX_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_SOURCES} ${INCLUDE}
 
 # ${PARSE_OBJECTS}: ${PARSE_SOURCES} ${DEPENDENCIES}
 # 	${CPP_COMPILE} ${FLAGS} -c ${PARSE_SOURCES} ${INCLUDE}
@@ -182,13 +187,13 @@ ${BMP_OBJECTS}: ${BMP_SOURCES} ${DEPENDENCIES}
 ${GENERATED_DEPENDENCIES}: ${DATA_DEPENDENCIES} ${GENERATION_SCRIPTS}
 	python3 make_parameter_files.py
 
-# ${IMGUI_OBJECTS}: ${IMGUI_SOURCES}
-# 	clang++ -std=c++17 -O2 -g -c $^ ${INCLUDE}
+${IMGUI_OBJECTS}: ${IMGUI_SOURCES}
+	clang++ -std=c++17 -O2 -g -c $^ ${INCLUDE}
 
-# ${IMGUI_SOURCES}:
-# 	wget "https://github.com/ocornut/imgui/archive/refs/heads/master.zip"
-# 	unzip master.zip
-# 	mv ./imgui-master ./imgui
+${IMGUI_SOURCES}:
+	wget "https://github.com/ocornut/imgui/archive/refs/heads/master.zip"
+	unzip master.zip
+	mv ./imgui-master ./imgui
 
 clean_obj:
 	rm -f *.o

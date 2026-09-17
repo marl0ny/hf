@@ -4,3 +4,7 @@
 program
 .*
 !.gitignore
+ignore*
+/**/ignore*
+/imgui
+*.ini

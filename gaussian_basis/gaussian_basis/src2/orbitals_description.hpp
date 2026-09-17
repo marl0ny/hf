@@ -3,6 +3,8 @@
 #include "basis_function_array.hpp"
 #include "array_helpers.hpp"
 
+#include <string>
+
 #ifndef _ORBITALS_DESCRIPTION_
 #define _ORBITALS_DESCRIPTION_
 
