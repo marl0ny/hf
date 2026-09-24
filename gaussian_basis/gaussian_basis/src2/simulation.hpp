@@ -34,7 +34,6 @@ struct Frames {
     WireFrame quad_wire_frame;
     // WireFrame arrows3d_frame;
     // WireFrame conical_arrows3d_frame;
-    // WireFrame scatter_frame;
     Frames(const TextureParams &default_tex_params, const SimParams &params);
     // void reset_data_reduce_dimensions(IVec3 texel_dimensions3d);
     void reset_simulation_discretization_dimensions(IVec3 texel_dimensions3d);
@@ -83,6 +82,7 @@ class Simulation {
     array_helpers::Array1D m_energies;
     int m_time_step_count;
     int last, curr, next;
+    float m_rad;
     std::vector<unsigned char> m_image_rgba_arr;
     std::vector<unsigned char> m_image_data;
     enum {VOL_RENDER_VIEW=0, PLANAR_SLICES_VIEW=1};
@@ -141,6 +141,12 @@ class Simulation {
         const std::vector<Vec2> &cursor_positions
     );
 
+    spatial::Vector get_position_of_cursor(
+        const SimParams &params,
+        const Vec2 &cursor_positions,
+        Quaternion rotation, float scale
+    ) const;
+
     void add_atom(
         const SimParams &params,
         unsigned int z, spatial::Vector position);
@@ -148,6 +154,7 @@ class Simulation {
     void clear_atoms(const SimParams &params);
     void set_preset_system(
         const SimParams &params, int preset_label);
+    // double get_total_energy() const;
 
     const RenderTarget
     &view(const SimParams &params,

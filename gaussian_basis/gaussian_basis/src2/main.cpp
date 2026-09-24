@@ -101,6 +101,10 @@ void simulation_ui_interface_handler(
             if (param_code == params.SOLVE) {
                 sim.solve(params);
             }
+            if (param_code == params.CLEAR) {
+                printf("Clear\n");
+                sim.clear_atoms(params);
+            }
         };
         /* Floating-point value parameters and their associated sliders
         can be created by the user. This notifies and keeps track of any
@@ -118,11 +122,12 @@ void simulation_ui_interface_handler(
                 params.mouseSelector.selected = val;
             }
             if (c == params.PRESET_ATOMS) {
-                sim.clear_atoms(params);
-                sim.add_atom(params, val + 1, spatial::Vector{
-                    .t=0.0, 0.0, 0.0, 0.0
-                });
-                sim.solve(params);
+                params.presetAtoms.selected = val;
+                // sim.clear_atoms(params);
+                // sim.add_atom(params, val + 1, spatial::Vector{
+                //     .t=0.0, 0.0, 0.0, 0.0
+                // });
+                // sim.solve(params);
             }
             if (c == params.PRESET_COMPOUNDS_DROPDOWN) {
                 sim.set_preset_system(params, val);
@@ -223,16 +228,29 @@ void simulation_ui_interface_handler(
             sim.time_step(params);
             params.t += 0.5*params.dt;
         }*/
-        if (cursor_positions.size() > 0 && params.mouseSelector.selected == 1
+        if (cursor_positions.size() == 1 && params.mouseSelector.selected == 1
             && sim.is_inside(params, rotation, 
-                        0.01*Interactor::get_scroll(), cursor_positions[0]))
+                        0.01*Interactor::get_scroll(), cursor_positions[0])) {
+            spatial::Vector position = sim.get_position_of_cursor(
+                params,
+                cursor_positions[0], 
+                rotation, 0.01*Interactor::get_scroll()
+            );
+            sim.add_atom(params, params.presetAtoms.selected + 1, position);
             main_render.draw(
                 sim.view(params, cursor_positions[0], 
                     rotation, 0.01*Interactor::get_scroll()));
-        else
+        } else if (cursor_positions.size() > 1 && params.mouseSelector.selected == 1
+            && sim.is_inside(params, rotation, 
+                        0.01*Interactor::get_scroll(), cursor_positions[0])) {
             main_render.draw(
+                sim.view(params, cursor_positions[0], 
+                    rotation, 0.01*Interactor::get_scroll()));
+        } else {
+                main_render.draw(
                 sim.view(params, hover_position, 
                     rotation, 0.01*Interactor::get_scroll()));
+        }
 
         if (hover_position.has_value()) {
             Vec3 loc = sim.get_cursor_location();
@@ -240,16 +258,17 @@ void simulation_ui_interface_handler(
             if (loc.x >= -1.0 && loc.x < 1.0 && loc.y >= -1.0 && loc.y < 1.0
                 && loc.z >= -1.0 && loc.z < 1.0) {
                 #ifdef __EMSCRIPTEN__
-                // edit_hovering_canvas_label_display(
-                //     SimParams::CANVAS_HOVER_DISPLAY,
-                //     "x: " + std::to_string(scaled_loc.x) + ", "
-                //     + "y: " + std::to_string(scaled_loc.y) + ", "
-                //     + "z: " + std::to_string(scaled_loc.z)
-                // );
+                edit_hovering_canvas_label_display(
+                    SimParams::CANVAS_HOVER_DISPLAY,
+                    "x: " + std::to_string(scaled_loc.x) + ", "
+                    + "y: " + std::to_string(scaled_loc.y) + ", "
+                    + "z: " + std::to_string(scaled_loc.z)
+                    // + "\n" + std::to_string(sim.get_total_energy())
+                );
                 #endif
-                /* edit_hovering_canvas_visibility_top_left_offset(
-                    SimParams::CANVAS_HOVER_DISPLAY, true, 50, 50
-                );*/
+                // edit_hovering_canvas_visibility_top_left_offset(
+                //     SimParams::CANVAS_HOVER_DISPLAY, true, 50, 50
+                // );
             }
         }
 

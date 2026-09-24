@@ -24,7 +24,11 @@ in vec2 UV;
 out vec4 fragColor;
 #endif
 
+#define PI 3.141592653589793
+
+uniform float scale;
 uniform bool showTotalDensity;
+uniform bool isClosedShell;
 uniform int orbitalCount;
 uniform int orbitalIndex;
 
@@ -36,6 +40,35 @@ uniform vec3 center;
 uniform vec3 dimensions3D; // Dimensions of simulation
 
 #define fp_type float
+
+vec3 argumentToColor(float argVal) {
+    float maxCol = 1.0;
+    float minCol = 50.0/255.0;
+    float colRange = maxCol - minCol;
+    if (argVal <= PI/3.0 && argVal >= 0.0) {
+        return vec3(maxCol,
+                    minCol + colRange*argVal/(PI/3.0), minCol);
+    } else if (argVal > PI/3.0 && argVal <= 2.0*PI/3.0){
+        return vec3(maxCol - colRange*(argVal - PI/3.0)/(PI/3.0),
+                    maxCol, minCol);
+    } else if (argVal > 2.0*PI/3.0 && argVal <= PI){
+        return vec3(minCol, maxCol,
+                    minCol + colRange*(argVal - 2.0*PI/3.0)/(PI/3.0));
+    } else if (argVal < 0.0 && argVal > -PI/3.0){
+        return vec3(maxCol, minCol,
+                    minCol - colRange*argVal/(PI/3.0));
+    } else if (argVal <= -PI/3.0 && argVal > -2.0*PI/3.0){
+        return vec3(maxCol + (colRange*(argVal + PI/3.0)/(PI/3.0)),
+                    minCol, maxCol);
+    } else if (argVal <= -2.0*PI/3.0 && argVal >= -PI){
+        return vec3(minCol,
+                    minCol - (colRange*(argVal + 2.0*PI/3.0)/(PI/3.0)), 
+                    maxCol);
+    }
+    else {
+        return vec3(minCol, maxCol, maxCol);
+    }
+}
 
 vec2 to2DTextureCoordinates(vec3 uvw) {
     int width2D = texelDimensions2D[0];
@@ -96,18 +129,26 @@ static const std::string MAIN_FUNC
     ) - center;
     float val = getOrbitalValue(r, orbitalIndex);
     if (showTotalDensity) {
-        float density = 0.0;
-        for (int i = 0; i < orbitalCount; i++) {
+        vec4 density = vec4(0.0);
+        for (int i = 0; i < min(orbitalCount, orbitalIndex + 1); i++) {
+            float argVal = 2.0*PI*float(i)/float(orbitalCount);
+            vec3 col = argumentToColor(argVal);
             float orbitalAmplitude = getOrbitalValue(r, i);
-            density += orbitalAmplitude*orbitalAmplitude;
+            density += vec4(col, 1.0)
+                *orbitalAmplitude*orbitalAmplitude;
         }
         fragColor = vec4(density);
     } else {
-        fragColor = float(orbitalCount)*val*val*vec4(sign(val), 0.0, -sign(val), 1.0);
+        float argVal = PI*float(orbitalIndex)/float(orbitalCount);
+        vec3 col = argumentToColor((sign(val) < 0.0)?(-PI + argVal): argVal);
+        fragColor = float(orbitalCount)*val*val*vec4(col, 1.0);
         // fragColor = vec4(val, 0.0, -val, abs(val));
         if (orbitalIndex >= orbitalCount)
             fragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
+    fragColor *= scale;
+    if (!isClosedShell)
+        fragColor *= 0.5;
 }
 )";
 

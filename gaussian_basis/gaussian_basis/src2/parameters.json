@@ -13,7 +13,7 @@
         "name": "Volume dimensions", "type": "IVec3", "value": [64, 64, 64]},
     "presetCompoundsDropdown": {
         "name": "Preset Compounds", "type": "SelectionList", 
-        "value": "{1, {\"Hydrogen molecule\", \"Water\", \"Carbon Dioxide\", \"Oxygen Molecule\"}}"
+        "value": "{1, {\"Hydrogen molecule\", \"Water\", \"Carbon Dioxide\", \"Oxygen Molecule\", \"Methane\", \"Acetylene\", \"Benzene (Will take a loong time!)\"}}"
     },
     "presetAtoms": {
         "name": "Atom dropdown", "type": "SelectionList",
@@ -38,7 +38,7 @@
         "name": "Show total electron density", "type": "bool", "value": true
     },
     "whichOrbitalSliderVal": {
-        "name": "Which orbital", "type": "int", "value": 3, "min": 0, "max": 20
+        "name": "Which orbital", "type": "int", "value": 3, "min": 0, "max": 50
     },
     "numberOfParticles": {
         "name": "Particle count upon reset", "type": "int", "value": 65536, "min": 8192, "max": 1048576, "step": 4096},
@@ -50,7 +50,7 @@
         "usePerspectiveProjection": {
             "name": "Use perspective projection", "type": "bool", "value": true},
         "brightness": {
-            "name": "Overall scaling", "type": "float", "value": 0.06, "min": 0.0, "max": 0.5, "step": 0.01},
+            "name": "Overall scaling", "type": "float", "value": 1.0, "min": 0.0, "max": 2.0, "step": 0.01},
 
         "volumeRenderSectionStart": {"name": "Volume Render Controls", "type": "SubSectionStart", "value": {}},
             "useLinear": {

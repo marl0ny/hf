@@ -107,6 +107,12 @@ void imgui_controls(void *void_params) {
             s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 2);
         if (ImGui::MenuItem("Oxygen Molecule"))
             s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 3);
+        if (ImGui::MenuItem("Methane"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 4);
+        if (ImGui::MenuItem("Acetylene"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 5);
+        if (ImGui::MenuItem("Benzene (Will take a loong time!)"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 6);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Atom dropdown")) {
@@ -201,7 +207,7 @@ void imgui_controls(void *void_params) {
            s_sim_params_set(params->SIZE_SCALE, params->sizeScale);
     if (ImGui::Checkbox("Show total electron density", &params->showDensity))
             s_sim_params_set(params->SHOW_DENSITY, params->showDensity);
-    if (ImGui::SliderInt("Which orbital", &params->whichOrbitalSliderVal, 0, 20))
+    if (ImGui::SliderInt("Which orbital", &params->whichOrbitalSliderVal, 0, 50))
             s_sim_params_set(params->WHICH_ORBITAL_SLIDER_VAL, params->whichOrbitalSliderVal);
     if (ImGui::SliderInt("Particle count upon reset", &params->numberOfParticles, 8192, 1048576))
             s_sim_params_set(params->NUMBER_OF_PARTICLES, params->numberOfParticles);
@@ -215,7 +221,7 @@ void imgui_controls(void *void_params) {
     }
     if (ImGui::Checkbox("Use perspective projection", &params->usePerspectiveProjection))
             s_sim_params_set(params->USE_PERSPECTIVE_PROJECTION, params->usePerspectiveProjection);
-    if (ImGui::SliderFloat("Overall scaling", &params->brightness, 0.0, 0.5))
+    if (ImGui::SliderFloat("Overall scaling", &params->brightness, 0.0, 2.0))
            s_sim_params_set(params->BRIGHTNESS, params->brightness);
     if (ImGui::TreeNode("Volume Render Controls")) {
     if (ImGui::Checkbox("Linear interpolation", &params->useLinear))

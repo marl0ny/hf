@@ -249,6 +249,31 @@ Simulation(const TextureParams &default_tex_params, const SimParams &params
     //     4*params.takeScreenshots.width*params.takeScreenshots.height, 0);
 }
 
+spatial::Vector Simulation::get_position_of_cursor(
+    const SimParams &params,
+    const Vec2 &cursor_pos,
+    Quaternion rotation, float scale) const {
+    return spatial::Vector{
+        .t=0.0,
+        .x=2.0*m_cursor_location.x*m_rad*params.sizeScale,
+        .y=2.0*m_cursor_location.y*m_rad*params.sizeScale,
+        .z=2.0*m_cursor_location.z*m_rad*params.sizeScale
+    };
+    // IVec2 tex_dims = m_frames.render.texture_dimensions();
+    // Vec3 r = Vec3{
+    //     .x=cursor_pos.x,
+    //     .y=cursor_pos.y*(float(tex_dims[1])/float(tex_dims[0]))
+    //         + 0.5F*(1.0F - float(tex_dims[1])/float(tex_dims[0])),
+    //     .z=0.0};
+    // Vec3 res = scale_rotate(r, scale, rotation) + Vec3{.x=0.5, 0.5, 0.5};
+    // return spatial::Vector{
+    //     .t=0.0, 
+    //     2.0*res.x*m_rad*params.sizeScale,
+    //     2.0*res.y*m_rad*params.sizeScale,
+    //     2.0*res.z*m_rad*params.sizeScale};
+}
+
+
 void Simulation::add_atom(
     const SimParams &params,
     unsigned int z, spatial::Vector position) {
@@ -256,6 +281,8 @@ void Simulation::add_atom(
 }
 
 void Simulation::solve(const SimParams &params) {
+    if (m_system.electron_count() == 0)
+        return;
     BasisFunctionArray arr = orbital_description_data::get_basis_function_array(
         this->m_system.get_atomic_orbital_description_list());
     int n = arr.get_number_of_basis_functions();
@@ -313,7 +340,9 @@ void Simulation::solve(const SimParams &params) {
             repulsion_exchange, orbitals_up);
         double ex_down = compute_energies::exchange(
             repulsion_exchange, orbitals_down);
-        printf("Total energy: %g\n", ke + pe + (re - ex_up - ex_down)/2.0);
+        double ne = nuclear_charges.get_energy();
+        printf("Total energy: %g\n",
+                 ke + pe + ne + (re - ex_up - ex_down)/2.0);
         std::string orbital_shader = get_shader_text(orbitals, arr);
         int status;
         uint32_t program;
@@ -357,11 +386,11 @@ void Simulation::clear_atoms(const SimParams &params) {
 void Simulation::set_preset_system(
     const SimParams &params, int preset_label) {
     this->clear_atoms(params);
-    int H_MOLECULE = 0, WATER = 1, CO2 = 2, O2 = 3;
+    int H_MOLECULE = 0, WATER = 1, CO2 = 2, O2 = 3, METHANE = 4, ACETYLENE = 5, BENZENE = 6;
     #define vec(x, y, z) spatial::Vector{.t=0.0, x, y, z}
     if (preset_label == H_MOLECULE) {
-        this->add_atom(params, 1, vec(1.37, 0.0, 0.0));
-        this->add_atom(params, 1, vec(0.0, 0.0, 0.0));
+        this->add_atom(params, 1, vec(0.685, 0.0, 0.0));
+        this->add_atom(params, 1, vec(-0.685, 0.0, 0.0));
     }
     else if (preset_label == WATER) {
         this->add_atom(params, 1, vec(-1.93044664,  0.82666546,  0.0));
@@ -372,9 +401,64 @@ void Simulation::set_preset_system(
         this->add_atom(params, 8, vec(2.2, 0.0, 0.0));
         this->add_atom(params, 6, vec(0.0, 0.0, 0.0));
     } else if (preset_label == O2) {
-        this->add_atom(params, 8, vec(2.31, 0.0,  0.0));
-        this->add_atom(params, 8, vec(0.0, 0.0, 0.0));
+        this->add_atom(params, 8, vec(1.155, 0.0,  0.0));
+        this->add_atom(params, 8, vec(-1.155, 0.0, 0.0));
+    } else if (preset_label == BENZENE) {
+        double pi = 3.141592653589793;
+        for (int i = 0; i < 6; i++) {
+            double angle = pi/3.0;
+            double r_c = 2.6;
+            double r_h = 4.6;
+            spatial::Vector c_pos {
+                .t=0.0, .x=r_c*cos(i*angle), .y=r_c*sin(i*angle), .z=0.0};
+            spatial::Vector h_pos {
+                .t=0.0, .x=r_h*cos(i*angle), .y=r_h*sin(i*angle), .z=0.0};
+            this->add_atom(params, 6, c_pos);
+            this->add_atom(params, 1, h_pos);
+        }
+    } else if (preset_label == METHANE) {
+        double theta = 2.0420352248333655;
+        double r = 2.05;
+        double pi = 3.141592653589793;
+        double phi = 2.0*pi/3.0;
+        spatial::Vector h_pos_top {
+                .t=0.0, .x=0.0, .y=0.0, .z=r};
+        this->add_atom(params, 1, h_pos_top);
+        for (int i = 0; i < 3; i++) {
+            spatial::Vector h_pos {
+                .t=0.0,
+                .x=r*cos(i*phi)*sin(theta),
+                .y=r*sin(i*phi)*sin(theta),
+                .z=r*cos(theta)};
+            this->add_atom(params, 1, h_pos);
+        }
+        this->add_atom(
+            params, 6,
+            spatial::Vector{.t=0.0, 0.0, 0.0, 0.0});
+    } else if (preset_label == ACETYLENE) {
+        spatial::Vector c1 {
+                .t=0.0, .x=0.0, .y=0.0, .z=-0.5*2.2};
+        spatial::Vector c2 {
+                .t=0.0, .x=0.0, .y=0.0, .z=0.5*2.2};
+        spatial::Vector h1 {
+                .t=0.0, .x=0.0, .y=0.0, .z=-0.5*2.2 - 1.8};
+        spatial::Vector h2 {
+                .t=0.0, .x=0.0, .y=0.0, .z=0.5*2.2 + 1.8};
+        this->add_atom(params, 1, h1);
+        this->add_atom(params, 6, c1);
+        this->add_atom(params, 6, c2);
+        this->add_atom(params, 1, h2);
     }
+    spatial::Vector center
+             = this->m_system.get_nuclear_charges().get_center();
+    float rad
+        = this->m_system.get_nuclear_charges().furthest_from_center();
+    if (this->m_system.get_nuclear_charges().size() <= 1) { 
+        rad = 1.0;
+    } else {
+
+    }
+    m_rad = rad;
     this->solve(params);
     #undef vec3
 }
@@ -900,17 +984,8 @@ const RenderTarget &Simulation
     ::Quaternion rotation, float scale) {
     // printf("This is some text.\n");
     if (m_programs.orbital > 0) {
-        spatial::Vector center
-             = this->m_system.get_nuclear_charges().get_center();
-        float rad
-            = this->m_system.get_nuclear_charges().furthest_from_center();
-        if (this->m_system.get_nuclear_charges().size() <= 1) { 
-            rad = 1.0;
-        } else {
-
-        }
-        rad *= params.sizeScale;
         int max_e_count = this->m_system.electron_count()/2;
+        float rad = m_rad * params.sizeScale;
         if (params.shellMethodType.selected == 1)
             max_e_count = 
                 this->m_system.get_up_count() 
@@ -918,7 +993,9 @@ const RenderTarget &Simulation
         this->m_frames.data_reduce.draw(
             m_programs.orbital,
             {
+                {"scale", params.brightness},
                 {"showTotalDensity", int(params.showDensity)},
+                {"isClosedShell", int((params.shellMethodType.selected == 0)? 1: 0)},
                 {"orbitalCount", max_e_count},
                 {"orbitalIndex", int(std::min(
                     params.whichOrbitalSliderVal,
@@ -935,7 +1012,10 @@ const RenderTarget &Simulation
                 
             }
         );
+    } else {
+        this->m_frames.data_reduce.clear();
     }
+    // WireFrame wf = 
     switch(params.visualizationSelect.selected) {
         case PLANAR_SLICES_VIEW: {
             this->m_frames.render.clear();
@@ -1150,10 +1230,18 @@ Vec3 Simulation::get_cursor_location() const {
 Vec3 Simulation::get_scaled_cursor_location(const SimParams &params) const {
     // float side_length = params.sideLength;
     float side_length = (float)params.texelSideLength;
+    float rad
+        = this->m_system.get_nuclear_charges().furthest_from_center();
+    if (this->m_system.get_nuclear_charges().size() <= 1) { 
+        rad = 1.0;
+    } else {
+
+    }
+    rad *= params.sizeScale;
     return Vec3{
-        .x=m_cursor_location.x*side_length/2.0F,
-        .y=m_cursor_location.y*side_length/2.0F,
-        .z=m_cursor_location.z*side_length/2.0F,
+        .x=m_cursor_location.x*rad*2.0F,
+        .y=m_cursor_location.y*rad*2.0F,
+        .z=m_cursor_location.z*rad*2.0F,
     };
 }
 

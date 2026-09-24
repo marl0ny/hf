@@ -192,14 +192,18 @@ void System::add_atom(int atomic_number, spatial::Vector position) {
     orbital_description_data::OrbitalsData descr = 
     get_atomic_description(
         atomic_number, u_count, d_count);
+    if (atomic_number == 1) {
+        u_count = 1, d_count = 0;
+    }
     m_electron_count += atomic_number;
     orbital_description_data::PositionedOrbitalsData 
         element {descr, position};
     m_atomic_orbitals.push_back(element);
     m_nuclear_charges.push_back(
         {.position=position, .strength=(int)atomic_number});
-    m_up_count += u_count;
-    m_down_count += d_count;
+    int total_count = m_up_count + m_down_count + u_count + d_count;
+    m_down_count = total_count / 2;
+    m_up_count = total_count - m_down_count;
 }
 
 void System::clear() {

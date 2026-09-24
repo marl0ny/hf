@@ -4993,6 +4993,10 @@ var ASM_CONSTS = {
       return false;
     }
 
+  function _emscripten_run_script(ptr) {
+      eval(UTF8ToString(ptr));
+    }
+
   function handleException(e) {
       // Certain exception types we do not treat as errors since they are used for
       // internal control flow.
@@ -8372,6 +8376,7 @@ var asmLibraryArg = {
   "emscripten_get_now": _emscripten_get_now,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
+  "emscripten_run_script": _emscripten_run_script,
   "emscripten_set_main_loop": _emscripten_set_main_loop,
   "environ_get": _environ_get,
   "environ_sizes_get": _environ_sizes_get,
@@ -8528,7 +8533,7 @@ var dynCall_iiiiijj = Module["dynCall_iiiiijj"] = createExportWrapper("dynCall_i
 /** @type {function(...*):?} */
 var dynCall_iiiiiijj = Module["dynCall_iiiiiijj"] = createExportWrapper("dynCall_iiiiiijj");
 
-var ___emscripten_embedded_file_data = Module['___emscripten_embedded_file_data'] = 201608;
+var ___emscripten_embedded_file_data = Module['___emscripten_embedded_file_data'] = 203448;
 
 
 
