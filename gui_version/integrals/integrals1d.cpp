@@ -117,7 +117,7 @@ fp_type coulomb_coefficient(int i, int j, int k, int n,
     } else {
         // printf("%d\n", std::max(i, std::max(j, k)));
     }
-    // puts("Computing Coulomb coefficient recursively...");
+    puts("Computing Coulomb coefficient recursively...");
 
     if (i == 0 && j == 0 && k == 0) {
         return pow((-2*orb_exp), n)

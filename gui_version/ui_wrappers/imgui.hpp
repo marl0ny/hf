@@ -197,7 +197,7 @@ void imgui_controls(void *void_params) {
     if (ImGui::Button("Clear"))
            s_button_pressed(params->CLEAR);
     if (ImGui::BeginMenu("Method type")) {
-        if (ImGui::MenuItem("All shells closed"))
+        if (ImGui::MenuItem("Restricted"))
             s_selection_set(params->SHELL_METHOD_TYPE, 0);
         if (ImGui::MenuItem("Unrestricted"))
             s_selection_set(params->SHELL_METHOD_TYPE, 1);

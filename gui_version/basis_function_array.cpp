@@ -289,6 +289,14 @@ int BasisFunctionArray::primitive_count_at(int index) const {
     return b.primitives.count;
 }
 
+int BasisFunctionArray::number_of_shells() const {
+    return m_shell_count;
+}
+
+ShellData BasisFunctionArray::get_shell(int index) const {
+    return m_shell_data[index];
+}
+
 spatial::Vector
 BasisFunctionArray::get_position(int index) const {
     return m_basis_function_data[index].position;

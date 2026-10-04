@@ -2,6 +2,7 @@
 #include "cube_outline.hpp"
 #include "cursor_outline3d.hpp"
 #include "axes3d.hpp"
+#include "gaussian1d.hpp"
 #include "metropolis.hpp"
 #include "quads_scatter3d.hpp"
 #include "bmp.hpp"
@@ -11,6 +12,8 @@
 #include "build_arrays.hpp"
 #include "orbital_shader_creator.hpp"
 #include "compute_energies.hpp"
+#include "gaussian3d.hpp"
+#include "integrals1d.hpp"
 
 #include <vector>
 
@@ -70,6 +73,10 @@ Programs::Programs() {
         "./shaders/axes/axes3d.frag"
     );
     this->orbital = 0;
+    this->re_compute = Quad::make_program_from_path(
+        "./shaders/repulsion-exchange/compute.frag"
+    );
+    // printf("%d\n", re_compute);
 }
 
 void Programs
@@ -120,6 +127,101 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .wrap_t=GL_REPEAT
     }),
     data_reduce(data_reduce_tex_params),
+    bf_spec1({
+        .format=GL_RGBA32F,
+        .width=1000,
+        .height=1,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    bf_spec2({
+        .format=GL_RGBA32F,
+        .width=1000,
+        .height=1,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    primitives(
+        {
+        .format=GL_RG32F,
+        .width=200,
+        .height=10,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    indices(
+        {
+        .format=GL_RGBA32F,
+        .width=1024,
+        .height=1024,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    re(
+        {
+        .format=GL_R32F,
+        .width=1024,
+        .height=1024,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    debugs {
+        .debug_ind = Quad({
+            .format=GL_RGBA32F,
+            .width=1024,
+            .height=1,
+            .generate_mipmap=false,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST,
+            .wrap_s=GL_REPEAT,
+            .wrap_t=GL_REPEAT
+        }),
+        .overlap_coeff = Quad({
+            .format=GL_R32F,
+            .width=1024,
+            .height=1,
+            .generate_mipmap=false,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST,
+            .wrap_s=GL_REPEAT,
+            .wrap_t=GL_REPEAT
+        }),
+        .coulomb_coeff = Quad({
+            .format=GL_R32F,
+            .width=1024,
+            .height=1,
+            .generate_mipmap=false,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST,
+            .wrap_s=GL_REPEAT,
+            .wrap_t=GL_REPEAT
+        }),
+        .bf = Quad({
+            .format=GL_R32F,
+            .width=1024,
+            .height=1,
+            .generate_mipmap=false,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST,
+            .wrap_s=GL_REPEAT,
+            .wrap_t=GL_REPEAT
+        })
+    },
     /* wave_sim {
         .psi = {
             wave_sim_tex_params, wave_sim_tex_params, wave_sim_tex_params},
@@ -293,20 +395,32 @@ void Simulation::solve(const SimParams &params) {
     array_helpers::SquareArray nuclear(n);
     array_helpers::Symmetric4 repulsion_exchange(n);
 
-    // struct timespec frame_time[2];
-    // clock_gettime(CLOCK_MONOTONIC, &frame_time[0]);
+    struct timespec frame_time[2];
+    clock_gettime(CLOCK_MONOTONIC, &frame_time[0]);
+    // debug_stuff();
+    build_arrays::fill(
+        m_frames.bf_spec1, m_frames.bf_spec2,
+        m_frames.primitives, m_frames.indices, m_frames.re,
+        overlap,
+        kinetic,
+        nuclear,
+        repulsion_exchange,
+        arr,
+        nuclear_charges,
+        m_programs.re_compute);
     build_arrays::fill(
         overlap, kinetic, nuclear, repulsion_exchange, 
         arr, nuclear_charges);
-    // clock_gettime(CLOCK_MONOTONIC, &frame_time[1]);
-    // double delta_t = frame_time[1].tv_sec - frame_time[0].tv_sec;
-    // std::cout << "Construction time: " << delta_t << "s \n";
 
     array_helpers::SquareArray h = kinetic + nuclear;
     int n_electrons = this->m_system.electron_count();
     printf("Electron count: %d\n", n_electrons);
     printf("Selected: %d\n", params.shellMethodType.selected);
     arr.print();
+    clock_gettime(CLOCK_MONOTONIC, &frame_time[1]);
+    double delta_t = frame_time[1].tv_sec - frame_time[0].tv_sec;
+    printf("Construction time: %gs \n", delta_t);
+    
     if (params.shellMethodType.selected == 1) {
         unsigned int u_count = m_system.get_up_count();
         unsigned int d_count = m_system.get_down_count();
@@ -1185,6 +1299,147 @@ const RenderTarget &Simulation
         m_frames.quad_wire_frame
     );
     return m_frames.render;
+}
+
+void Simulation::debug_stuff() {
+    m_frames.debugs.debug_ind.reset({
+        .format=GL_RGBA32F,
+        .width=1024,
+        .height=1,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    });
+    m_frames.debugs.coulomb_coeff.reset({
+        .format=GL_R32F,
+        .width=1024,
+        .height=1,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    });
+    m_frames.debugs.bf.reset({
+        .format=GL_R32F,
+        .width=1024,
+        .height=1,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    });
+    std::vector<float> indices(
+        4*m_frames.debugs.debug_ind.width(), 0.0);
+    std::vector<float> res(
+        m_frames.debugs.coulomb_coeff.width(), 0.0);
+
+    bool compare_coulomb_coeff_values = false;
+    bool compare_overlap_coeff_values = false;
+    if (compare_overlap_coeff_values) {
+        double x1 = 1.0;
+        double x2 = 1.1;
+        double e1 = 20.4;
+        double e2 = 40.5;
+        int index_count = 0;
+        for (int a1 = 0; a1 < 5; a1++) {
+            for (int a2 = 0; a2 < 5; a2++) {
+                for (int n = 0; n < (a1 + a2 + 1); n++) {
+                    indices[index_count] = (float)n;
+                    index_count++;
+                    indices[index_count] = (float)a1;
+                    index_count++;
+                    indices[index_count] = (float)a2;
+                    index_count++;
+                    indices[index_count] = 0.0;
+                    index_count++;
+                }
+            }
+        }
+        m_frames.debugs.debug_ind.set_pixels((float *)&indices[0]);
+        m_frames.debugs.overlap_coeff.draw(
+            m_programs.re_compute,
+            {
+                {"debug", int(2)},
+                {"debugIndTex", (Quad *)&m_frames.debugs.debug_ind},
+                {"debugOverlapPositions",
+                        Vec2{.ind{(float)x1, (float)x2}}},
+                {"debugOverlapExponents",
+                        Vec2{.ind{(float)e1, (float)e2}}}
+            }
+        );
+        index_count = 0;
+        m_frames.debugs.overlap_coeff.fill_array_with_contents(&res[0]);
+        for (int a1 = 0; a1 < 5; a1++) {
+            for (int a2 = 0; a2 < 5; a2++) {
+                for (int n = 0; n < (a1 + a2 + 1); n++) {
+                    Gaussian1D g1 (e1, x1, a1);
+                    Gaussian1D g2 (e2, x2, a2);
+                    double val = overlap_coefficient(n, g1, g2);
+                    double val2 = res[index_count];
+                    printf("%d, %d, %d \t %g\n", n, a1, a2, val);
+                    printf("%d, %d, %d \t %g\n", n, a1, a2, val2);
+                    index_count++;
+                }
+            }
+        }
+
+    }
+    if (compare_coulomb_coeff_values) {
+        int index_count = 0;
+        for (int i = 0; i <= 4; i++) {
+            for (int j = 0; j <= i; j++) {
+                for (int k = 0; k <= j; k++) {
+                    indices[index_count] = (float)i;
+                    index_count++;
+                    indices[index_count] = (float)j;
+                    index_count++;
+                    indices[index_count] = (float)k;
+                    index_count++;
+                    indices[index_count] = 0.0;
+                    index_count++;
+                }
+            }
+        }
+        // for (int i = 0; i < indices.size(); i++)
+        //     if (indices[i] > 0 && i != 0)
+        //         printf("%g\n", indices[i]);
+        m_frames.debugs.debug_ind.set_pixels((float *)&indices[0]);
+        std::srand(std::time(0));
+        double orb_exp = double(std::rand() % 100) + 5.0;
+        double x = 0.75, y = 0.1, z = 0.1;
+        int coulomb_factor = 0;
+        m_frames.debugs.coulomb_coeff.draw(
+            m_programs.re_compute,
+            {
+                {"debug", int(1)},
+                {"debugIndTex", (Quad *)&m_frames.debugs.debug_ind},
+                {"debugCoulombFactor", int(coulomb_factor)},
+                {"debugCoulombOrbExp", float(orb_exp)},
+                {"debugCoulombR", Vec3{.x=(float)x, (float)y, (float)z}}
+            }
+        );
+        m_frames.debugs.coulomb_coeff.fill_array_with_contents(&res[0]);
+        index_count = 0;
+        printf("Orbital exponent: %g\n", orb_exp);
+        for (int i = 0; i <= 4; i++) {
+            for (int j = 0; j <= i; j++) {
+                for (int k = 0; k <= j; k++) {
+                    printf("%d, %d, %d\t%g\n", i, j, k, res[index_count]);
+                    printf("%d, %d, %d\t%g\n", i, j, k,
+                        coulomb_coefficient(i, j, k, coulomb_factor, orb_exp,
+                            spatial::Vector{.t=0.0, .x=x, y, z}));
+                        // overlap_coefficient(
+                        //     indices[4*index_count], g1, g2));
+                    index_count++;
+                }
+            }
+        }
+    }
+
 }
 
 const RenderTarget &Simulation

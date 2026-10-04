@@ -29,7 +29,7 @@
         "name": "Clear", "type": "Button", "value": "{}"
     },
     "shellMethodType": {
-        "name": "Method type", "type": "SelectionList", "value": "{0, {\"All shells closed\", \"Unrestricted\"}}"
+        "name": "Method type", "type": "SelectionList", "value": "{0, {\"Restricted\", \"Unrestricted\"}}"
     },
     "sizeScale": {
         "name": "Zoom out level", "type": "float", "value": 1.0, "min": 0.5, "max": 10.0, "step": 0.01

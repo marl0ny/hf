@@ -50,7 +50,7 @@ struct SimParams {
     int maxNumberOfIterations = (int)(20);
     Button solve = Button{};
     Button clear = Button{};
-    SelectionList shellMethodType = SelectionList{0, {"All shells closed", "Unrestricted"}};
+    SelectionList shellMethodType = SelectionList{0, {"Restricted", "Unrestricted"}};
     float sizeScale = (float)(1.0F);
     bool showDensity = (bool)(true);
     int whichOrbitalSliderVal = (int)(3);

@@ -15,6 +15,7 @@ This is indebted to the following article:
 using namespace spatial;
 
 #define PI 3.141592653589793
+#define fp_t float
 
 /* Obtain the overlap coefficients between two 3D Gaussians.
 
@@ -34,8 +35,8 @@ Refer to the section "Kinetic energy integrals" from Joshua Goings'
 article: https://joshuagoings.com/2017/04/28/integrals/.
 */
 double kinetic(const Gaussian3D &g1, const Gaussian3D &g2) {
-    double amplitude1 = g1.amplitude();
-    double amplitude2 = g2.amplitude();
+    fp_t amplitude1 = g1.amplitude();
+    fp_t amplitude2 = g2.amplitude();
     Gaussian1D g1x = g1.get_gaussian1d(0);
     Gaussian1D g1y = g1.get_gaussian1d(1);
     Gaussian1D g1z = g1.get_gaussian1d(2);
@@ -64,8 +65,8 @@ double nuclear_single_charge(const Gaussian3D &g, const Gaussian3D &h,
     Gaussian1D hz = h.get_z();
     Vector r2 = product_center(g, h);
     Vector r12 = r2 - r;
-    double orb_exp = g.orbital_exponent() + h.orbital_exponent();
-    double val = 0.0;
+    fp_t orb_exp = g.orbital_exponent() + h.orbital_exponent();
+    fp_t val = 0.0;
     for (int i = 0; i < (gx.angular() + hx.angular() + 1); i++) {
         for (int j = 0; j < (gy.angular() + hy.angular() + 1); j++) {
             for (int k = 0; k < (gz.angular() + hz.angular() + 1); k++) {
@@ -81,34 +82,34 @@ double nuclear_single_charge(const Gaussian3D &g, const Gaussian3D &h,
 
 }
 
-static double repulsion_inner(const Gaussian3D &g2, const Gaussian3D &h2,
+double repulsion_inner(const Gaussian3D &g2, const Gaussian3D &h2,
                               int ix, int iy, int iz,
-                              double orb_exp, const Vector &r12) {
-    double val = 0.0;
+                              fp_t orb_exp, const Vector &r12) {
+    fp_t val = 0.0;
     Gaussian1D g2x = g2.get_x();
     Gaussian1D g2y = g2.get_y();
     Gaussian1D g2z = g2.get_z();
     Gaussian1D h2x = h2.get_x();
     Gaussian1D h2y = h2.get_y();
     Gaussian1D h2z = h2.get_z();
-    double eps = 1e-40;
-    double eps2 = 1e-40;
+    fp_t eps = 1e-40;
+    fp_t eps2 = 1e-40;
     for (int jx = 0; jx < (g2x.angular() + h2x.angular() + 1); jx++) {
-        double overlap_x = overlap_coefficient(jx, g2x, h2x);
+        fp_t overlap_x = overlap_coefficient(jx, g2x, h2x);
 
         for (int jy = 0; 
              abs(overlap_x) > eps 
              && jy < (g2y.angular() + h2y.angular() + 1);
              jy++) {
-            double overlap_y = overlap_coefficient(jy, g2y, h2y);
+            fp_t overlap_y = overlap_coefficient(jy, g2y, h2y);
 
             for (int jz = 0;
                  abs(overlap_y) > eps 
                  && jz < (g2z.angular() + h2z.angular() + 1);
                  jz++) {
                 
-                double overlap_z = overlap_coefficient(jz, g2z, h2z);
-                double overlaps = overlap_x * overlap_y * overlap_z;
+                fp_t overlap_z = overlap_coefficient(jz, g2z, h2z);
+                fp_t overlaps = overlap_x * overlap_y * overlap_z;
                 if (std::abs(overlaps) > eps2)
                     val += pow(-1.0, jx + jy + jz) *
                         overlap_x * overlap_y * overlap_z
@@ -131,37 +132,37 @@ double repulsion(const Gaussian3D &g1,
                  const Gaussian3D &h1,
                  const Gaussian3D &g2,
                  const Gaussian3D &h2) {
-    double amplitude = g1.amplitude()*g2.amplitude()
+    fp_t amplitude = g1.amplitude()*g2.amplitude()
                         *h1.amplitude()*h2.amplitude();
     if (amplitude == 0.0)
         return 0.0;
-    double val = 0.0;
+    fp_t val = 0.0;
     Gaussian1D g1x = g1.get_x();
     Gaussian1D g1y = g1.get_y();
     Gaussian1D g1z = g1.get_z();
     Gaussian1D h1x = h1.get_x();
     Gaussian1D h1y = h1.get_y();
     Gaussian1D h1z = h1.get_z();
-    double orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
-    double orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
-    double orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
+    fp_t orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
+    fp_t orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
+    fp_t orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
     struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
-    double eps = 1e-40;
-    double eps2 = 1e-40;
+    fp_t eps = 1e-40;
+    fp_t eps2 = 1e-40;
     for (int ix = 0; ix < (g1x.angular() + h1x.angular() + 1); ix++) {
-        double overlap_x = overlap_coefficient(ix, g1x, h1x);
+        fp_t overlap_x = overlap_coefficient(ix, g1x, h1x);
 
         for (int iy = 0; 
              std::abs(overlap_x) > eps 
              && iy < (g1y.angular() + h1y.angular() + 1); iy++) {
-            double overlap_y = overlap_coefficient(iy, g1y, h1y); 
+            fp_t overlap_y = overlap_coefficient(iy, g1y, h1y); 
 
             for (int iz = 0;
                 std::abs(overlap_y) > eps 
                 && iz < (g1z.angular() + h1z.angular() + 1); iz++) {
     
-                double overlap_z = overlap_coefficient(iz, g1z, h1z);
-                double overlaps = overlap_x * overlap_y * overlap_z;
+                fp_t overlap_z = overlap_coefficient(iz, g1z, h1z);
+                fp_t overlaps = overlap_x * overlap_y * overlap_z;
                 if (std::abs(overlaps) > eps2)
                     val += 2.0*pow(PI, (5.0/2.0))
                         / (orb_exp1*orb_exp2*sqrt(orb_exp1 + orb_exp2))

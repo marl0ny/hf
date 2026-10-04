@@ -553,7 +553,7 @@ createSelectionList(controls, 6, 0, "Atom dropdown", [ "H",  "He",  "Li",  "Be",
 createScalarParameterSlider(controls, 7, "Max # of SCF steps", "int", {'value': 20, 'min': 0, 'max': 30});
 createButton(controls, 8, "Solve");
 createButton(controls, 9, "Clear");
-createSelectionList(controls, 10, 0, "Method type", [ "All shells closed",  "Unrestricted"]);
+createSelectionList(controls, 10, 0, "Method type", [ "Restricted",  "Unrestricted"]);
 createScalarParameterSlider(controls, 11, "Zoom out level", "float", {'value': 1.0, 'min': 0.5, 'max': 10.0, 'step': 0.01});
 createCheckbox(controls, 12, "Show total electron density", true);
 createScalarParameterSlider(controls, 13, "Which orbital", "int", {'value': 3, 'min': 0, 'max': 50});

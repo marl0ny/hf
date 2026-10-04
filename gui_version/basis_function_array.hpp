@@ -22,6 +22,7 @@ struct BasisFunctionData {
 };
 
 struct ShellData {
+    unsigned int principle;
     unsigned int angular;
     struct {
         unsigned int offset;
@@ -68,6 +69,8 @@ class BasisFunctionArray {
         int index, const spatial::Vector &r
     ) const;
     int primitive_count_at(int index) const;
+    int number_of_shells() const;
+    ShellData get_shell(int index) const;
     spatial::Vector get_position(int index) const;
     spatial::UByte4 get_angular(int index) const;
     Gaussian3D get_primitive(int ind_bf, int ind_p) const;

@@ -27,6 +27,7 @@
 
 ifeq ($(shell uname),Darwin)
 INCLUDE =  -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
+	-I${PWD}/atomic_data  \
 	-I${PWD}/matrix_computations -I${PWD}/metropolis \
 	-I/opt/homebrew/include -I${PWD}/bmp -I${PWD}/matrix \
 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
@@ -39,6 +40,7 @@ LIBS = -ldl -L/opt/homebrew/lib -lglfw -lpthread\
        -framework Cocoa -framework Carbon
 else
 INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
+	-I${PWD}/atomic_data \
 	-I${PWD}/matrix_computations -I${PWD}/metropolis \
 	-I/opt/homebrew/lib -I${PWD}/bmp \
 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
@@ -63,21 +65,21 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 ##############################################################################
 
-# TARGET = ${PWD}/program
-# FLAGS = -O3 -g -ffast-math
-# FLAGS2 = 
-# CPP_COMPILE = clang++ -std=c++17
+TARGET = ${PWD}/program
+FLAGS = -O3 -g -ffast-math
+FLAGS2 = 
+CPP_COMPILE = clang++ -std=c++17
 
-TARGET = main.js
-FLAGS = -std=c++17 -O3 -ffast-math
-FLAGS_NO_OPT = -std=c++17 -O0 -ffast-math
-FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
-	-s ALLOW_MEMORY_GROWTH=1 -s LLD_REPORT_UNDEFINED \
-	-lembind --embed-file shaders
-CPP_COMPILE = emcc
-LIBS = 
-IMGUI_SOURCES =
-IMGUI_OBJECTS = 
+# TARGET = main.js
+# FLAGS = -std=c++17 -O3 -ffast-math
+# FLAGS_NO_OPT = -std=c++17 -O0 -ffast-math
+# FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
+# 	-s ALLOW_MEMORY_GROWTH=1 \
+# 	-lembind --embed-file shaders
+# CPP_COMPILE = emcc
+# LIBS = 
+# IMGUI_SOURCES =
+# IMGUI_OBJECTS = 
 
 ##############################################################################
 ##############################################################################
@@ -96,6 +98,7 @@ TOP_LEVEL_SOURCES = main.cpp basis_function_array.cpp nuclear_charges.cpp \
 	orbitals_description.cpp molecular_geometry.cpp array_helpers.cpp \
 	converge.cpp build_arrays.cpp compute_energies.cpp simple_examples.cpp \
 	orbital_shader_creator.cpp simple_system.cpp simulation.cpp
+ATOMIC_DATA_SOURCES = ./atomic_data/atomic_data.cpp
 SPATIAL_SOURCES = ./spatial/spatial.cpp
 INTEGRALS_SOURCES = ./integrals/gaussian1d.cpp ./integrals/gaussian3d.cpp \
 	./integrals/integrals1d.cpp ./integrals/integrals3d.cpp \
@@ -118,6 +121,7 @@ TOP_LEVEL_OBJECTS = main.o basis_function_array.o nuclear_charges.o \
 	orbitals_description.o molecular_geometry.o array_helpers.o \
 	build_arrays.o converge.o compute_energies.o simple_examples.o \
 	orbital_shader_creator.o simple_system.o simulation.o
+ATOMIC_DATA_OBJECTS = atomic_data.o
 SPATIAL_OBJECTS = spatial.o
 INTEGRALS_OBJECTS = gaussian1d.o gaussian3d.o integrals1d.o integrals3d.o \
 	boys_function.o
@@ -135,7 +139,7 @@ MATRIX_OBJECTS = ./matrix.o
 BMP_OBJECTS = ./bmp.o
 
 OBJECTS = ${TOP_LEVEL_OBJECTS} \
-	${SPATIAL_OBJECTS} ${INTEGRALS_OBJECTS} \
+	${SPATIAL_OBJECTS} ${INTEGRALS_OBJECTS} ${ATOMIC_DATA_OBJECTS} \
 	${MATRIX_COMPUTATIONS_OBJECTS} \
 	${VISUALIZATION_3D_OBJECTS} \
 	${GL_WRAPPER_OBJECTS} ${GLFW_WRAPPER_OBJECTS} \
@@ -146,13 +150,16 @@ OBJECTS = ${TOP_LEVEL_OBJECTS} \
 SHADERS := $(wildcard ./shaders/**/*.frag) $(wildcard ./shaders/**/*.vert)
 
 ${TARGET}: ${OBJECTS} ${SHADERS}
-	${CPP_COMPILE} ${FLAGS_NO_OPT} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
+	${CPP_COMPILE} ${FLAGS} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
 
 ${TOP_LEVEL_OBJECTS}: ${TOP_LEVEL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${TOP_LEVEL_SOURCES} ${INCLUDE}
 
 ${INTEGRALS_OBJECTS}: ${INTEGRALS_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${INTEGRALS_SOURCES} ${INCLUDE}
+
+${ATOMIC_DATA_OBJECTS}: ${ATOMIC_DATA_SOURCES} ${DEPENDENCIES}
+	${CPP_COMPILE} ${FLAGS} -c ${ATOMIC_DATA_SOURCES} ${INCLUDE}
 
 ${SPATIAL_OBJECTS}: ${SPATIAL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${SPATIAL_SOURCES} ${INCLUDE}

@@ -19,6 +19,15 @@ struct Frames {
     TextureParams particles_tex_params;
     TextureParams data_reduce_tex_params;
     Quad data_reduce;
+    Quad bf_spec1, bf_spec2, primitives;
+    Quad indices;
+    Quad re;
+    struct {
+        Quad debug_ind;
+        Quad overlap_coeff;
+        Quad coulomb_coeff;
+        Quad bf;
+    } debugs;
     /* struct {
         Quad psi[3];
         Quad potential;
@@ -53,6 +62,7 @@ struct Programs {
         unsigned int axes_labels_3d;
     } visualization;
     unsigned int orbital;
+    unsigned int re_compute;
     /* struct {
         unsigned int new_wavepacket;
         unsigned int time_step;
@@ -87,6 +97,8 @@ class Simulation {
     std::vector<unsigned char> m_image_data;
     enum {VOL_RENDER_VIEW=0, PLANAR_SLICES_VIEW=1};
 
+    void debug_stuff();
+    
     const RenderTarget
     &view_volume_render(
         SimParams &params, ::Quaternion rotation, float scale);
