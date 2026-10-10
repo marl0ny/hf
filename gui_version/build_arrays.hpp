@@ -28,7 +28,8 @@ namespace build_arrays {
 
     void fill(
         Quad &bf_spec1, Quad &bf_spec2,
-        Quad &primitives, Quad &indices_q, Quad &rep_exc,
+        Quad &primitives, Quad &indices_q,
+        Quad &rep_exc1, Quad &rep_exc2,
         array_helpers::SquareArray &overlap,
         array_helpers::SquareArray &kinetic,
         array_helpers::SquareArray &nuclear,

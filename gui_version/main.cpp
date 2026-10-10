@@ -190,6 +190,7 @@ void simulation_ui_interface_handler(
     { // Initial configuration from the default preset option
         // TODO
         sim.set_preset_system(params, 1);
+        sim.debug_stuff();
     }
 
     start_gui(main_render.get_window());

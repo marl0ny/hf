@@ -54,6 +54,7 @@ struct SimParams {
     float sizeScale = (float)(1.0F);
     bool showDensity = (bool)(true);
     int whichOrbitalSliderVal = (int)(3);
+    bool computeRepExcOnGPU = (bool)(false);
     int numberOfParticles = (int)(65536);
     SubSectionStart visualizationControlsStart = SubSectionStart{};
     SelectionList visualizationSelect = SelectionList{0, {"Volume render", "Three orthogonal planar slices"}};
@@ -93,30 +94,31 @@ struct SimParams {
         SIZE_SCALE=11,
         SHOW_DENSITY=12,
         WHICH_ORBITAL_SLIDER_VAL=13,
-        NUMBER_OF_PARTICLES=14,
-        VISUALIZATION_CONTROLS_START=15,
-        VISUALIZATION_SELECT=16,
-        USE_PERSPECTIVE_PROJECTION=17,
-        BRIGHTNESS=18,
-        VOLUME_RENDER_SECTION_START=19,
-        USE_LINEAR=20,
-        ALPHA_BRIGHTNESS=21,
-        COLOR_BRIGHTNESS=22,
-        VOLUME_TEXEL_DIMENSIONS3_D=23,
-        APPLY_BLUR=24,
-        BLUR_SIZE=25,
-        VOLUME_RENDER_SECTION_END=26,
-        PLANAR_SLICES_SECTION_START=27,
-        PLANAR_NORM_COORD_OFFSETS=28,
-        PLANAR_SLICES_SECTION_END=29,
-        ARROWS3_D_LINE_SECTION_START=30,
-        ARROW_DIMENSIONS=31,
-        USE_CONES=32,
-        ARROWS3_D_LINE_SECTION_END=33,
-        VISUALIZATION_CONTROLS_END=34,
-        TAKE_SCREENSHOTS=35,
-        CANVAS_HOVER_DISPLAY=36,
-        DUMMY_VALUE=37,
+        COMPUTE_REP_EXC_ON_G_P_U=14,
+        NUMBER_OF_PARTICLES=15,
+        VISUALIZATION_CONTROLS_START=16,
+        VISUALIZATION_SELECT=17,
+        USE_PERSPECTIVE_PROJECTION=18,
+        BRIGHTNESS=19,
+        VOLUME_RENDER_SECTION_START=20,
+        USE_LINEAR=21,
+        ALPHA_BRIGHTNESS=22,
+        COLOR_BRIGHTNESS=23,
+        VOLUME_TEXEL_DIMENSIONS3_D=24,
+        APPLY_BLUR=25,
+        BLUR_SIZE=26,
+        VOLUME_RENDER_SECTION_END=27,
+        PLANAR_SLICES_SECTION_START=28,
+        PLANAR_NORM_COORD_OFFSETS=29,
+        PLANAR_SLICES_SECTION_END=30,
+        ARROWS3_D_LINE_SECTION_START=31,
+        ARROW_DIMENSIONS=32,
+        USE_CONES=33,
+        ARROWS3_D_LINE_SECTION_END=34,
+        VISUALIZATION_CONTROLS_END=35,
+        TAKE_SCREENSHOTS=36,
+        CANVAS_HOVER_DISPLAY=37,
+        DUMMY_VALUE=38,
     };
     void set(int enum_val, Uniform val) {
         switch(enum_val) {
@@ -137,6 +139,9 @@ struct SimParams {
             break;
             case WHICH_ORBITAL_SLIDER_VAL:
             whichOrbitalSliderVal = val.i32;
+            break;
+            case COMPUTE_REP_EXC_ON_G_P_U:
+            computeRepExcOnGPU = val.b32;
             break;
             case NUMBER_OF_PARTICLES:
             numberOfParticles = val.i32;
@@ -193,6 +198,8 @@ struct SimParams {
             return {(bool)showDensity};
             case WHICH_ORBITAL_SLIDER_VAL:
             return {(int)whichOrbitalSliderVal};
+            case COMPUTE_REP_EXC_ON_G_P_U:
+            return {(bool)computeRepExcOnGPU};
             case NUMBER_OF_PARTICLES:
             return {(int)numberOfParticles};
             case USE_PERSPECTIVE_PROJECTION:

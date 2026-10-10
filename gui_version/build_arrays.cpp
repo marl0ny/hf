@@ -491,7 +491,8 @@ void get_symmetric_re(
 
 void build_arrays::fill(
     Quad &bf_spec1, Quad &bf_spec2,
-    Quad &primitives, Quad &indices_q, Quad &rep_exc,
+    Quad &primitives, Quad &indices_q,
+    Quad &rep_exc1, Quad &rep_exc2,
     array_helpers::SquareArray &overlap,
     array_helpers::SquareArray &kinetic,
     array_helpers::SquareArray &nuclear,
@@ -511,7 +512,7 @@ void build_arrays::fill(
     std::vector<float> primitives_arr;
     int max_primitives_count;
     int total_count;
-    std::vector<float> indices (10000);
+    std::vector<float> indices (1000000);
     modify_re_arrays(
         bf_spec1_arr,
         bf_spec2_arr,
@@ -569,7 +570,8 @@ void build_arrays::fill(
     bf_spec1.reset(bf_tex_params);
     bf_spec2.reset(bf_tex_params);
     indices_q.reset(indices_tex_params);
-    rep_exc.reset(re_tex_params);
+    rep_exc1.reset(re_tex_params);
+    rep_exc2.reset(re_tex_params);
     primitives.set_pixels((float *)&primitives_arr[0]);
     bf_spec1.set_pixels((float *)&bf_spec1_arr[0]);
     bf_spec2.set_pixels((float *)&bf_spec2_arr[0]);
@@ -577,22 +579,52 @@ void build_arrays::fill(
     std::vector<float> rep_exc_arr(
         re_tex_width*re_tex_width, 0.0);
     std::vector<float> indices_final(
-        re_tex_width*re_tex_width, 0.0);
+        4*re_tex_width*re_tex_width, 0.0);
     indices_q.set_pixels((float *)&indices[0]);
-    rep_exc.draw(
-        program,
-        {
-            {"basisFunctionSpec1Tex", &bf_spec1},
-            {"basisFunctionSpec2Tex", &bf_spec2},
-            {"primitivesTex", &primitives},
-            {"indicesTex", &indices_q},
-            {"numberOfBasisFunctions", 
-                    int(basis_functions.get_number_of_basis_functions())}
+    int max_angular = 0;
+    for (int i = 0; 
+         i < basis_functions.get_number_of_basis_functions(); i++) {
+        spatial::UByte4 angular = basis_functions.get_angular(i);
+        int x = angular.i;
+        int y = angular.j;
+        int z = angular.k;
+        int max_angular_i = std::max(std::max(x, y), z);
+        if (max_angular_i > max_angular)
+            max_angular = max_angular_i;
+    }
+    printf("%d\n", max_angular);
+    Quad *rep_exc_ptrs[2] = {&rep_exc1, &rep_exc2};
+    for (int i = 0; i < max_primitives_count; i++) {
+        for (int j = 0; j < max_primitives_count; j++) {
+            for (int k = 0; k < max_primitives_count; k++) {
+                for (int l = 0; l < max_primitives_count; l++) {
+                    rep_exc_ptrs[0]->draw(
+                        program,
+                        {
+                            {"basisFunctionSpec1Tex", &bf_spec1},
+                            {"basisFunctionSpec2Tex", &bf_spec2},
+                            {"primitivesTex", &primitives},
+                            {"indicesTex", &indices_q},
+                            {"previousSumTex", rep_exc_ptrs[1]},
+                            {"numberOfBasisFunctions", 
+                                    int(basis_functions.get_number_of_basis_functions())},
+                            {"maxNumberOfPrimitives", int(max_primitives_count)},
+                            {"primitiveIndices", IVec4{.x=i, j, k, l}},
+                            {"maxAngularIter", int(2*max_angular + 1)},
+                            {"debug", int(0)}
+
+                        }
+                    );
+                    std::swap(rep_exc_ptrs[0], rep_exc_ptrs[1]);
+                }
+            }
         }
-    );
+    }
     printf("This is reached.\n");
-    rep_exc.fill_array_with_contents((float *)&rep_exc_arr[0]);
+    rep_exc_ptrs[1]->fill_array_with_contents((float *)&rep_exc_arr[0]);
     indices_q.fill_array_with_contents((float *)&indices_final[0]);
+    rep_exc_ptrs[0]->clear();
+    rep_exc_ptrs[1]->clear();
     for (int n = 0; n < total_count; n++) {
         int i = indices[4*n], j = indices[4*n + 1];
         int k = indices[4*n + 2], l = indices[4*n + 3];

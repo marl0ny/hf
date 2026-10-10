@@ -169,7 +169,18 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .wrap_s=GL_REPEAT,
         .wrap_t=GL_REPEAT
     }),
-    re(
+    re1(
+        {
+        .format=GL_R32F,
+        .width=1024,
+        .height=1024,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    re2(
         {
         .format=GL_R32F,
         .width=1024,
@@ -395,32 +406,37 @@ void Simulation::solve(const SimParams &params) {
     array_helpers::SquareArray nuclear(n);
     array_helpers::Symmetric4 repulsion_exchange(n);
 
-    struct timespec frame_time[2];
-    clock_gettime(CLOCK_MONOTONIC, &frame_time[0]);
+    struct timespec time_build[2];
+    clock_gettime(CLOCK_MONOTONIC, &time_build[0]);
     // debug_stuff();
-    build_arrays::fill(
-        m_frames.bf_spec1, m_frames.bf_spec2,
-        m_frames.primitives, m_frames.indices, m_frames.re,
-        overlap,
-        kinetic,
-        nuclear,
-        repulsion_exchange,
-        arr,
-        nuclear_charges,
-        m_programs.re_compute);
-    build_arrays::fill(
-        overlap, kinetic, nuclear, repulsion_exchange, 
-        arr, nuclear_charges);
+    if (params.computeRepExcOnGPU)
+        build_arrays::fill(
+            m_frames.bf_spec1, m_frames.bf_spec2,
+            m_frames.primitives, m_frames.indices,
+            m_frames.re1, m_frames.re2,
+            overlap,
+            kinetic,
+            nuclear,
+            repulsion_exchange,
+            arr,
+            nuclear_charges,
+            m_programs.re_compute);
+    else
+        build_arrays::fill(
+            overlap, kinetic, nuclear, repulsion_exchange, 
+            arr, nuclear_charges);
 
     array_helpers::SquareArray h = kinetic + nuclear;
     int n_electrons = this->m_system.electron_count();
     printf("Electron count: %d\n", n_electrons);
     printf("Selected: %d\n", params.shellMethodType.selected);
     arr.print();
-    clock_gettime(CLOCK_MONOTONIC, &frame_time[1]);
-    double delta_t = frame_time[1].tv_sec - frame_time[0].tv_sec;
+    clock_gettime(CLOCK_MONOTONIC, &time_build[1]);
+    double delta_t = time_build[1].tv_sec - time_build[0].tv_sec;
     printf("Construction time: %gs \n", delta_t);
-    
+
+    struct timespec time_conv[2];
+    clock_gettime(CLOCK_MONOTONIC, &time_conv[0]);
     if (params.shellMethodType.selected == 1) {
         unsigned int u_count = m_system.get_up_count();
         unsigned int d_count = m_system.get_down_count();
@@ -488,6 +504,9 @@ void Simulation::solve(const SimParams &params) {
         printf("Total energy: %g\n", ke + pe + re + ne // + mp2e
         );
     }
+    clock_gettime(CLOCK_MONOTONIC, &time_conv[1]);
+    double delta_t2 = time_conv[1].tv_sec - time_conv[0].tv_sec;
+    printf("Convergence time: %gs \n", delta_t2);
 
 }
 
@@ -1337,8 +1356,8 @@ void Simulation::debug_stuff() {
     std::vector<float> res(
         m_frames.debugs.coulomb_coeff.width(), 0.0);
 
-    bool compare_coulomb_coeff_values = false;
-    bool compare_overlap_coeff_values = false;
+    bool compare_coulomb_coeff_values = true;
+    bool compare_overlap_coeff_values = true;
     if (compare_overlap_coeff_values) {
         double x1 = 1.0;
         double x2 = 1.1;
@@ -1409,8 +1428,9 @@ void Simulation::debug_stuff() {
         //         printf("%g\n", indices[i]);
         m_frames.debugs.debug_ind.set_pixels((float *)&indices[0]);
         std::srand(std::time(0));
-        double orb_exp = double(std::rand() % 100) + 5.0;
-        double x = 0.75, y = 0.1, z = 0.1;
+        double orb_exp = 100.0;
+        // double orb_exp = double(std::rand() % 100) + 5.0;
+        double x = 5.0, y = 2.0, z = 3.0;
         int coulomb_factor = 0;
         m_frames.debugs.coulomb_coeff.draw(
             m_programs.re_compute,

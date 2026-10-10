@@ -209,6 +209,8 @@ void imgui_controls(void *void_params) {
             s_sim_params_set(params->SHOW_DENSITY, params->showDensity);
     if (ImGui::SliderInt("Which orbital", &params->whichOrbitalSliderVal, 0, 50))
             s_sim_params_set(params->WHICH_ORBITAL_SLIDER_VAL, params->whichOrbitalSliderVal);
+    if (ImGui::Checkbox("Compute repulsion-exchange on GPU", &params->computeRepExcOnGPU))
+            s_sim_params_set(params->COMPUTE_REP_EXC_ON_G_P_U, params->computeRepExcOnGPU);
     if (ImGui::SliderInt("Particle count upon reset", &params->numberOfParticles, 8192, 1048576))
             s_sim_params_set(params->NUMBER_OF_PARTICLES, params->numberOfParticles);
     if (ImGui::TreeNode("Visualization Controls")) {

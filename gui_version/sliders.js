@@ -13,30 +13,31 @@ const ENUM_CODES = {
     SIZE_SCALE: 11,
     SHOW_DENSITY: 12,
     WHICH_ORBITAL_SLIDER_VAL: 13,
-    NUMBER_OF_PARTICLES: 14,
-    VISUALIZATION_CONTROLS_START: 15,
-    VISUALIZATION_SELECT: 16,
-    USE_PERSPECTIVE_PROJECTION: 17,
-    BRIGHTNESS: 18,
-    VOLUME_RENDER_SECTION_START: 19,
-    USE_LINEAR: 20,
-    ALPHA_BRIGHTNESS: 21,
-    COLOR_BRIGHTNESS: 22,
-    VOLUME_TEXEL_DIMENSIONS3_D: 23,
-    APPLY_BLUR: 24,
-    BLUR_SIZE: 25,
-    VOLUME_RENDER_SECTION_END: 26,
-    PLANAR_SLICES_SECTION_START: 27,
-    PLANAR_NORM_COORD_OFFSETS: 28,
-    PLANAR_SLICES_SECTION_END: 29,
-    ARROWS3_D_LINE_SECTION_START: 30,
-    ARROW_DIMENSIONS: 31,
-    USE_CONES: 32,
-    ARROWS3_D_LINE_SECTION_END: 33,
-    VISUALIZATION_CONTROLS_END: 34,
-    TAKE_SCREENSHOTS: 35,
-    CANVAS_HOVER_DISPLAY: 36,
-    DUMMY_VALUE: 37,
+    COMPUTE_REP_EXC_ON_G_P_U: 14,
+    NUMBER_OF_PARTICLES: 15,
+    VISUALIZATION_CONTROLS_START: 16,
+    VISUALIZATION_SELECT: 17,
+    USE_PERSPECTIVE_PROJECTION: 18,
+    BRIGHTNESS: 19,
+    VOLUME_RENDER_SECTION_START: 20,
+    USE_LINEAR: 21,
+    ALPHA_BRIGHTNESS: 22,
+    COLOR_BRIGHTNESS: 23,
+    VOLUME_TEXEL_DIMENSIONS3_D: 24,
+    APPLY_BLUR: 25,
+    BLUR_SIZE: 26,
+    VOLUME_RENDER_SECTION_END: 27,
+    PLANAR_SLICES_SECTION_START: 28,
+    PLANAR_NORM_COORD_OFFSETS: 29,
+    PLANAR_SLICES_SECTION_END: 30,
+    ARROWS3_D_LINE_SECTION_START: 31,
+    ARROW_DIMENSIONS: 32,
+    USE_CONES: 33,
+    ARROWS3_D_LINE_SECTION_END: 34,
+    VISUALIZATION_CONTROLS_END: 35,
+    TAKE_SCREENSHOTS: 36,
+    CANVAS_HOVER_DISPLAY: 37,
+    DUMMY_VALUE: 38,
 };
 
 let gVecParams = {};
@@ -557,21 +558,22 @@ createSelectionList(controls, 10, 0, "Method type", [ "Restricted",  "Unrestrict
 createScalarParameterSlider(controls, 11, "Zoom out level", "float", {'value': 1.0, 'min': 0.5, 'max': 10.0, 'step': 0.01});
 createCheckbox(controls, 12, "Show total electron density", true);
 createScalarParameterSlider(controls, 13, "Which orbital", "int", {'value': 3, 'min': 0, 'max': 50});
-createScalarParameterSlider(controls, 14, "Particle count upon reset", "int", {'value': 65536, 'min': 8192, 'max': 1048576, 'step': 4096});
+createCheckbox(controls, 14, "Compute repulsion-exchange on GPU", false);
+createScalarParameterSlider(controls, 15, "Particle count upon reset", "int", {'value': 65536, 'min': 8192, 'max': 1048576, 'step': 4096});
 let subControls0 = createSubDiv(controls, "Visualization Controls", "");
-createSelectionList(subControls0, 16, 0, "Visualization select", [ "Volume render",  "Three orthogonal planar slices"]);
-createCheckbox(subControls0, 17, "Use perspective projection", true);
-createScalarParameterSlider(subControls0, 18, "Overall scaling", "float", {'value': 1.0, 'min': 0.0, 'max': 2.0, 'step': 0.01});
+createSelectionList(subControls0, 17, 0, "Visualization select", [ "Volume render",  "Three orthogonal planar slices"]);
+createCheckbox(subControls0, 18, "Use perspective projection", true);
+createScalarParameterSlider(subControls0, 19, "Overall scaling", "float", {'value': 1.0, 'min': 0.0, 'max': 2.0, 'step': 0.01});
 let subControls1 = createSubDiv(subControls0, "Volume Render Controls", "");
-createCheckbox(subControls1, 20, "Linear interpolation", false);
-createScalarParameterSlider(subControls1, 21, "Alpha brightness", "float", {'value': 2.0, 'min': 0.0, 'max': 10.0, 'step': 0.01});
-createScalarParameterSlider(subControls1, 22, "Color brightness", "float", {'value': 1.0, 'min': 0.0, 'max': 10.0, 'step': 0.01});
-createVectorParameterSliders(subControls1, 23, "Volume dimensions", "IVec3", {'value': [128, 128, 192], 'min': [16, 16, 16], 'max': [512, 512, 512], 'step': [2, 2, 4]});
-createCheckbox(subControls1, 24, "Enable bloom", true);
-createScalarParameterSlider(subControls1, 25, "Bloominess", "int", {'value': 5, 'min': 0, 'max': 10});
+createCheckbox(subControls1, 21, "Linear interpolation", false);
+createScalarParameterSlider(subControls1, 22, "Alpha brightness", "float", {'value': 2.0, 'min': 0.0, 'max': 10.0, 'step': 0.01});
+createScalarParameterSlider(subControls1, 23, "Color brightness", "float", {'value': 1.0, 'min': 0.0, 'max': 10.0, 'step': 0.01});
+createVectorParameterSliders(subControls1, 24, "Volume dimensions", "IVec3", {'value': [128, 128, 192], 'min': [16, 16, 16], 'max': [512, 512, 512], 'step': [2, 2, 4]});
+createCheckbox(subControls1, 25, "Enable bloom", true);
+createScalarParameterSlider(subControls1, 26, "Bloominess", "int", {'value': 5, 'min': 0, 'max': 10});
 let subControls2 = createSubDiv(subControls0, "Three Orthogonal Planar Slices Controls", "");
-createVectorParameterSliders(subControls2, 28, "Planar slices offsets (in normalized coordinates) for xy, yz, xz", "Vec3", {'value': [0.5, 0.5, 0.5], 'min': [0.0, 0.0, 0.0], 'max': [1.0, 1.0, 1.0], 'step': [0.001, 0.001, 0.001]});
+createVectorParameterSliders(subControls2, 29, "Planar slices offsets (in normalized coordinates) for xy, yz, xz", "Vec3", {'value': [0.5, 0.5, 0.5], 'min': [0.0, 0.0, 0.0], 'max': [1.0, 1.0, 1.0], 'step': [0.001, 0.001, 0.001]});
 let subControls3 = createSubDiv(subControls0, "Arrows Plot", "");
-createVectorParameterSliders(subControls3, 31, "Arrows dimensions", "IVec3", {'value': [8, 8, 8], 'min': [8, 8, 8], 'max': [128, 128, 128]});
-createCheckbox(subControls3, 32, "Use conical arrows", false);
-createHoveringLabelOnCanvas(36, "");
+createVectorParameterSliders(subControls3, 32, "Arrows dimensions", "IVec3", {'value': [8, 8, 8], 'min': [8, 8, 8], 'max': [128, 128, 128]});
+createCheckbox(subControls3, 33, "Use conical arrows", false);
+createHoveringLabelOnCanvas(37, "");

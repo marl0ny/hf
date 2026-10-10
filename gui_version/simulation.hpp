@@ -21,7 +21,7 @@ struct Frames {
     Quad data_reduce;
     Quad bf_spec1, bf_spec2, primitives;
     Quad indices;
-    Quad re;
+    Quad re1, re2;
     struct {
         Quad debug_ind;
         Quad overlap_coeff;
@@ -96,8 +96,6 @@ class Simulation {
     std::vector<unsigned char> m_image_rgba_arr;
     std::vector<unsigned char> m_image_data;
     enum {VOL_RENDER_VIEW=0, PLANAR_SLICES_VIEW=1};
-
-    void debug_stuff();
     
     const RenderTarget
     &view_volume_render(
@@ -152,7 +150,7 @@ class Simulation {
         const SimParams &params, Quaternion rotation, float scale,
         const std::vector<Vec2> &cursor_positions
     );
-
+    void debug_stuff();
     spatial::Vector get_position_of_cursor(
         const SimParams &params,
         const Vec2 &cursor_positions,

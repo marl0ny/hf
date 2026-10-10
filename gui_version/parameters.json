@@ -40,6 +40,9 @@
     "whichOrbitalSliderVal": {
         "name": "Which orbital", "type": "int", "value": 3, "min": 0, "max": 50
     },
+    "computeRepExcOnGPU": {
+        "name": "Compute repulsion-exchange on GPU", "type": "bool", "value": false
+    },
     "numberOfParticles": {
         "name": "Particle count upon reset", "type": "int", "value": 65536, "min": 8192, "max": 1048576, "step": 4096},
 

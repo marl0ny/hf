@@ -30,7 +30,11 @@ uniform sampler2D basisFunctionSpec1Tex;
 uniform sampler2D basisFunctionSpec2Tex;
 uniform sampler2D primitivesTex;
 uniform sampler2D indicesTex;
+uniform sampler2D previousSumTex;
 uniform int numberOfBasisFunctions;
+uniform int maxNumberOfPrimitives;
+uniform ivec4 primitiveIndices;
+uniform int maxAngularIter;
 
 const int DEBUG_COULOMB = 1;
 const int DEBUG_OVERLAP = 2;
@@ -78,7 +82,17 @@ Am. J. Phys. 55, 762–763 (1987)
 */
 float erf(float x) {
     #if __VERSION__ > 150
-    return tanh(167.0/148.0*x + 11.0/109.0*x*x*x);
+    // float arg = (167.0/148.0)*x + (11.0/109.0)*(x*x*x);
+    float a = (167.0/148.0), b = (11.0/109.0), c = 0.0;
+    // float a = 1.12860381e+00, b= 1.02606209e-01, c = -1.08902527e-03;
+    float arg = a*x + b*(x*x*x) + c*(x*x*x*x*x);
+    if (arg > 10.0)
+        return 1.0;
+    else if (arg < -10.0)
+        return -1.0;
+    // s = exp(ix) - exp(-ix)/(2i)
+    // c = (exp(ix) + exp(-ix))/2
+    return tanh(arg);
     #else
     // TODO!!!
     return 0.0;
@@ -102,7 +116,8 @@ float boysFuncRecurseUpwards(float x, int n) {
     }
     float val = (mul(oneHalf, cVal)).r;
     for (int n_iter = 12; n_iter > n; n_iter--) {
-        val = x/(n_iter - 0.5)*val + exp(-x)/(2.0*(n_iter - 0.5));
+        val = x/(float(n_iter) - 0.5)*val 
+            + exp(-x)/(2.0*(float(n_iter) - 0.5));
     }
     return val;
 }
@@ -113,19 +128,21 @@ equation (4) for the n = 0 base if (hex_n_a1_a2 == , and (2) for the recursion r
 that goes to zero. */
 float boysFuncRecurseToZero(float x, int n) {
     float val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
+    float bx = 0.5*exp(-x)/x;
     for (int n_iter = 1; n_iter <= n; n_iter++)
-        val = ((n_iter - 0.5)/x)*val - 0.5*exp(-x)/x;
+        val = ((float(n_iter) - 0.5)/x)*val - bx;
     return val;
 }
 
 float bf(float x, int n) {
-    if (x == 0)
+    if (abs(x) < 1e-60)
         return 1.0/(2.0*float(n) + 1.0);
-    float y = 1.0;
-    int n_max = 12;
-    for (int j = 1; j <= n_max; j++) // See I.
-        y *= (j - 0.5);
-    float z = pow(y, 1.0/float(n_max));
+    // float y = 1.0;
+    // int nMax = 12;
+    // for (int j = 1; j <= nMax; j++) // See I.
+    //     y *= (j - 0.5);
+    // float z = pow(y, 1.0/float(nMax));
+    float z = 4.5425955121971775;
     if (abs(x) < z)
         return boysFuncRecurseUpwards(x, n);
     else
@@ -133,7 +150,12 @@ float bf(float x, int n) {
 }
 
 float pw(float a, int b) {
-    float sgn = (a < 0.0 && mod(b, 2) == 1)? -1.0: 1.0;
+    // if (a < 0.0)
+    //     return ((mod(b, 2) == 1)? -1.0: 1.0)*pow(abs(a), float(b));
+    // return pow(a, float(b));
+    float sgn = 1.0;
+    if (a < 0.0 && abs(mod(float(b), float(2))) > 1e-60)
+        sgn = -1.0;
     return sgn*pow(abs(a), float(b));
 }
 
@@ -724,7 +746,7 @@ float repulsionInner(
     float eps1 = 1e-40;
     float val = 0.0;
 
-    for (int jx = 0; jx < (a3.x + a4.x + 1); jx++) {
+    for (int jx = 0; jx < maxAngularIter && jx < (a3.x + a4.x + 1); jx++) {
         
         float overlapX 
             = overlapCoefficient(
@@ -733,6 +755,7 @@ float repulsionInner(
                 r4.x, a4.x, e4);
         
         for (int jy = 0; 
+             jy < maxAngularIter && 
              abs(overlapX) > eps1 && jy < (a3.y + a4.y + 1); jy++) {
             
             float overlapY 
@@ -742,6 +765,7 @@ float repulsionInner(
                     r4.y, a4.y, e4);
             
             for (int jz = 0;
+                 jz < maxAngularIter &&
                  abs(overlapY) > eps1 && jz < (a3.z + a4.z + 1); jz++) {
                 
                 float overlapZ 
@@ -752,7 +776,9 @@ float repulsionInner(
                 float overlaps = overlapX*overlapY*overlapZ;
                 // ivec3 indices, int n, float orbExp, vec4 r12)
 
-                float factor = (mod(jx + jy + jz, 2) == 1)? -1.0: 1.0;
+                // float factor = (mod(jx + jy + jz, 2) == 1)? -1.0: 1.0;
+                float factor = (mod(float(jx + jy + jz), 2.0) > 1e-30)? 
+                    -1.0: 1.0;
                 if (abs(overlaps) > eps1) {
                     val += factor * overlaps * coulombCoefficient(
                             ivec3(ix + jx, iy + jy, iz + jz), 0,
@@ -782,7 +808,8 @@ float repulsion(
     float eps1 = 1e-40;
     float val = 0.0;
 
-    for (int ix = 0; ix < (a1.x + a2.x + 1); ix++) {
+    for (int ix = 0;
+         ix < maxAngularIter && ix < (a1.x + a2.x + 1); ix++) {
         
         float overlapX 
             = overlapCoefficient(
@@ -791,7 +818,8 @@ float repulsion(
                 r2.x, a2.x, e2);
         
         for (int iy = 0; 
-             abs(overlapX) > eps1 && iy < (a1.y + a2.y + 1); iy++) {
+             iy < maxAngularIter
+             && abs(overlapX) > eps1 && iy < (a1.y + a2.y + 1); iy++) {
             
             float overlapY 
                 = overlapCoefficient(
@@ -800,7 +828,8 @@ float repulsion(
                     r2.y, a2.y, e2);
             
             for (int iz = 0;
-                 abs(overlapY) > eps1 && iz < (a1.z + a2.z + 1); iz++) {
+                 iz < maxAngularIter
+                 && abs(overlapY) > eps1 && iz < (a1.z + a2.z + 1); iz++) {
                 
                 float overlapZ 
                     = overlapCoefficient(
@@ -811,8 +840,7 @@ float repulsion(
 
                 if (abs(overlaps) > eps1)
                     val += 
-                        1.0 / (orbExpL*orbExpR*sqrt(orbExpL + orbExpR))
-                        * overlaps
+                        overlaps
                         * repulsionInner(
                             r3, a3, e3, r4, a4, e4,
                             ix, iy, iz, orbExp, rLR
@@ -821,8 +849,8 @@ float repulsion(
             }
         }
     }
-    val = val*(2.0*pow(PI, (5.0/2.0)));
-    return val*amplitude;
+    return amplitude*val*(2.0*pow(PI, (5.0/2.0))) 
+        / (orbExpL*orbExpR*sqrt(orbExpL + orbExpR));
 
 }
 
@@ -841,79 +869,77 @@ void main () {
     int countJ = int(texture2D(basisFunctionSpec1Tex, indJ).w);
     int countK = int(texture2D(basisFunctionSpec1Tex, indK).w);
     int countL = int(texture2D(basisFunctionSpec1Tex, indL).w);
-    vec3 angI = texture2D(basisFunctionSpec2Tex, indI).xyz;
-    ivec3 angularI = ivec3(int(angI.x), int(angI.y), int(angI.z));
-    vec3 angJ = texture2D(basisFunctionSpec2Tex, indJ).xyz;
-    ivec3 angularJ = ivec3(int(angJ.x), int(angJ.y), int(angJ.z));
-    vec3 angK = texture2D(basisFunctionSpec2Tex, indK).xyz;
-    ivec3 angularK = ivec3(int(angK.x), int(angK.y), int(angK.z));
-    vec3 angL = texture2D(basisFunctionSpec2Tex, indL).xyz;
-    ivec3 angularL = ivec3(int(angL.x), int(angL.y), int(angL.z));
-    float sum = 0.0;
-    // for (int i = 0; i < countI; i++) {
-    //     for (int j = 0; j < countJ; j++) {
-    //         for (int k = 0; k < countK; k++) {
-    //             for (int l = 0; l < countL; l++) {
-    //                 vec2 primIndI = vec2(
-    //                     (float(i) + 0.5)/float(countI), indI[0]);
-    //                 vec2 primIndJ = vec2(
-    //                     (float(j) + 0.5)/float(countJ), indJ[0]);
-    //                 vec2 primIndK = vec2(
-    //                     (float(k) + 0.5)/float(countK), indK[0]);
-    //                 vec2 primIndL = vec2(
-    //                     (float(l) + 0.5)/float(countL), indL[0]);
-    //                 float ampI = texture2D(primitivesTex, primIndI)[0];
-    //                 float eI = texture2D(primitivesTex, primIndI)[1];
-    //                 float ampJ = texture2D(primitivesTex, primIndJ)[0];
-    //                 float eJ = texture2D(primitivesTex, primIndJ)[1];
-    //                 float ampK = texture2D(primitivesTex, primIndK)[0];
-    //                 float eK = texture2D(primitivesTex, primIndK)[1];
-    //                 float ampL = texture2D(primitivesTex, primIndL)[0];
-    //                 float eL = texture2D(primitivesTex, primIndL)[1];
-    //                 // sum += eI + eJ + eK + eL;
-    //                 // sum += length(rI + rJ + rK + rL);
-    //                 sum += repulsion(
-    //                     ampI, rI, angularI, eI,
-    //                     ampJ, rJ, angularJ, eJ,
-    //                     ampK, rK, angularK, eK,
-    //                     ampL, rL, angularL, eL
-    //                 );
-
-    //             }
-    //         }
-    //     }
-    // }
-    sum = indI.x*float(numberOfBasisFunctions);
-    fragColor = vec4(sum);
-
-
-    
-    vec3 fDebugInd = texture2D(debugIndTex, UV).xyz;
-    ivec3 debugInd = ivec3(
-        int(fDebugInd.x), int(fDebugInd.y), int(fDebugInd.z)
-    );
-
-
-    // fragColor = vec4(fDebugInd.x + fDebugInd.y + fDebugInd.z);
-    if (debug == DEBUG_COULOMB) { 
-        // float coulombCoefficient(
-        // ivec3 indices, int n, float orbExp, vec3 r12)
-        float val = coulombCoefficient(
-            debugInd, debugCoulombFactor, debugCoulombOrbExp,
-            debugCoulombR);
-        fragColor = vec4(val);
-    } 
-    else if (debug == DEBUG_OVERLAP) {
-        int n = debugInd[0];
-        int a1 = debugInd[1];
-        int a2 = debugInd[2];
-        float e1 = debugOverlapExponents[0];
-        float e2 = debugOverlapExponents[1];
-        float x1 = debugOverlapPositions[0];
-        float x2 = debugOverlapPositions[1];
-        float val = overlapCoefficient(
-             n, x1, a1, e1, x2, a2, e2);
-        fragColor = vec4(val);
+    if (primitiveIndices[0] >= countI ||
+        primitiveIndices[1] >= countJ ||
+        primitiveIndices[2] >= countK ||
+        primitiveIndices[3] >= countL) {
+        fragColor = texture2D(previousSumTex, UV);
+    } else {
+        vec3 angI = texture2D(basisFunctionSpec2Tex, indI).xyz;
+        ivec3 angularI = ivec3(int(angI.x), int(angI.y), int(angI.z));
+        vec3 angJ = texture2D(basisFunctionSpec2Tex, indJ).xyz;
+        ivec3 angularJ = ivec3(int(angJ.x), int(angJ.y), int(angJ.z));
+        vec3 angK = texture2D(basisFunctionSpec2Tex, indK).xyz;
+        ivec3 angularK = ivec3(int(angK.x), int(angK.y), int(angK.z));
+        vec3 angL = texture2D(basisFunctionSpec2Tex, indL).xyz;
+        ivec3 angularL = ivec3(int(angL.x), int(angL.y), int(angL.z));
+        vec2 primIndI = vec2(
+            (float(primitiveIndices[0]) + 0.5)/float(maxNumberOfPrimitives),
+            indI[0]);
+        vec2 primIndJ = vec2(
+            (float(primitiveIndices[1]) + 0.5)/float(maxNumberOfPrimitives),
+            indJ[0]);
+        vec2 primIndK = vec2(
+            (float(primitiveIndices[2]) + 0.5)/float(maxNumberOfPrimitives),
+            indK[0]);
+        vec2 primIndL = vec2(
+            (float(primitiveIndices[3]) + 0.5)/float(maxNumberOfPrimitives),
+            indL[0]);
+        float ampI = texture2D(primitivesTex, primIndI)[0];
+        float eI = texture2D(primitivesTex, primIndI)[1];
+        float ampJ = texture2D(primitivesTex, primIndJ)[0];
+        float eJ = texture2D(primitivesTex, primIndJ)[1];
+        float ampK = texture2D(primitivesTex, primIndK)[0];
+        float eK = texture2D(primitivesTex, primIndK)[1];
+        float ampL = texture2D(primitivesTex, primIndL)[0];
+        float eL = texture2D(primitivesTex, primIndL)[1];
+        float sumTerm = repulsion(
+            ampI, rI, angularI, eI,
+            ampJ, rJ, angularJ, eJ,
+            ampK, rK, angularK, eK,
+            ampL, rL, angularL, eL
+        );
+        fragColor = vec4(sumTerm) + texture2D(previousSumTex, UV);
     }
-    // fragColor = vec4(float(dot(angularI + angularJ + angularK + angularL, angularI + angularJ + angularK + angularL)));
+
+    if (debug > 0) {
+    
+        vec3 fDebugInd = texture2D(debugIndTex, UV).xyz;
+        ivec3 debugInd = ivec3(
+            int(fDebugInd.x), int(fDebugInd.y), int(fDebugInd.z)
+        );
+
+
+        // fragColor = vec4(fDebugInd.x + fDebugInd.y + fDebugInd.z);
+        if (debug == DEBUG_COULOMB) { 
+            // float coulombCoefficient(
+            // ivec3 indices, int n, float orbExp, vec3 r12)
+            float val = coulombCoefficient(
+                debugInd, debugCoulombFactor, debugCoulombOrbExp,
+                debugCoulombR);
+            fragColor = vec4(val);
+        } 
+        else if (debug == DEBUG_OVERLAP) {
+            int n = debugInd[0];
+            int a1 = debugInd[1];
+            int a2 = debugInd[2];
+            float e1 = debugOverlapExponents[0];
+            float e2 = debugOverlapExponents[1];
+            float x1 = debugOverlapPositions[0];
+            float x2 = debugOverlapPositions[1];
+            float val = overlapCoefficient(
+                n, x1, a1, e1, x2, a2, e2);
+            fragColor = vec4(val);
+        }
+    }
 }
