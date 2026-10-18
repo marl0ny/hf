@@ -8,7 +8,7 @@
 // #define THREAD_COUNT 0
 
 #ifndef __EMSCRIPTEN__
-#define THREAD_COUNT 1
+#define THREAD_COUNT 10
 #else
 #define THREAD_COUNT 1
 #endif

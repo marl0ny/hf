@@ -1,5 +1,6 @@
 from sympy import Symbol, symbols, Function
 from sympy import exp
+from sympy import diff
 import re
 
 
@@ -25,17 +26,31 @@ if __name__ == '__main__':
     e1 = Symbol('e1')
     e2 = Symbol('e2')
     r = Symbol('r')
+    r2 = r*r
+    r3 = r*r*r
     for a1 in range(5):
         for a2 in range(5):
             for n in range(a1 + a2 + 1):
                 print(f'        case 0x{n}{a1}{a2}:')
                 expr = overlap_coefficient(n, a1, a2, r, e1, e2
                                         ).simplify()
+                diff_expr = diff(expr, r)
                 for i in range(9, 1, -1):
                     expr = expr.subs(e1**i, f'e1_{i}')
                     expr = expr.subs(e2**i, f'e2_{i}')
                     expr = expr.subs((e1 + e2)**i, f'e1e2_{i}')
                     expr = expr.subs(r**i, f'r{i}')
+                    diff_expr = diff_expr.subs(e1**i, f'e1_{i}')
+                    diff_expr = diff_expr.subs(e2**i, f'e2_{i}')
+                    diff_expr = diff_expr.subs((e1 + e2)**i, f'e1e2_{i}')
+                    diff_expr = diff_expr.subs(r**i, f'r{i}')
+                # print(expr)
+                # print(diff_expr)
+                # for i in range(9, 1, -1):
+                #     expr = expr.subs(e1**i, f'e1_{i}')
+                #     expr = expr.subs(e2**i, f'e2_{i}')
+                #     expr = expr.subs((e1 + e2)**i, f'e1e2_{i}')
+                #     expr = expr.subs(r**i, f'r{i}')
                 print('            return ', str(expr) + ';')
                 print('            break;')
 
