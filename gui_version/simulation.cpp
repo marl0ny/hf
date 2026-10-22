@@ -1409,7 +1409,7 @@ void Simulation::debug_stuff() {
     }
     if (compare_coulomb_coeff_values) {
         int index_count = 0;
-        for (int i = 0; i <= 4; i++) {
+        for (int i = 0; i <= 7; i++) {
             for (int j = 0; j <= i; j++) {
                 for (int k = 0; k <= j; k++) {
                     indices[index_count] = (float)i;
@@ -1431,6 +1431,8 @@ void Simulation::debug_stuff() {
         double orb_exp = 100.0;
         // double orb_exp = double(std::rand() % 100) + 5.0;
         double x = 5.0, y = 2.0, z = 3.0;
+        printf("Boys function argument: %g\n", orb_exp*(x*x + y*y + z*z));
+        // double x = 0.125, y = 0.125, z = 0.125;
         int coulomb_factor = 0;
         m_frames.debugs.coulomb_coeff.draw(
             m_programs.re_compute,
@@ -1445,7 +1447,7 @@ void Simulation::debug_stuff() {
         m_frames.debugs.coulomb_coeff.fill_array_with_contents(&res[0]);
         index_count = 0;
         printf("Orbital exponent: %g\n", orb_exp);
-        for (int i = 0; i <= 4; i++) {
+        for (int i = 0; i <= 7; i++) {
             for (int j = 0; j <= i; j++) {
                 for (int k = 0; k <= j; k++) {
                     printf("%d, %d, %d\t%g\n", i, j, k, res[index_count]);

@@ -212,6 +212,55 @@ def print_glsl_implementation(min_angular, max_angular):
     print('Time taken: ', t2 - t1)
 
 
+def print_glsl_implementation_v2(min_angular, max_angular):
+    t1 = perf_counter()
+    for i in range(min_angular, max_angular + 1):
+        for j in range(0, i+1):
+            for k in range(0, j+1):
+                val = coulomb_coefficient(
+                    i, j, k, 0, e, x, y, z).subs(
+                        x**2 + y**2 + z**2, r2
+                        ).factor()
+                val = val.subs(
+                            x**6, x6
+                        ).subs(
+                            y**6, y6
+                        ).subs(
+                            z**6, z6
+                        ).subs(
+                            x**4, x4
+                        ).subs(
+                            y**4, y4
+                        ).subs(
+                            z**4, z4
+                        ).subs(
+                            x**2, x2
+                        ).subs(
+                            y**2, y2
+                        ).subs(
+                            z**2, z2
+                        ).simplify()
+                # val = val.subs((-2.0)**n, 'neg2_pow_n')
+                rep_val = val
+                for pow_val in range(5*max_angular, 0, -1):
+                    rep_val = rep_val.subs(boys_func(e*r2, pow_val), f'bF{pow_val}')
+                    rep_val = rep_val.subs(power(e, pow_val), f'ep{pow_val}')
+                bf_set = set(re.findall('bF[0-9]+', str(rep_val)))
+                str_expr = str(rep_val)
+                for bf in bf_set:
+                    pow_val = bf[2:]
+                    # print(pow_val)
+                    str_expr = re.sub(bf, f'bF[{pow_val}]', str_expr)
+                if (i + j + k) == 0:
+                    print(f'    if (hexIJK == 0x{i}{j}{k})' + ' {')
+                else:
+                    print(f'    else if (hexIJK == 0x{i}{j}{k})' + ' {')
+                print(f'        return {str_expr};')
+                print('    }')
+    t2 = perf_counter()
+    print('Time taken: ', t2 - t1)
+
+
 
 def get_glsl_helper_functions(amount):
     y_args = ''
@@ -244,4 +293,5 @@ def get_glsl_helper_functions(amount):
         y_args, n_args, set_vals3, y_args2, n_args2, y_args2, n_args2))
 
 
-print_glsl_implementation(0, 6)
+if __name__ == '__main__':
+    print_glsl_implementation_v2(6, 6)

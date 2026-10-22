@@ -592,7 +592,7 @@ void build_arrays::fill(
         if (max_angular_i > max_angular)
             max_angular = max_angular_i;
     }
-    printf("%d\n", max_angular);
+    printf("Max angular: %d\n", max_angular);
     Quad *rep_exc_ptrs[2] = {&rep_exc1, &rep_exc2};
     for (int i = 0; i < max_primitives_count; i++) {
         for (int j = 0; j < max_primitives_count; j++) {
@@ -620,7 +620,6 @@ void build_arrays::fill(
             }
         }
     }
-    printf("This is reached.\n");
     rep_exc_ptrs[1]->fill_array_with_contents((float *)&rep_exc_arr[0]);
     indices_q.fill_array_with_contents((float *)&indices_final[0]);
     rep_exc_ptrs[0]->clear();

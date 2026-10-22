@@ -65,21 +65,22 @@ IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 ##############################################################################
 ##############################################################################
 
-TARGET = ${PWD}/program
-FLAGS = -O3 -g -ffast-math
-FLAGS2 = 
-CPP_COMPILE = clang++ -std=c++17
+# TARGET = ${PWD}/program
+# FLAGS = -O3 -g -ffast-math
+# FLAGS_NO_OPT = -std=c++17 -O3 -ffast-math
+# FLAGS2 = 
+# CPP_COMPILE = clang++ -std=c++17
 
-# TARGET = main.js
-# FLAGS = -std=c++17 -O3 -ffast-math
-# FLAGS_NO_OPT = -std=c++17 -O0 -ffast-math
-# FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
-# 	-s ALLOW_MEMORY_GROWTH=1 \
-# 	-lembind --embed-file shaders
-# CPP_COMPILE = emcc
-# LIBS = 
-# IMGUI_SOURCES =
-# IMGUI_OBJECTS = 
+TARGET = main.js
+FLAGS = -std=c++17 -O3 -ffast-math
+FLAGS_NO_OPT = -std=c++17 -O0 -ffast-math
+FLAGS2 = -v -s WASM=2 -s USE_GLFW=3 -s MAX_WEBGL_VERSION=2 \
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-lembind --embed-file shaders
+CPP_COMPILE = emcc
+LIBS = 
+IMGUI_SOURCES =
+IMGUI_OBJECTS = 
 
 ##############################################################################
 ##############################################################################
@@ -150,7 +151,7 @@ OBJECTS = ${TOP_LEVEL_OBJECTS} \
 SHADERS := $(wildcard ./shaders/**/*.frag) $(wildcard ./shaders/**/*.vert)
 
 ${TARGET}: ${OBJECTS} ${SHADERS}
-	${CPP_COMPILE} ${FLAGS} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
+	${CPP_COMPILE} ${FLAGS_NO_OPT} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
 
 ${TOP_LEVEL_OBJECTS}: ${TOP_LEVEL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${TOP_LEVEL_SOURCES} ${INCLUDE}
