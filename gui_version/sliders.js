@@ -549,7 +549,7 @@ let controls = document.getElementById('controls');
 createLinkedLabel(controls, 0, "Source", "https://github.com/marl0ny/hf");
 createSelectionList(controls, 1, 0, "Mouse usage", [ "Rotate only",  "Place atom"]);
 createSelectionList(controls, 3, 0, "Grid discretization size", [ "64x64x64",  "128x128x128",  "256x256x256"]);
-createSelectionList(controls, 5, 1, "Preset Compounds", [ "Hydrogen molecule",  "Water",  "Carbon Dioxide",  "Oxygen Molecule",  "Methane",  "Acetylene",  "Benzene (Will take a loong time!)"]);
+createSelectionList(controls, 5, 1, "Preset Compounds", [ "Hydrogen molecule",  "Water",  "Carbon Dioxide",  "Oxygen Molecule",  "Methane",  "Acetylene",  "Benzene (Will take a loong time!)",  "Iron"]);
 createSelectionList(controls, 6, 0, "Atom dropdown", [ "H",  "He",  "Li",  "Be",  "B",  "C",  "N",  "O",  "F",  "Ne",  "Na",  "Mg",  "Al",  "Si",  "P",  "S",  "Cl",  "Ar",  "K",  "Ca",  "Sc",  "Ti",  "V",  "Cr",  "Mn",  "Fe",  "Co",  "Ni",  "Cu",  "Zn",  "Ga",  "Ge",  "As",  "Se",  "Br",  "Kr"]);
 createScalarParameterSlider(controls, 7, "Max # of SCF steps", "int", {'value': 20, 'min': 0, 'max': 30});
 createButton(controls, 8, "Solve");

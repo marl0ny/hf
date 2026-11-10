@@ -5,7 +5,7 @@ OrbitalsData get_atomic_description(int z, int &u_count, int &d_count) {
     switch (z) {
         case 1:
         u_count = 1, d_count = 0;
-        descr = atomic_data_descriptions::ORB_1P1E_1S21;
+        descr = atomic_data_descriptions::ORB_1P1E_1S3;
         break;
         case 2:
         u_count = 1, d_count = 1;

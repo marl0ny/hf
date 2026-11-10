@@ -13,7 +13,7 @@
         "name": "Volume dimensions", "type": "IVec3", "value": [64, 64, 64]},
     "presetCompoundsDropdown": {
         "name": "Preset Compounds", "type": "SelectionList", 
-        "value": "{1, {\"Hydrogen molecule\", \"Water\", \"Carbon Dioxide\", \"Oxygen Molecule\", \"Methane\", \"Acetylene\", \"Benzene (Will take a loong time!)\"}}"
+        "value": "{1, {\"Hydrogen molecule\", \"Water\", \"Carbon Dioxide\", \"Oxygen Molecule\", \"Methane\", \"Acetylene\", \"Benzene (Will take a loong time!)\", \"Iron\"}}"
     },
     "presetAtoms": {
         "name": "Atom dropdown", "type": "SelectionList",

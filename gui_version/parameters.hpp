@@ -45,7 +45,7 @@ struct SimParams {
     int texelSideLength = (int)(64);
     SelectionList texelSideLengthSelector = SelectionList{0, {"64x64x64", "128x128x128", "256x256x256"}};
     IVec3 dataTexelDimensions3D = (IVec3)(IVec3 {.ind={64, 64, 64}});
-    SelectionList presetCompoundsDropdown = SelectionList{1, {"Hydrogen molecule", "Water", "Carbon Dioxide", "Oxygen Molecule", "Methane", "Acetylene", "Benzene (Will take a loong time!)"}};
+    SelectionList presetCompoundsDropdown = SelectionList{1, {"Hydrogen molecule", "Water", "Carbon Dioxide", "Oxygen Molecule", "Methane", "Acetylene", "Benzene (Will take a loong time!)", "Iron"}};
     SelectionList presetAtoms = SelectionList{0, {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr"}};
     int maxNumberOfIterations = (int)(20);
     Button solve = Button{};

@@ -1,5 +1,5 @@
 from sympy import Symbol, symbols, Function
-from sympy import exp
+from sympy import exp, sqrt
 from sympy import diff
 import re
 
@@ -69,6 +69,10 @@ def print_glsl_implementation():
                 expr = overlap_coefficient(n, a1, a2, r, e1, e2
                                         ).simplify()
                 expr = expr.subs(exp_val, 'expVal')
+                x1, y1, z1 = Symbol('x1'), Symbol ('y1'), Symbol('z1')
+                x2, y2, z2 = Symbol('x2'), Symbol ('y2'), Symbol('z2')
+                expr2 \
+                    = expr.subs(r, sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2))
                 diff_expr = diff(expr, r)
                 for i in range(9, 1, -1):
                     expr = expr.subs(e1**i, f'e1_{i}')
@@ -87,6 +91,7 @@ def print_glsl_implementation():
                 #     expr = expr.subs((e1 + e2)**i, f'e1e2_{i}')
                 #     expr = expr.subs(r**i, f'r{i}')
                 print(f'        overlaps[{n}][index] = {expr};')
+                print(f'        dOdr[{n}][index] = {diff_expr};')
                 # print('            return ', str(expr) + ';')
                 # print(f'        }}')
             print(f'    }}')

@@ -111,12 +111,22 @@ static inline fp_type boys_func_recurse_upwards(fp_type x, int n) {
     // return boys_func(x, n);
 }
 
+static inline fp_type custom_erf(float x) {
+    fp_type a = (167.0/148.0), b = (11.0/109.0), c = 0.0;
+    fp_type arg = a*x + b*(x*x*x) + c*(x*x*x*x*x);
+    if (arg > 10.0)
+        return 1.0;
+    else if (arg < -10.0)
+        return -1.0;
+    return tanh(arg);
+}
+
 /* See "A fast algorithm for computing the Boys function"
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (4) for the n = 0 base case, and (2) for the recursion relation
 that goes to zero. */
 static inline fp_type boys_func_recurse_to_zero(fp_type x, int n) {
-    fp_type val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
+    fp_type val = sqrt(PI)*custom_erf(sqrt(x))/(2.0*sqrt(x));
     for (int n_iter = 1; n_iter <= n; n_iter++)
         val = ((n_iter - 0.5)/x)*val - 0.5*exp(-x)/x;
     return val;

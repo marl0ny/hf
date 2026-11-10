@@ -113,6 +113,8 @@ void imgui_controls(void *void_params) {
             s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 5);
         if (ImGui::MenuItem("Benzene (Will take a loong time!)"))
             s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 6);
+        if (ImGui::MenuItem("Iron"))
+            s_selection_set(params->PRESET_COMPOUNDS_DROPDOWN, 7);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Atom dropdown")) {

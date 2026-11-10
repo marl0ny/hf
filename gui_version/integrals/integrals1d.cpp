@@ -117,9 +117,14 @@ fp_type coulomb_coefficient(int i, int j, int k, int n,
     } else {
         // printf("%d\n", std::max(i, std::max(j, k)));
     }
-    puts("Computing Coulomb coefficient recursively...");
+    // puts("Computing Coulomb coefficient recursively...");
 
-    if (i == 0 && j == 0 && k == 0) {
+    /*
+    R_n_5 = t*R_(n+1)_3 + x*R_(n+1)_4
+    R_(n+1)_4 = 
+    */
+
+    /* if (i == 0 && j == 0 && k == 0) {
         return pow((-2*orb_exp), n)
         // *from_boost_library::boys(orb_exp*(dot(r12, r12)), n);
         *beylkin_sharma::boys(orb_exp*(dot(r12, r12)), n);
@@ -134,7 +139,7 @@ fp_type coulomb_coefficient(int i, int j, int k, int n,
     } else {
         return (k-1)*coulomb_coefficient(i, j, k-2, n+1, orb_exp, r12)
                + r12.z*coulomb_coefficient(i, j, k-1, n+1, orb_exp, r12);
-    }
+    }*/
 }
 /* 
 fp_type coulomb_coefficient(int i, int j, int k, int n,
@@ -211,123 +216,88 @@ static fp_type coulomb_coefficient_helper(
     fp_type x = s12.x, y = s12.y, z = s12.z;
     fp_type x2 = x*x, y2 = y*y, z2 = z*z;
     fp_type x4 = x2*x2, y4 = y2*y2, z4 = z2*z2;
+    fp_type x6 = x4*x2;
+    fp_type y6 = y4*y2;
+    fp_type z6 = z4*z2;
+    fp_type ep1 = e;
+    fp_type ep2 = e*e;
+    fp_type ep3 = e*e*e;
+    fp_type ep4 = e*e*e*e;
+    fp_type ep5 = e*e*e*e*e;
+    fp_type ep6 = e*e*e*e*e*e;
+    fp_type ep7 = e*e*e*e*e*e*e;
 
     int hex_ijk = i*16*16 + j*16 + k;
+    int hexIJK = hex_ijk;
 
-    switch(hex_ijk) {
-
-        case 0x000:
-            return bf(e*r2, n)*pw(-2.0*e, n);
-            break;
-        case 0x100:
-            return x*bf(e*r2, n + 1)*pw(-2.0*e, n + 1);
-            break;
-        case 0x110:
-            return x*y*bf(e*r2, n + 2)*pw(-2.0*e, n + 2);
-            break;
-        case 0x111:
-            return x*y*z*bf(e*r2, n + 3)*pw(-2.0*e, n + 3);
-            break;
-        case 0x200:
-            return x2*bf(e*r2, n + 2)*pw(-2.0*e, n + 2) + 1.0*bf(e*r2, n + 1)*pw(-2.0*e, n + 1);
-            break;
-        case 0x210:
-            return y*(x2*bf(e*r2, n + 3)*pw(-2.0*e, n + 3) + 1.0*bf(e*r2, n + 2)*pw(-2.0*e, n + 2));
-            break;
-        case 0x211:
-            return y*z*(x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 1.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3));
-            break;
-        case 0x220:
-            return 1.0*x2*y2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 1.0*x2*bf(e*r2, n + 3)*pw(-2.0*e, n + 3) + 1.0*y2*bf(e*r2, n + 3)*pw(-2.0*e, n + 3) + 1.0*bf(e*r2, n + 2)*pw(-2.0*e, n + 2);
-            break;
-        case 0x221:
-            return 1.0*z*(x2*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + y2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + bf(e*r2, n + 3)*pw(-2.0*e, n + 3));
-            break;
-        case 0x222:
-            return 1.0*x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 1.0*y2*(x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + bf(e*r2, n + 4)*pw(-2.0*e, n + 4)) + z2*(1.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + y2*(x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 1.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5)) + 1.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4)) + 1.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3);
-            break;
-        case 0x300:
-            return x*(x2*bf(e*r2, n + 3)*pw(-2.0*e, n + 3) + 3.0*bf(e*r2, n + 2)*pw(-2.0*e, n + 2));
-            break;
-        case 0x310:
-            return x*y*(x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 3.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3));
-            break;
-        case 0x311:
-            return x*y*z*(x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x320:
-            return x*(1.0*x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + y2*(x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4)) + 3.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3));
-            break;
-        case 0x321:
-            return x*z*(1.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + y2*(x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5)) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x322:
-            return x*(1.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + y2*(1.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5)) + z2*(1.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + y2*(x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6)) + 3.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5)) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x330:
-            return x*y*(3.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + y2*(x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5)) + 9.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x331:
-            return x*y*z*(3.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + y2*(x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6)) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5));
-            break;
-        case 0x332:
-            return x*y*(3.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 1.0*y2*(x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6)) + z2*(3.0*x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + y2*(x2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*bf(e*r2, n + 7)*pw(-2.0*e, n + 7)) + 9.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6)) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5));
-            break;
-        case 0x333:
-            return x*y*z*(9.0*x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*y2*(x2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*bf(e*r2, n + 7)*pw(-2.0*e, n + 7)) + z2*(3.0*x2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + y2*(x2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*bf(e*r2, n + 8)*pw(-2.0*e, n + 8)) + 9.0*bf(e*r2, n + 7)*pw(-2.0*e, n + 7)) + 27.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6));
-            break;
-        case 0x400:
-            return 6.0*x2*bf(e*r2, n + 3)*pw(-2.0*e, n + 3) + 1.0*x4*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 3.0*bf(e*r2, n + 2)*pw(-2.0*e, n + 2);
-            break;
-        case 0x410:
-            return y*(6.0*x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 1.0*x4*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3));
-            break;
-        case 0x411:
-            return y*z*(6.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 1.0*x4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x420:
-            return 6.0*x2*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 6.0*x2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 1.0*x4*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 1.0*x4*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*y2*bf(e*r2, n + 4)*pw(-2.0*e, n + 4) + 3.0*bf(e*r2, n + 3)*pw(-2.0*e, n + 3);
-            break;
-        case 0x421:
-            return z*(6.0*x2*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 1.0*x4*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 1.0*x4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x422:
-            return 6.0*x2*y2*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 6.0*x2*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x2*z2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 1.0*x4*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 1.0*x4*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 1.0*x4*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 1.0*x4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y2*z2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*z2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4);
-            break;
-        case 0x430:
-            return y*(6.0*x2*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 18.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 1.0*x4*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*x4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 9.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4));
-            break;
-        case 0x431:
-            return y*z*(6.0*x2*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 1.0*x4*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*x4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5));
-            break;
-        case 0x432:
-            return y*(6.0*x2*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 6.0*x2*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*x2*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 1.0*x4*y2*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 1.0*x4*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*x4*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*x4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*y2*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 9.0*z2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5));
-            break;
-        case 0x433:
-            return y*z*(6.0*x2*y2*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 18.0*x2*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*x2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 54.0*x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 1.0*x4*y2*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 3.0*x4*y2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*x4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 9.0*x4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 9.0*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 9.0*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 27.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6));
-            break;
-        case 0x440:
-            return 36.0*x2*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x2*y4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*x2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 6.0*x4*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 1.0*x4*y4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*x4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 18.0*y2*bf(e*r2, n + 5)*pw(-2.0*e, n + 5) + 3.0*y4*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 9.0*bf(e*r2, n + 4)*pw(-2.0*e, n + 4);
-            break;
-        case 0x441:
-            return z*(36.0*x2*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 6.0*x2*y4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x4*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 1.0*x4*y4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*x4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5));
-            break;
-        case 0x442:
-            return 36.0*x2*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 36.0*x2*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 6.0*x2*y4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 6.0*x2*y4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*x2*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*x2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 6.0*x4*y2*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 6.0*x4*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 1.0*x4*y4*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 1.0*x4*y4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*x4*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*x4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*y2*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*y2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 3.0*y4*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 3.0*y4*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 9.0*z2*bf(e*r2, n + 6)*pw(-2.0*e, n + 6) + 9.0*bf(e*r2, n + 5)*pw(-2.0*e, n + 5);
-            break;
-        case 0x443:
-            return z*(36.0*x2*y2*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 108.0*x2*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 6.0*x2*y4*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 18.0*x2*y4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 18.0*x2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 54.0*x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 6.0*x4*y2*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 18.0*x4*y2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 1.0*x4*y4*z2*bf(e*r2, n + 11)*pw(-2.0*e, n + 11) + 3.0*x4*y4*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 3.0*x4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 9.0*x4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 54.0*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 3.0*y4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 9.0*y4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 9.0*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 27.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6));
-            break;
-        case 0x444:
-            return 216.0*x2*y2*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 36.0*x2*y2*z4*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 108.0*x2*y2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 36.0*x2*y4*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 6.0*x2*y4*z4*bf(e*r2, n + 11)*pw(-2.0*e, n + 11) + 18.0*x2*y4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 108.0*x2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*x2*z4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 54.0*x2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 36.0*x4*y2*z2*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 6.0*x4*y2*z4*bf(e*r2, n + 11)*pw(-2.0*e, n + 11) + 18.0*x4*y2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 6.0*x4*y4*z2*bf(e*r2, n + 11)*pw(-2.0*e, n + 11) + 1.0*x4*y4*z4*bf(e*r2, n + 12)*pw(-2.0*e, n + 12) + 3.0*x4*y4*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 18.0*x4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*x4*z4*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 9.0*x4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 108.0*y2*z2*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 18.0*y2*z4*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 54.0*y2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 18.0*y4*z2*bf(e*r2, n + 9)*pw(-2.0*e, n + 9) + 3.0*y4*z4*bf(e*r2, n + 10)*pw(-2.0*e, n + 10) + 9.0*y4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 54.0*z2*bf(e*r2, n + 7)*pw(-2.0*e, n + 7) + 9.0*z4*bf(e*r2, n + 8)*pw(-2.0*e, n + 8) + 27.0*bf(e*r2, n + 6)*pw(-2.0*e, n + 6);
-            break;
-
-
-        
-        default:
-            return 0.0;
-            break;
-
+    if (hexIJK == 0x000) {
+        return bf(e*r2, 0)*pw(e, 0);
+    }
+    else if (hexIJK == 0x100) {
+        return -2*ep1*x*bf(e*r2, 1);
+    }
+    else if (hexIJK == 0x110) {
+        return 4*ep2*x*y*bf(e*r2, 2);
+    }
+    else if (hexIJK == 0x111) {
+        return -8*ep3*x*y*z*bf(e*r2, 3);
+    }
+    else if (hexIJK == 0x200) {
+        return -2.0*ep1*bf(e*r2, 1) + 4.0*ep2*x2*bf(e*r2, 2);
+    }
+    else if (hexIJK == 0x210) {
+        return 4.0*ep2*y*bf(e*r2, 2) - 8.0*ep3*x2*y*bf(e*r2, 3);
+    }
+    else if (hexIJK == 0x211) {
+        return -8.0*ep3*y*z*bf(e*r2, 3) + 16.0*ep4*x2*y*z*bf(e*r2, 4);
+    }
+    else if (hexIJK == 0x220) {
+        return 4.0*ep2*bf(e*r2, 2) - 8.0*ep3*x2*bf(e*r2, 3) - 8.0*ep3*y2*bf(e*r2, 3) + 16.0*ep4*x2*y2*bf(e*r2, 4);
+    }
+    else if (hexIJK == 0x221) {
+        return -8.0*ep3*z*bf(e*r2, 3) + 16.0*ep4*x2*z*bf(e*r2, 4) + 16.0*ep4*y2*z*bf(e*r2, 4) - 32.0*ep5*x2*y2*z*bf(e*r2, 5);
+    }
+    else if (hexIJK == 0x222) {
+        return -8.0*ep3*bf(e*r2, 3) + 16.0*ep4*x2*bf(e*r2, 4) + 16.0*ep4*y2*bf(e*r2, 4) + 16.0*ep4*z2*bf(e*r2, 4) - 32.0*ep5*x2*y2*bf(e*r2, 5) - 32.0*ep5*x2*z2*bf(e*r2, 5) - 32.0*ep5*y2*z2*bf(e*r2, 5) + 64.0*ep6*x2*y2*z2*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x300) {
+        return 12.0*ep2*x*bf(e*r2, 2) - 8.0*ep3*x*x2*bf(e*r2, 3);
+    }
+    else if (hexIJK == 0x310) {
+        return -24.0*ep3*x*y*bf(e*r2, 3) + 16.0*ep4*x*x2*y*bf(e*r2, 4);
+    }
+    else if (hexIJK == 0x311) {
+        return 48.0*ep4*x*y*z*bf(e*r2, 4) - 32.0*ep5*x*x2*y*z*bf(e*r2, 5);
+    }
+    else if (hexIJK == 0x320) {
+        return -24.0*ep3*x*bf(e*r2, 3) + 16.0*ep4*x*x2*bf(e*r2, 4) + 48.0*ep4*x*y2*bf(e*r2, 4) - 32.0*ep5*x*x2*y2*bf(e*r2, 5);
+    }
+    else if (hexIJK == 0x321) {
+        return 48.0*ep4*x*z*bf(e*r2, 4) - 32.0*ep5*x*x2*z*bf(e*r2, 5) - 96.0*ep5*x*y2*z*bf(e*r2, 5) + 64.0*ep6*x*x2*y2*z*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x330) {
+        return 144.0*ep4*x*y*bf(e*r2, 4) - 96.0*ep5*x*x2*y*bf(e*r2, 5) - 96.0*ep5*x*y*y2*bf(e*r2, 5) + 64.0*ep6*x*x2*y*y2*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x400) {
+        return 12.0*ep2*bf(e*r2, 2) - 48.0*ep3*x2*bf(e*r2, 3) + 16.0*ep4*x4*bf(e*r2, 4);
+    }
+    else if (hexIJK == 0x410) {
+        return -24.0*ep3*y*bf(e*r2, 3) + 96.0*ep4*x2*y*bf(e*r2, 4) - 32.0*ep5*x4*y*bf(e*r2, 5);
+    }
+    else if (hexIJK == 0x411) {
+        return 48.0*ep4*y*z*bf(e*r2, 4) - 192.0*ep5*x2*y*z*bf(e*r2, 5) + 64.0*ep6*x4*y*z*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x420) {
+        return -24.0*ep3*bf(e*r2, 3) + 96.0*ep4*x2*bf(e*r2, 4) + 48.0*ep4*y2*bf(e*r2, 4) - 192.0*ep5*x2*y2*bf(e*r2, 5) - 32.0*ep5*x4*bf(e*r2, 5) + 64.0*ep6*x4*y2*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x500) {
+        return -120.0*ep3*x*bf(e*r2, 3) + 160.0*ep4*x*x2*bf(e*r2, 4) - 32.0*ep5*x*x4*bf(e*r2, 5);
+    }
+    else if (hexIJK == 0x510) {
+        return 240.0*ep4*x*y*bf(e*r2, 4) - 320.0*ep5*x*x2*y*bf(e*r2, 5) + 64.0*ep6*x*x4*y*bf(e*r2, 6);
+    }
+    else if (hexIJK == 0x600) {
+        return -120.0*ep3*bf(e*r2, 3) + 720.0*ep4*x2*bf(e*r2, 4) - 480.0*ep5*x4*bf(e*r2, 5) + 64.0*ep6*x6*bf(e*r2, 6);
     }
 
     return val;

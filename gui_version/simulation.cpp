@@ -76,6 +76,9 @@ Programs::Programs() {
     this->re_compute = Quad::make_program_from_path(
         "./shaders/repulsion-exchange/compute.frag"
     );
+    // this->boys_compute = Quad::make_program_from_path(
+    //     "./shaders/repulsion-exchange/boys-function.frag"
+    // );
     // printf("%d\n", re_compute);
 }
 
@@ -169,6 +172,17 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .wrap_s=GL_REPEAT,
         .wrap_t=GL_REPEAT
     }),
+    shell_indices(
+        {
+        .format=GL_RGBA32F,
+        .width=1024,
+        .height=1024,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
     re1(
         {
         .format=GL_R32F,
@@ -183,6 +197,17 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
     re2(
         {
         .format=GL_R32F,
+        .width=1024,
+        .height=1024,
+        .generate_mipmap=false,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST,
+        .wrap_s=GL_REPEAT,
+        .wrap_t=GL_REPEAT
+    }),
+    shell_re(
+        {
+        .format=GL_RGBA32F,
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
@@ -412,14 +437,16 @@ void Simulation::solve(const SimParams &params) {
     if (params.computeRepExcOnGPU)
         build_arrays::fill(
             m_frames.bf_spec1, m_frames.bf_spec2,
-            m_frames.primitives, m_frames.indices,
-            m_frames.re1, m_frames.re2,
+            m_frames.primitives,
+            m_frames.indices, m_frames.shell_indices,
+            m_frames.shell_re, m_frames.re1, m_frames.re2,
             overlap,
             kinetic,
             nuclear,
             repulsion_exchange,
             arr,
             nuclear_charges,
+            m_programs.boys_compute,
             m_programs.re_compute);
     else
         build_arrays::fill(
@@ -432,8 +459,23 @@ void Simulation::solve(const SimParams &params) {
     printf("Selected: %d\n", params.shellMethodType.selected);
     arr.print();
     clock_gettime(CLOCK_MONOTONIC, &time_build[1]);
-    double delta_t = time_build[1].tv_sec - time_build[0].tv_sec;
-    printf("Construction time: %gs \n", delta_t);
+    {
+        double t2_nsec = time_build[1].tv_nsec;
+        double t1_nsec = time_build[0].tv_nsec;
+        double t2_sec = (double)time_build[1].tv_sec;
+        double t1_sec = (double)time_build[0].tv_sec;
+        double delta_t = 0.0;
+        if ((t2_sec - t1_sec) > 1.0) {
+            delta_t += t2_sec - t1_sec;
+        } else {
+            if (t2_nsec < t1_nsec)
+                std::swap(t2_nsec, t1_nsec);
+            double delta_t_nsec = (t2_nsec - t1_nsec)/1000000000.0;
+            delta_t += delta_t_nsec;
+        }
+        // printf("%gs \n", delta_t_nsec);
+        printf("Construction time: %gs \n", delta_t);
+    }
 
     struct timespec time_conv[2];
     clock_gettime(CLOCK_MONOTONIC, &time_conv[0]);
@@ -505,8 +547,23 @@ void Simulation::solve(const SimParams &params) {
         );
     }
     clock_gettime(CLOCK_MONOTONIC, &time_conv[1]);
-    double delta_t2 = time_conv[1].tv_sec - time_conv[0].tv_sec;
-    printf("Convergence time: %gs \n", delta_t2);
+    {
+        double t2_nsec = time_conv[1].tv_nsec;
+        double t1_nsec = time_conv[0].tv_nsec;
+        double t2_sec = time_conv[1].tv_sec;
+        double t1_sec = time_conv[0].tv_sec;
+        double delta_t = 0.0;
+        if ((t2_sec - t1_sec) > 1.0) {
+            delta_t += t2_sec - t2_sec;
+        } else {
+            if (t2_nsec < t1_nsec)
+                std::swap(t2_nsec, t1_nsec);
+            double delta_t_nsec = (t2_nsec - t1_nsec)/1000000000.0;
+            delta_t += delta_t_nsec;
+        }
+        // printf("%gs \n", delta_t_nsec);
+        printf("Convergence time: %gs \n", delta_t);
+    }
 
 }
 
@@ -519,7 +576,7 @@ void Simulation::clear_atoms(const SimParams &params) {
 void Simulation::set_preset_system(
     const SimParams &params, int preset_label) {
     this->clear_atoms(params);
-    int H_MOLECULE = 0, WATER = 1, CO2 = 2, O2 = 3, METHANE = 4, ACETYLENE = 5, BENZENE = 6;
+    int H_MOLECULE = 0, WATER = 1, CO2 = 2, O2 = 3, METHANE = 4, ACETYLENE = 5, BENZENE = 6, IRON = 7;
     #define vec(x, y, z) spatial::Vector{.t=0.0, x, y, z}
     if (preset_label == H_MOLECULE) {
         this->add_atom(params, 1, vec(0.685, 0.0, 0.0));
@@ -581,6 +638,8 @@ void Simulation::set_preset_system(
         this->add_atom(params, 6, c1);
         this->add_atom(params, 6, c2);
         this->add_atom(params, 1, h2);
+    } else if (preset_label == IRON) {
+        this->add_atom(params, 26, {.t=0.0, 0.0, 0.0, 0.0});
     }
     spatial::Vector center
              = this->m_system.get_nuclear_charges().get_center();

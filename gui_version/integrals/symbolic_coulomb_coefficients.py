@@ -1,4 +1,4 @@
-from sympy import Symbol, Function
+from sympy import Symbol, Function, diff, Add, Mul
 import re
 from time import perf_counter
 
@@ -65,6 +65,7 @@ def coulomb_coefficient(i, j, k, n, e, x, y, z):
     else:
         return (k - 1.0) * coulomb_coefficient(i, j, k-2, n+1, e, x, y, z) \
                 + z*coulomb_coefficient(i, j, k-1, n+1, e, x, y, z)
+
 
 x = Symbol('x')
 y = Symbol('y')
@@ -212,53 +213,221 @@ def print_glsl_implementation(min_angular, max_angular):
     print('Time taken: ', t2 - t1)
 
 
-def print_glsl_implementation_v2(min_angular, max_angular):
+def print_table(min_angular, max_angular):
     t1 = perf_counter()
+    term_tally = []
+    terms_count = []
+    total_term_count = 0
+    print('int CC_TABLE = int[](')
     for i in range(min_angular, max_angular + 1):
         for j in range(0, i+1):
             for k in range(0, j+1):
                 val = coulomb_coefficient(
                     i, j, k, 0, e, x, y, z).subs(
                         x**2 + y**2 + z**2, r2
-                        ).factor()
-                val = val.subs(
-                            x**6, x6
-                        ).subs(
-                            y**6, y6
-                        ).subs(
-                            z**6, z6
-                        ).subs(
-                            x**4, x4
-                        ).subs(
-                            y**4, y4
-                        ).subs(
-                            z**4, z4
-                        ).subs(
-                            x**2, x2
-                        ).subs(
-                            y**2, y2
-                        ).subs(
-                            z**2, z2
-                        ).simplify()
-                # val = val.subs((-2.0)**n, 'neg2_pow_n')
+                        ).factor().simplify()
                 rep_val = val
                 for pow_val in range(5*max_angular, 0, -1):
                     rep_val = rep_val.subs(boys_func(e*r2, pow_val), f'bF{pow_val}')
                     rep_val = rep_val.subs(power(e, pow_val), f'ep{pow_val}')
-                bf_set = set(re.findall('bF[0-9]+', str(rep_val)))
-                str_expr = str(rep_val)
-                for bf in bf_set:
-                    pow_val = bf[2:]
-                    # print(pow_val)
-                    str_expr = re.sub(bf, f'bF[{pow_val}]', str_expr)
-                if (i + j + k) == 0:
-                    print(f'    if (hexIJK == 0x{i}{j}{k})' + ' {')
+                rep_val = rep_val.expand()
+                print(f'    // {rep_val}')
+                if i == 0 or i == 1:
+                    total_term_count += 1
+                    term_count = 1
+                    term_count += \
+                        (term_tally[-1] if (len(term_tally) > 0) else 0)
+                    term_tally.append(term_count)
+                    terms_count.append(1)
                 else:
-                    print(f'    else if (hexIJK == 0x{i}{j}{k})' + ' {')
-                print(f'        return {str_expr};')
-                print('    }')
+                    n_terms = 0
+                    # print(f'{len(rep_val.args)}, {i}, {j}, {k}, {0}, {0},')
+                    term_count = len(rep_val.args)
+                    term_count += \
+                        (term_tally[-1] if (len(term_tally) > 0) else 0)
+                    term_tally.append(term_count)
+                    for term in rep_val.args:
+                        # print(term)
+                        pow_dict = term.as_powers_dict()
+                        pow_dict_keys = tuple(pow_dict.keys())
+                        coeff = pow_dict_keys[0]
+                        bf_factor = str(pow_dict_keys[1])[2:]
+                        ep_factor = str(pow_dict_keys[2])[2:]
+                        x_pow = pow_dict[x] if x in pow_dict else 0
+                        y_pow = pow_dict[y] if y in pow_dict else 0
+                        z_pow = pow_dict[z] if z in pow_dict else 0
+                        print(
+                            f'    {int(coeff)}, {int(bf_factor)}, {int(ep_factor)}, '
+                            f' {int(x_pow)}, {int(y_pow)}, {int(z_pow)}, ')
+                        # print(Mul.coeff(term, x))
+                        n_terms += 1
+                    terms_count.append(n_terms)
+                    # print(n_terms)
+                    # for i in range(27 - n_terms):
+                    #     print('0, 0, 0, 0, 0, 0,')
+                # temr
+                print()
+                # total_count += len(rep_val.args)
+    print(');')
+    print([0] + term_tally)
+    print(terms_count)
+
+def print_glsl_implementation_v2(min_angular, max_angular):
+    t1 = perf_counter()
+    total_count = 0
+    total_term_count = 0
+    for i in range(min_angular, max_angular + 1):
+        for j in range(0, i+1):
+            for k in range(0, j+1):
+                if i + j + k <= 6:
+                    val = coulomb_coefficient(
+                        i, j, k, 0, e, x, y, z).subs(
+                            x**2 + y**2 + z**2, r2
+                            ).factor()
+                    val = val.subs(
+                                x**6, x6
+                            ).subs(
+                                y**6, y6
+                            ).subs(
+                                z**6, z6
+                            ).subs(
+                                x**4, x4
+                            ).subs(
+                                y**4, y4
+                            ).subs(
+                                z**4, z4
+                            ).subs(
+                                x**2, x2
+                            ).subs(
+                                y**2, y2
+                            ).subs(
+                                z**2, z2
+                            ).simplify()
+                    # val = val.subs((-2.0)**n, 'neg2_pow_n')
+                    rep_val = val.expand()
+                    ddx_rep_val = diff(val, x)
+                    ddy_rep_val = diff(val, y)
+                    ddz_rep_val = diff(val, z)
+                    for pow_val in range(5*max_angular, 0, -1):
+                        # rep_val = rep_val.subs(
+                        #     boys_func(e*r2, pow_val), f'bF{pow_val}')
+                        # rep_val2 = -rep_val.subs(
+                        #     boys_func(e*r2, pow_val + 1), f'bF{pow_val}')
+                        rep_val = rep_val.subs(
+                            power(e, pow_val), f'ep{pow_val}')
+                        ddx_rep_val = ddx_rep_val.subs(
+                            boys_func(e*r2, pow_val), f'bF{pow_val}')
+                        ddx_rep_val = ddx_rep_val.subs(
+                            power(e, pow_val), f'ep{pow_val}')
+                        ddy_rep_val = ddy_rep_val.subs(
+                            boys_func(e*r2, pow_val), f'bF{pow_val}')
+                        ddy_rep_val = ddy_rep_val.subs(
+                            power(e, pow_val), f'ep{pow_val}')
+                        ddz_rep_val = ddz_rep_val.subs(
+                            boys_func(e*r2, pow_val), f'bF{pow_val}')
+                        ddz_rep_val = ddz_rep_val.subs(
+                            power(e, pow_val), f'ep{pow_val}')
+                    bf_set = set(re.findall('bF[0-9]+', str(rep_val)))
+                    str_expr = str(rep_val)
+                    # print(len(rep_val.args))
+                    # for term in rep_val.args:
+                    #     print(term)
+                    total_count += len(rep_val.args)
+                    total_term_count += 1
+                    str_ddx_expr = str(ddx_rep_val)
+                    str_ddy_expr = str(ddy_rep_val)
+                    str_ddz_expr = str(ddz_rep_val)
+                    for bf in bf_set:
+                        pow_val = bf[2:]
+                        # print(pow_val)
+                        str_expr = re.sub(bf, f'bF[{pow_val}]', str_expr)
+                    if (i + j + k) == 0:
+                        print(f'    if (hexIJK == 0x{i}{j}{k})' + ' {')
+                    else:
+                        print(f'    else if (hexIJK == 0x{i}{j}{k})' + ' {')
+                    # print('        return vec3(')
+                    # print(f'            {str_ddx_expr},')
+                    # print(f'            {str_ddy_expr},')
+                    # print(f'            {str_ddz_expr},')
+                    print(f'        return {str_expr};')
+                    # print('        );')
+                    print('    }')
     t2 = perf_counter()
+    print(total_count)
+    print(total_term_count)
     print('Time taken: ', t2 - t1)
+
+
+next_func0 = Function('cc0')
+next_func1 = Function('cc1')
+
+
+def cc1(bf, n, i, j, orb_exp, x, y):
+    if j == 0:
+        return next_func0(bf, n, i, orb_exp, x)
+    elif j < 0:
+        return 0
+    else:
+        return (j - 1.0)*cc1(bf, n + 1, i, j - 2, orb_exp, x, y) \
+            + y*cc1(bf, n + 1, i, j - 1, orb_exp, x, y)
+
+
+def cc2(bf, n, i, j, k, orb_exp, x, y, z):
+    if k == 0:
+        return next_func1(bf, n, i, j, orb_exp, x, y)
+    elif k < 0:
+        return 0
+    else:
+        # return (i - 1)*cc2(i - 2, n + 1, x) + x*cc2(i - 1, n + 1, x)
+        return (k - 1.0)*cc2(bf, n + 1, i, j, k - 2, orb_exp, x, y, z) \
+            + z*cc2(bf, n + 1, i, j, k - 1, orb_exp, x, y, z)
+
+
+
+def print_glsl_implementation_v3():
+    orb_exp = Symbol('orbExp')
+    x, y, z = Symbol('x'), Symbol('y'), Symbol('z')
+    i, j = Symbol('i'), Symbol('j')
+    bf = Symbol('bF')
+    for k in range(11):
+        expr = cc2(bf, n, i, j, k, orb_exp, x, y, z).simplify()
+        for pow_val in range(10, 1, -1):
+            expr = expr.subs(z**pow_val, f'z{pow_val}')
+        print(f'    if (k == {k}) {{' if k == 0 
+              else f'    else if (k == {k}) {{' )
+        print('        return ' + str(expr) + ';')
+        print(f'    }}')
+    for j in range(11):
+        expr = cc1(bf, n, i, j, orb_exp, x, y).simplify()
+        for pow_val in range(10, 1, -1):
+            expr = expr.subs(y**pow_val, f'y{pow_val}')
+        print(f'    if (j == {j}) {{' if j == 0 
+                      else f'    else if (j == {j}) {{' )
+        print('        return ' + str(expr) + ';')
+        print(f'    }}')
+    for i in range(11):
+        val = coulomb_coefficient(
+            i, 0, 0, n, orb_exp, x, y, z).subs(
+            x**2 + y**2 + z**2, r2)
+        rep_val = val.simplify()
+        for pow_val in range(10, 0, -1):
+            rep_val = rep_val.subs(x**pow_val, f'x{pow_val}')
+            rep_val = rep_val.subs((-2)**n, f'negPow2N')
+            rep_val = rep_val.subs(boys_func(orb_exp*r2, pow_val + n), f'bF{pow_val}')
+            # rep_val = rep_val.subs(power(orb_exp, pow_val), f'ep{pow_val}')
+        bf_set = set(re.findall('bF[0-9]+', str(rep_val)))
+        str_expr = str(rep_val)
+        for bf in bf_set:
+            pow_val = bf[2:]
+            # print(pow_val)
+            str_expr = re.sub(bf, f'bF[n + {pow_val}]', str_expr)
+        if i == 0:
+            print(f'    if (i == {i})' + ' {')
+        else:
+            print(f'    else if (i == {i})' + ' {')
+        print(f'        return {str_expr};')
+        print('    }')
+
 
 
 
@@ -294,4 +463,23 @@ def get_glsl_helper_functions(amount):
 
 
 if __name__ == '__main__':
-    print_glsl_implementation_v2(6, 6)
+    # print(cc(14, n, x).simplify())
+    print_glsl_implementation_v2(0, 6)
+    # print_table(0, 4)
+    # print_glsl_implementation_v3()
+    # indices = set()
+    # count = 0
+    # for n in range(0, 6 + 1):
+    #     # print(n)
+    #     for i in range(0, 6 + 1):
+    #         for j in range(0, i+1):
+    #             for k in range(0, j+1):
+    #                 if (i + j + k) <= n:
+    #                     index = (i, j, k)
+    #                     if not index in indices:
+    #                         print(f'    if (hexIJK == 0x{i}{j}{k}) return ccValues[IJK_{i}{j}{k}];')
+    #                         # print(f'#define IJK_{i}{j}{k} {count}')
+    #                         # print(index)
+    #                         indices.add(index)
+    #                         count += 1
+    # print(indices)

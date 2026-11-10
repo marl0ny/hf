@@ -61,6 +61,7 @@ void BasisFunctionArray::add_basis_function(
     } else {
         m_shell_data[m_shell_count - 1].basis_functions.count++;
     }
+    m_basis_function_data[m_basis_function_count].shell = this->m_shell_count - 1;
     m_basis_function_data[m_basis_function_count].angular = angular;
     m_basis_function_data[m_basis_function_count].position = position;
     m_basis_function_data[m_basis_function_count].primitives.count
@@ -297,6 +298,10 @@ ShellData BasisFunctionArray::get_shell(int index) const {
     return m_shell_data[index];
 }
 
+int BasisFunctionArray::shell_at(int index) const {
+    return m_basis_function_data[index].shell;
+}
+
 spatial::Vector
 BasisFunctionArray::get_position(int index) const {
     return m_basis_function_data[index].position;
@@ -330,6 +335,8 @@ void BasisFunctionArray::print() const {
         }
         std::cout << "Basis function " << i << std::endl;
         // std::cout >> "coefficient: " << basis_function.
+        std::cout << "shell: ";
+        std::cout << basis_function.shell << std::endl;
         std::cout << "position: ";
         std::cout << basis_function.position.x << ", ";
         std::cout << basis_function.position.y << ", ";

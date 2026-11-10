@@ -5,13 +5,13 @@
 
 #include <set>
 
-// #define THREAD_COUNT 0
+#define THREAD_COUNT 0
 
-#ifndef __EMSCRIPTEN__
-#define THREAD_COUNT 10
-#else
-#define THREAD_COUNT 1
-#endif
+// #ifndef __EMSCRIPTEN__
+// #define THREAD_COUNT 10
+// #else
+// #define THREAD_COUNT 1
+// #endif
 
 struct FillArraysThreadData {
     array_helpers::SquareArray *overlap;
@@ -383,16 +383,19 @@ static void modify_re_arrays(
     std::vector<float> &primitives_arr,
     int &max_primitives_count,
     std::vector<float> &indices,
-    int &total_count,
+    std::vector<float> &shell_indices,
+    int &total_count, int &total_shell_count,
     const array_helpers::Symmetric4 &repulsion_exchange,
     const array_helpers::SquareArray &re_abab,
     const BasisFunctionArray &basis_functions
 ) {
     int n = basis_functions.get_number_of_basis_functions();
+    int shell_count = basis_functions.number_of_shells();
     bf_spec1_arr = std::vector<float>(0);
     bf_spec2_arr = std::vector<float>(0);
     max_primitives_count = 0;
     for (int i = 0; i < n; i++) {
+        int shell = basis_functions.shell_at(i);
         spatial::UByte4 angular = basis_functions.get_angular(i);
         spatial::Vector position = basis_functions.get_position(i);
         int count = basis_functions.primitive_count_at(i);
@@ -405,7 +408,7 @@ static void modify_re_arrays(
         bf_spec2_arr.push_back(angular.x);
         bf_spec2_arr.push_back(angular.y);
         bf_spec2_arr.push_back(angular.z);
-        bf_spec2_arr.push_back(0.0F);
+        bf_spec2_arr.push_back(float(shell));
     }
     primitives_arr = std::vector<float>(2*n*max_primitives_count, 0.0);
     for (int i = 0; i < n; i++) {
@@ -420,6 +423,7 @@ static void modify_re_arrays(
         }
     }
     int curr = 0;
+    printf("Shell and basis function indices\n");
     for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
             int outer = i*n + j;
@@ -429,8 +433,13 @@ static void modify_re_arrays(
                 for (int l = start; l < n; l++) {
                     double four_e1 = re_abab(i, j);
                     double four_e2 = re_abab(k, l);
-                    if (sqrt(four_e1 * four_e2) > 1e-4) {
-                        // printf("%d %d %d %d\n", i, j, k, l);
+                    if (sqrt(four_e1 * four_e2) > 1e-10) {
+                        // printf("%d %d %d %d: ", i, j, k, l);
+                        // printf("%d %d %d %d\n",
+                        //     basis_functions.shell_at(i),
+                        //     basis_functions.shell_at(j),
+                        //     basis_functions.shell_at(k),
+                        //     basis_functions.shell_at(l));
                         indices[curr] = (float)i;
                         curr++;
                         indices[curr] = (float)j;
@@ -445,6 +454,37 @@ static void modify_re_arrays(
         }
     }
     total_count = curr/4;
+    int curr2 = 0;
+    for (int i = 0; i < shell_count; i++) {
+        for (int j = i; j < shell_count; j++) {
+            int outer = i*shell_count + j;
+            for (int k = outer / shell_count; k < shell_count; k++) {
+                int start = (k == (outer / shell_count))?
+                    std::max(outer % shell_count, k): k;
+                for (int l = start; l < shell_count; l++) {
+                    int offset_i 
+                        = basis_functions.get_shell(i).basis_functions.offset;
+                    int offset_j
+                        = basis_functions.get_shell(j).basis_functions.offset;
+                    int offset_k
+                        = basis_functions.get_shell(k).basis_functions.offset;
+                    int offset_l
+                        = basis_functions.get_shell(l).basis_functions.offset;
+                    shell_indices[curr] = (float)offset_i;
+                    curr2++;
+                    shell_indices[curr] = (float)offset_j;
+                    curr2++;
+                    shell_indices[curr] = (float)offset_k;
+                    curr2++;
+                    shell_indices[curr] = (float)offset_l;
+                    curr2++;
+                }
+            }
+        }
+    }
+    total_shell_count = curr2/4;
+    printf("Total count: %d\n", total_count);
+    printf("Shell count: %d\n", total_shell_count);
 }
 
 static void print_spec_arrs(
@@ -491,15 +531,17 @@ void get_symmetric_re(
 
 void build_arrays::fill(
     Quad &bf_spec1, Quad &bf_spec2,
-    Quad &primitives, Quad &indices_q,
-    Quad &rep_exc1, Quad &rep_exc2,
+    Quad &primitives,
+    Quad &indices_q, Quad &shell_indices_q,
+    Quad &shell_rep_exc, Quad &rep_exc1, Quad &rep_exc2,
     array_helpers::SquareArray &overlap,
     array_helpers::SquareArray &kinetic,
     array_helpers::SquareArray &nuclear,
     array_helpers::Symmetric4 &repulsion_exchange,
     const BasisFunctionArray &basis_functions,
     const NuclearChargesArray &nuclear_charges,
-    const unsigned int program
+    const unsigned int boys_program,
+    const unsigned int re_program
 ) {
     array_helpers::SquareArray re_abab(
         basis_functions.get_number_of_basis_functions());
@@ -511,17 +553,20 @@ void build_arrays::fill(
     std::vector<float> bf_spec2_arr;
     std::vector<float> primitives_arr;
     int max_primitives_count;
-    int total_count;
-    std::vector<float> indices (1000000);
+    int total_count, total_shell_count;
+    std::vector<float> indices (4194304);
+    std::vector<float> shell_indices (4194304); 
     modify_re_arrays(
         bf_spec1_arr,
         bf_spec2_arr,
         primitives_arr,
         max_primitives_count,
         indices,
-        total_count,
+        shell_indices,
+        total_count, total_shell_count,
         repulsion_exchange, re_abab, basis_functions);
     int re_tex_width = std::ceil(std::sqrt(total_count));
+    int shell_re_tex_width = std::ceil(std::sqrt(total_shell_count));
     print_spec_arrs(
         bf_spec1_arr, bf_spec2_arr,
         primitives_arr, 
@@ -558,6 +603,14 @@ void build_arrays::fill(
         .wrap_s=GL_REPEAT, .wrap_t=GL_REPEAT,
         .min_filter=GL_NEAREST, .mag_filter=GL_NEAREST
     };
+    TextureParams re_shell_tex_params = {
+        .format=GL_RGBA32F,
+        .width=(unsigned int)shell_re_tex_width,
+        .height=(unsigned int)shell_re_tex_width,
+        .generate_mipmap=false,
+        .wrap_s=GL_REPEAT, .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST, .mag_filter=GL_NEAREST
+    };
     TextureParams indices_tex_params = {
         .format=GL_RGBA32F,
         .width=(unsigned int)re_tex_width,
@@ -570,6 +623,8 @@ void build_arrays::fill(
     bf_spec1.reset(bf_tex_params);
     bf_spec2.reset(bf_tex_params);
     indices_q.reset(indices_tex_params);
+    shell_indices_q.reset(re_shell_tex_params);
+    shell_rep_exc.reset(re_shell_tex_params);
     rep_exc1.reset(re_tex_params);
     rep_exc2.reset(re_tex_params);
     primitives.set_pixels((float *)&primitives_arr[0]);
@@ -581,6 +636,7 @@ void build_arrays::fill(
     std::vector<float> indices_final(
         4*re_tex_width*re_tex_width, 0.0);
     indices_q.set_pixels((float *)&indices[0]);
+    shell_indices_q.set_pixels((float *)&shell_indices[0]);
     int max_angular = 0;
     for (int i = 0; 
          i < basis_functions.get_number_of_basis_functions(); i++) {
@@ -593,17 +649,33 @@ void build_arrays::fill(
             max_angular = max_angular_i;
     }
     printf("Max angular: %d\n", max_angular);
+    // printf("Max primitives count %d\n", max_primitives_count);
     Quad *rep_exc_ptrs[2] = {&rep_exc1, &rep_exc2};
     for (int i = 0; i < max_primitives_count; i++) {
         for (int j = 0; j < max_primitives_count; j++) {
             for (int k = 0; k < max_primitives_count; k++) {
                 for (int l = 0; l < max_primitives_count; l++) {
-                    rep_exc_ptrs[0]->draw(
-                        program,
+                    shell_rep_exc.draw(
+                        boys_program,
                         {
                             {"basisFunctionSpec1Tex", &bf_spec1},
                             {"basisFunctionSpec2Tex", &bf_spec2},
                             {"primitivesTex", &primitives},
+                            {"indicesTex", &shell_indices_q},
+                            {"previousSumTex", rep_exc_ptrs[1]},
+                            {"numberOfBasisFunctions", 
+                                    int(basis_functions.get_number_of_basis_functions())},
+                            {"maxNumberOfPrimitives", int(max_primitives_count)},
+                            {"primitiveIndices", IVec4{.x=i, j, k, l}}
+                        }
+                    );
+                    rep_exc_ptrs[0]->draw(
+                        re_program,
+                        {
+                            {"basisFunctionSpec1Tex", &bf_spec1},
+                            {"basisFunctionSpec2Tex", &bf_spec2},
+                            {"primitivesTex", &primitives},
+                            {"boysFunctionTex", &shell_rep_exc},
                             {"indicesTex", &indices_q},
                             {"previousSumTex", rep_exc_ptrs[1]},
                             {"numberOfBasisFunctions", 
@@ -611,6 +683,9 @@ void build_arrays::fill(
                             {"maxNumberOfPrimitives", int(max_primitives_count)},
                             {"primitiveIndices", IVec4{.x=i, j, k, l}},
                             {"maxAngularIter", int(2*max_angular + 1)},
+                            {"shellCount", int(basis_functions.number_of_shells())},
+                            {"shellQuartetsCount", int(total_shell_count)},
+                            {"shellTexWidth", int(shell_re_tex_width)},
                             {"debug", int(0)}
 
                         }
@@ -629,15 +704,16 @@ void build_arrays::fill(
         int k = indices[4*n + 2], l = indices[4*n + 3];
         double val = rep_exc_arr[n];
         repulsion_exchange(i, j, k, l) = val;
-        if (i == j && k == l) {
+        /* if (i == j && k == l) {
             int i = int(indices_final[4*n]);
             int j = int(indices_final[4*n + 1]);
             int k = int(indices_final[4*n + 2]);
             int l = int(indices_final[4*n + 3]);
             printf("%d, %d, %d, %d\t%g\n", i, j, k, l, val);
-        }
+        }*/
     }
 }
+
 
 void build_arrays::fill(
         array_helpers::SquareArray &overlap,

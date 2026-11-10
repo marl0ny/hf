@@ -20,8 +20,8 @@ struct Frames {
     TextureParams data_reduce_tex_params;
     Quad data_reduce;
     Quad bf_spec1, bf_spec2, primitives;
-    Quad indices;
-    Quad re1, re2;
+    Quad indices, shell_indices;
+    Quad re1, re2, shell_re;
     struct {
         Quad debug_ind;
         Quad overlap_coeff;
@@ -63,6 +63,7 @@ struct Programs {
     } visualization;
     unsigned int orbital;
     unsigned int re_compute;
+    unsigned int boys_compute;
     /* struct {
         unsigned int new_wavepacket;
         unsigned int time_step;
