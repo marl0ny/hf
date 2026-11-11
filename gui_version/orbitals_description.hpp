@@ -4,6 +4,11 @@
 #include "array_helpers.hpp"
 
 #include <string>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #ifndef _ORBITALS_DESCRIPTION_
 #define _ORBITALS_DESCRIPTION_

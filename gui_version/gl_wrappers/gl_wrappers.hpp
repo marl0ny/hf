@@ -20,6 +20,12 @@ OpenGL for the first time.
 #include <cstdlib>
 #include <cstdint>
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 // #ifdef __EMSCRIPTEN__
 // #define uint32_t int
 // #define u_int32_t int

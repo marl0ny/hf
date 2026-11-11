@@ -1,6 +1,12 @@
 #ifndef _GAUSSIAN1D_
 #define _GAUSSIAN1D_
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 
 class Gaussian1D {
     double r0;

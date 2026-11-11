@@ -10,6 +10,12 @@ in <i>An Introduction to Computer Simulation Methods</i>,
 */ 
 #include <vector>
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 
 struct MetropolisResultInfo {
     int accepted_count, rejection_count;

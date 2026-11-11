@@ -5,6 +5,12 @@
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 // #include <iostream>
 
 using namespace Eigen;

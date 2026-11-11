@@ -1,5 +1,11 @@
 #include "array_helpers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _COMPUTE_ENERGIES_
 #define _COMPUTE_ENERGIES_
 

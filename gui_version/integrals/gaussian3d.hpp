@@ -1,6 +1,12 @@
 #include "gaussian1d.hpp"
 #include "spatial.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _GAUSSIAN3D_
 #define _GAUSSIAN3D_
 

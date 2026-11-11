@@ -1,5 +1,11 @@
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _CONICAL_ARROW3D_
 #define _CONICAL_ARROW3D_
 

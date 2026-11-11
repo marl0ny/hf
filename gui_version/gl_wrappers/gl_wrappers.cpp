@@ -5,7 +5,7 @@ the structure and layout of simulation code that call upon GLSL shaders
 for numerical computations and visualization.
 
 A useful resource for writing this source file is Learn OpenGL
-(https://learnopengl.com) - it is especially helpful as a first-time
+(https://learnopengl.com). It is especially helpful as a first-time
 introduction to OpenGL without any prior graphics knowledge.
 */
 #include <cstdint>

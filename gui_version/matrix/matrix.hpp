@@ -2,6 +2,11 @@
 #define __MATRIX_  
 
 #include <vector>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 typedef double ftype;
 

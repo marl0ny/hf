@@ -49,7 +49,8 @@ class BasisFunctionArray {
     // void extend_size(
     //     int number_of_primitives, int number_of_basis_functions);
     void add_basis_function(
-        spatial::Vector &position, spatial::UByte4 &angular,
+        const spatial::Vector &position, const spatial::UByte4 &angular,
+        int principle,
         const std::vector<double> &primitive_amplitudes,
         const std::vector<double> &primitive_exponents
     );
@@ -76,6 +77,7 @@ class BasisFunctionArray {
     spatial::Vector get_position(int index) const;
     spatial::UByte4 get_angular(int index) const;
     Gaussian3D get_primitive(int ind_bf, int ind_p) const;
+    BasisFunctionArray sort_by_angular() const;
     void print() const;
 };
 

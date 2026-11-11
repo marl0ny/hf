@@ -1,5 +1,11 @@
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _VOLUME_RENDER_
 #define _VOLUME_RENDER_
 

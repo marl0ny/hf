@@ -2,6 +2,11 @@
 
 #include <functional>
 #include <set>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

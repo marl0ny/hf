@@ -1,4 +1,9 @@
 #include <vector>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #ifndef _ARRAY_HELPERS_
 #define _ARRAY_HELPERS_
@@ -85,6 +90,10 @@ namespace array_helpers {
         SquareArray reduce(
             unsigned int sum_index_a, unsigned int sum_index_b,
             const SquareArray &a, const SquareArray &b) const;
+        SquareArray reduce_last(
+            const Array2D &a, const Array2D &b) const;
+        SquareArray reduce_2nd3rd(const Array2D &a) const;
+        SquareArray reduce_1st3rd(const Array2D &a) const;
         SquareArray reduce(
             unsigned int sum_index_a, unsigned int sum_index_b,
             const Array2D &a, const Array2D &b) const;

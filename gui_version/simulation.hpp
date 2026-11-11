@@ -8,6 +8,13 @@
 
 #include "spatial.hpp"
 #include "simple_system.hpp"
+#include <optional>
+
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #ifndef _SIMULATION_
 #define _SIMULATION_

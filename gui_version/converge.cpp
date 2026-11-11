@@ -32,19 +32,34 @@ void converge::iteration(
     const array_helpers::SquareArray &kinetic_nuclear,
     const array_helpers::Symmetric4 &repulsion_exchange_tensor,
     const array_helpers::Array2D &orbitals) {
-    array_helpers::SquareArray
-    repulsion = repulsion_exchange_tensor.reduce(
-        2, 3, orbitals, orbitals
-    );
-    array_helpers::SquareArray
-    exchange = repulsion_exchange_tensor.reduce(
-        1, 3, orbitals, orbitals
-    );
-    array_helpers::SquareArray
-    fock = kinetic_nuclear + (2.0*repulsion - exchange);
 
-    compute_eigenvalues_eigenvectors(
-        energies, next_orbitals, overlap, fock);
+    /* if (orbitals.col_size() == 1) {
+        array_helpers::SquareArray
+        repulsion = repulsion_exchange_tensor.reduce(
+            2, 3, orbitals, orbitals
+        );
+        array_helpers::SquareArray
+        exchange = repulsion_exchange_tensor.reduce(
+            1, 3, orbitals, orbitals
+        );
+        array_helpers::SquareArray
+        fock = kinetic_nuclear + (2.0*repulsion - exchange);
+
+        compute_eigenvalues_eigenvectors(
+            energies, next_orbitals, overlap, fock);
+    }
+
+    else { */
+        array_helpers::SquareArray
+        repulsion = repulsion_exchange_tensor.reduce_2nd3rd(orbitals);
+        array_helpers::SquareArray
+        exchange = repulsion_exchange_tensor.reduce_1st3rd(orbitals);
+        array_helpers::SquareArray
+        fock = kinetic_nuclear + (2.0*repulsion - exchange);
+
+        compute_eigenvalues_eigenvectors(
+            energies, next_orbitals, overlap, fock);
+    // }
 
 }
 
@@ -174,9 +189,9 @@ void converge::closed(
     array_helpers::Array1D energies_iter(occupied_count);
     array_helpers::Array2D orbitals_iter(
         occupied_count, orbitals.row_size());
-    single_electron_solve(
-        energies_iter, orbitals_iter,
-        overlap, kinetic_nuclear);
+    // single_electron_solve(
+    //     energies_iter, orbitals_iter,
+    //     overlap, kinetic_nuclear);
     for (int i = 0; i < n_iterations; i++) {
         if (i == n_iterations - 1) {
             iteration(energies, orbitals,
@@ -213,9 +228,9 @@ void converge::closed(
     //     for (int j = 0; j < orbitals.row_size(); j++)
     //         orbitals_iter(i, j) = 1.0;
     // }
-    single_electron_solve(
-        energies_iter, orbitals_iter,
-        overlap, kinetic_nuclear);
+    // single_electron_solve(
+    //     energies_iter, orbitals_iter,
+    //     overlap, kinetic_nuclear);
     for (int i = 0; i < n_iterations; i++) {
         if (i == n_iterations - 1) {
             iteration(energies, orbitals,

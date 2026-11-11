@@ -1,6 +1,12 @@
 #include <GLFW/glfw3.h>
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _GLFW_WINDOW
 #define _GLFW_WINDOW
 

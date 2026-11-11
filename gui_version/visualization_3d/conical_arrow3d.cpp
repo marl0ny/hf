@@ -153,16 +153,17 @@ WireFrame conical_arrows3d::get_3d_vector_field_wire_frame(
             .size=4, .type=GL_FLOAT, .normalized=false,
             .stride=6*sizeof(float), .offset=2*sizeof(float)}}
     };
-    ConicalArrowDimensions conical_arrow_dimensions {
-        .length = 1.0,
-        .tail.radius = 0.05,
-        .tail.length = 0.8,
-        .head.base_radius = 0.125,
-        .head.offset = 0.75,
+    ConicalArrowDimensions conical_arrow_dimensions;
+    {
+        conical_arrow_dimensions.length = 1.0;
+        conical_arrow_dimensions.tail.radius = 0.05;
+        conical_arrow_dimensions.tail.length = 0.8;
+        conical_arrow_dimensions.head.base_radius = 0.125;
+        conical_arrow_dimensions.head.offset = 0.75;
+        conical_arrow_dimensions.head.length = (
+            conical_arrow_dimensions.length 
+                - conical_arrow_dimensions.head.offset);
     };
-    conical_arrow_dimensions.head.length = (
-        conical_arrow_dimensions.length 
-        - conical_arrow_dimensions.head.offset);
     std::vector<float> vertices = get_vertices(
         conical_arrow_dimensions,
         d_3d, points_per_cone_circle);

@@ -20,6 +20,11 @@
 #include <utility>
 #include <iostream>
 #include <vector>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #include "spatial.hpp"
 
@@ -419,8 +424,8 @@ int main(int argc, char **argv) {
         // .generate_mipmap=!(filter_type == GL_NEAREST),
         .wrap_s=GL_CLAMP_TO_EDGE,
         .wrap_t=GL_CLAMP_TO_EDGE,
-        .mag_filter=(unsigned int)filter_type,
-        .min_filter=(unsigned int)filter_type
+        .min_filter=(unsigned int)filter_type,
+        .mag_filter=(unsigned int)filter_type
     };
     MainGLFWQuad 
     main_render (default_tex_params.width, default_tex_params.height);

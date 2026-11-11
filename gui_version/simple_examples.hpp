@@ -1,6 +1,12 @@
 #include <map>
 #include "spatial.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _SIMPLE_EXAMPLES_
 #define _SIMPLE_EXAMPLES_
 

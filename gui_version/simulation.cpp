@@ -16,6 +16,8 @@
 #include "integrals1d.hpp"
 
 #include <vector>
+#include <ctime>
+#include <cstring>
 
 using namespace sim_3d;
 
@@ -102,20 +104,20 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
                      params.texelSideLength,
                      params.texelSideLength}})[1],
         .generate_mipmap=1, // default_tex_params.generate_mipmap,
-        .min_filter=default_tex_params.min_filter,
-        .mag_filter=default_tex_params.mag_filter,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=default_tex_params.min_filter,
+        .mag_filter=default_tex_params.mag_filter
     }),
     particles_tex_params({
         .format=GL_RGBA32F,
         .width=(unsigned int)decompose(params.numberOfParticles)[0],
         .height=(unsigned int)decompose(params.numberOfParticles)[1],
         .generate_mipmap=1, // default_tex_params.generate_mipmap,
-        .min_filter=default_tex_params.min_filter,
-        .mag_filter=default_tex_params.mag_filter,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=default_tex_params.min_filter,
+        .mag_filter=default_tex_params.mag_filter
     }),
     data_reduce_tex_params({
         .format=GL_RGBA32F,
@@ -124,10 +126,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .height=(unsigned int)get_2d_from_3d_dimensions(
             params.dataTexelDimensions3D)[1],
         .generate_mipmap=default_tex_params.generate_mipmap,
-        .min_filter=default_tex_params.min_filter,
-        .mag_filter=default_tex_params.mag_filter,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=default_tex_params.min_filter,
+        .mag_filter=default_tex_params.mag_filter
     }),
     data_reduce(data_reduce_tex_params),
     bf_spec1({
@@ -135,20 +137,20 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1000,
         .height=1,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     bf_spec2({
         .format=GL_RGBA32F,
         .width=1000,
         .height=1,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     primitives(
         {
@@ -156,10 +158,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=200,
         .height=10,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     indices(
         {
@@ -167,10 +169,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     shell_indices(
         {
@@ -178,10 +180,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     re1(
         {
@@ -189,10 +191,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     re2(
         {
@@ -200,10 +202,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     shell_re(
         {
@@ -211,10 +213,10 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
         .width=1024,
         .height=1024,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     }),
     debugs {
         .debug_ind = Quad({
@@ -222,40 +224,40 @@ Frames(const TextureParams &default_tex_params, const SimParams &params):
             .width=1024,
             .height=1,
             .generate_mipmap=false,
-            .min_filter=GL_NEAREST,
-            .mag_filter=GL_NEAREST,
             .wrap_s=GL_REPEAT,
-            .wrap_t=GL_REPEAT
+            .wrap_t=GL_REPEAT,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST
         }),
         .overlap_coeff = Quad({
             .format=GL_R32F,
             .width=1024,
             .height=1,
             .generate_mipmap=false,
-            .min_filter=GL_NEAREST,
-            .mag_filter=GL_NEAREST,
             .wrap_s=GL_REPEAT,
-            .wrap_t=GL_REPEAT
+            .wrap_t=GL_REPEAT,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST
         }),
         .coulomb_coeff = Quad({
             .format=GL_R32F,
             .width=1024,
             .height=1,
             .generate_mipmap=false,
-            .min_filter=GL_NEAREST,
-            .mag_filter=GL_NEAREST,
             .wrap_s=GL_REPEAT,
-            .wrap_t=GL_REPEAT
+            .wrap_t=GL_REPEAT,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST
         }),
         .bf = Quad({
             .format=GL_R32F,
             .width=1024,
             .height=1,
             .generate_mipmap=false,
-            .min_filter=GL_NEAREST,
-            .mag_filter=GL_NEAREST,
             .wrap_s=GL_REPEAT,
-            .wrap_t=GL_REPEAT
+            .wrap_t=GL_REPEAT,
+            .min_filter=GL_NEAREST,
+            .mag_filter=GL_NEAREST
         })
     },
     /* wave_sim {
@@ -423,6 +425,7 @@ void Simulation::solve(const SimParams &params) {
         return;
     BasisFunctionArray arr = orbital_description_data::get_basis_function_array(
         this->m_system.get_atomic_orbital_description_list());
+    arr = arr.sort_by_angular();
     int n = arr.get_number_of_basis_functions();
     NuclearChargesArray nuclear_charges
          = this->m_system.get_nuclear_charges();
@@ -553,8 +556,10 @@ void Simulation::solve(const SimParams &params) {
         double t2_sec = time_conv[1].tv_sec;
         double t1_sec = time_conv[0].tv_sec;
         double delta_t = 0.0;
-        if ((t2_sec - t1_sec) > 1.0) {
-            delta_t += t2_sec - t2_sec;
+        if (abs(t2_sec - t1_sec) > 1.0) {
+            if ((t2_sec - t1_sec) < 0.0)
+                std::swap(t2_sec, t1_sec);
+            delta_t += t2_sec - t1_sec;
         } else {
             if (t2_nsec < t1_nsec)
                 std::swap(t2_nsec, t1_nsec);
@@ -1385,30 +1390,30 @@ void Simulation::debug_stuff() {
         .width=1024,
         .height=1,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     });
     m_frames.debugs.coulomb_coeff.reset({
         .format=GL_R32F,
         .width=1024,
         .height=1,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     });
     m_frames.debugs.bf.reset({
         .format=GL_R32F,
         .width=1024,
         .height=1,
         .generate_mipmap=false,
-        .min_filter=GL_NEAREST,
-        .mag_filter=GL_NEAREST,
         .wrap_s=GL_REPEAT,
-        .wrap_t=GL_REPEAT
+        .wrap_t=GL_REPEAT,
+        .min_filter=GL_NEAREST,
+        .mag_filter=GL_NEAREST
     });
     std::vector<float> indices(
         4*m_frames.debugs.debug_ind.width(), 0.0);

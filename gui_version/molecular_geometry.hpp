@@ -3,6 +3,10 @@
 
 #include <vector>
 #include <map>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
 
 #ifndef _MOLECULAR_GEOMETRY_
 #define _MOLECULAR_GEOMETRY_

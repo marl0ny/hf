@@ -1,5 +1,11 @@
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _PLANAR_SLICE_
 #define _PLANAR_SLICE_
 

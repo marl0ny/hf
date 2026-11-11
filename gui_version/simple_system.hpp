@@ -1,6 +1,12 @@
 #include "nuclear_charges.hpp"
 #include "orbitals_description.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _SIMPLE_SYSTEM_
 #define _SIMPLE_SYSTEM_
 

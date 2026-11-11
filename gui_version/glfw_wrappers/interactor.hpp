@@ -1,6 +1,12 @@
 #include "gl_wrappers.hpp"
 #include "glfw_window.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _INTERACTOR_
 #define _INTERACTOR_
 

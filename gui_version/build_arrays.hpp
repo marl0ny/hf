@@ -3,6 +3,12 @@
 #include "array_helpers.hpp"
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _BUILD_ARRAYS_
 #define _BUILD_ARRAYS_
 

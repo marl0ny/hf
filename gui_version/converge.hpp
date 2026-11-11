@@ -4,6 +4,12 @@
 #include "array_helpers.hpp"
 #include "eigenvalues_eigenvectors.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 
 #ifndef _CONVERGE_
 #define _CONVERGE_

@@ -1,5 +1,11 @@
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _CURSOR_OUTLINE3D_
 #define _CURSOR_OUTLINE3D_
 

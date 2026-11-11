@@ -1,5 +1,10 @@
 #include "spatial.hpp"
 #include <vector>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 
 #ifndef _NUCLEAR_CHARGES_

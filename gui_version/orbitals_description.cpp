@@ -41,6 +41,25 @@ static unsigned int get_angular_multiplicity(const std::string &orbital_letter) 
     return 0;
 }
 
+static unsigned int get_principle(const std::string &orbital_letter) {
+    if (orbital_letter.substr(0, 1) == "1") {
+        return 1;
+    }
+    else if (orbital_letter.substr(0, 1) == "2") {
+        return 2;
+    }
+    else if (orbital_letter.substr(0, 1) == "3") {
+        return 3;
+    }
+    else if (orbital_letter.substr(0, 1) == "4") {
+        return 4;
+    }
+    else if (orbital_letter.substr(0, 1) == "5") {
+        return 5;
+    }
+    return 0;
+}
+
 unsigned int 
 orbital_description_data::get_number_of_primitives(
     const orbital_description_data::OrbitalsData &d) {
@@ -78,6 +97,7 @@ orbital_description_data::get_basis_function_array(
     for (int orbital_index = 0; 
          orbital_index < o.orbitals.size(); orbital_index++) {
         orbital_description_data::Orbital orbital = o.orbitals[orbital_index];
+        int principle = get_principle(orbital.name);
         int angular_number = get_angular_number(orbital.name);
         int multiplicity = get_angular_multiplicity(orbital.name);
         for (int i = 0; i < multiplicity; i++) {
@@ -122,7 +142,7 @@ orbital_description_data::get_basis_function_array(
             }
             for (auto &basis_function: orbital.basis_functions) {
                 arr.add_basis_function(
-                    position, angular,
+                    position, angular, principle,
                     basis_function.primitives.coefficients,
                     basis_function.primitives.exponents);
                 // for (auto &e: basis_function.primitives.coefficients)
@@ -131,6 +151,7 @@ orbital_description_data::get_basis_function_array(
             }
         }
     }
+    // BasisFunctionArray arr2 = arr.sort_by_angular();
     return arr;
 }
 
@@ -154,6 +175,7 @@ orbital_description_data::get_basis_function_array(
             orbital_description_data::Orbital orbital = o.orbitals[orbital_index];
             int angular_number = get_angular_number(orbital.name);
             int multiplicity = get_angular_multiplicity(orbital.name);
+            int principle = get_principle(orbital.name);
             for (int i = 0; i < multiplicity; i++) {
                 spatial::UByte4 angular
                     = spatial::UByte4{.ind{0, 0, 0}};
@@ -197,7 +219,7 @@ orbital_description_data::get_basis_function_array(
                 for (auto &basis_function: orbital.basis_functions) {
                     spatial::Vector position = o.position;
                     basis_func_arr.add_basis_function(
-                        position, angular,
+                        position, angular, principle,
                         basis_function.primitives.coefficients,
                         basis_function.primitives.exponents);
                     // for (auto &e: basis_function.primitives.coefficients)
@@ -207,6 +229,7 @@ orbital_description_data::get_basis_function_array(
             }
         }
     }
+    // BasisFunctionArray arr2 = basis_func_arr.sort_by_angular();
     return basis_func_arr;
 }
 

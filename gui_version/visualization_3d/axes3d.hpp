@@ -1,5 +1,11 @@
 #include "gl_wrappers.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _AXES3D_
 #define _AXES3D_
 

@@ -30,7 +30,8 @@ BasisFunctionArray::BasisFunctionArray(
 }
 
 void BasisFunctionArray::add_basis_function(
-    spatial::Vector &position, spatial::UByte4 &angular,
+    const spatial::Vector &position, const spatial::UByte4 &angular,
+    int principle,
     const std::vector<double> &primitive_amplitudes,
     const std::vector<double> &primitive_exponents
     ) {
@@ -38,6 +39,7 @@ void BasisFunctionArray::add_basis_function(
         = m_basis_function_data[m_basis_function_count - 1].position;
     spatial::UByte4 prev_angular
         = m_basis_function_data[m_basis_function_count - 1].angular;
+    int principle_prev = m_shell_data[m_shell_count - 1].principle;
     unsigned int angular_curr
         = (unsigned int)(angular.ind[0]) 
             + (unsigned int)(angular.ind[1])
@@ -50,13 +52,15 @@ void BasisFunctionArray::add_basis_function(
             + (unsigned int)(prev_angular.ind[3]);
     double diff2 = spatial::dot(prev_pos - position, prev_pos - position);
     if (m_shell_count == 0 ||
-        diff2 > 1e-20 || angular_prev_s != angular_curr) {
-        m_shell_data.push_back({
-            .angular=angular_curr,
-            .basis_functions.count=1,
-            .basis_functions.offset=(unsigned int)m_basis_function_count,
-            .hash=0
-        });
+        diff2 > 1e-20 || angular_prev_s != angular_curr
+        || principle_prev != principle) {
+        ShellData s;
+        s.principle = principle;
+        s.angular = angular_curr;
+        s.basis_functions.count = 1;
+        s.basis_functions.offset = (unsigned int)m_basis_function_count;
+        s.hash = 0;
+        m_shell_data.push_back(s);
         this->m_shell_count++;
     } else {
         m_shell_data[m_shell_count - 1].basis_functions.count++;
@@ -317,6 +321,37 @@ get_primitive(int ind_bf, int ind_p) const {
     return primitive(m_basis_function_data[ind_bf], ind_p);
 }
 
+BasisFunctionArray BasisFunctionArray::sort_by_angular() const {
+    int number_of_primitives = this->m_primitive_count;
+    int number_of_basis_functions = this->m_basis_function_count;
+    BasisFunctionArray arr = BasisFunctionArray(
+        number_of_primitives, number_of_basis_functions
+    );
+    for (int n = 0; n < 3; n++) {
+        for (int i = 0; i < this->get_number_of_basis_functions(); i++) {
+            if ((int(this->get_angular(i).x)
+                 + int(this->get_angular(i).y)
+                 + int(this->get_angular(i).z)) == n) {
+                std::vector<double> coefficients (0);
+                std::vector<double> exponents (0);
+                for (int p = 0; p < this->primitive_count_at(i); p++) {
+                    Gaussian3D g = this->get_primitive(i, p);
+                    coefficients.push_back(g.amplitude());
+                    exponents.push_back(g.orbital_exponent());
+                }
+                spatial::Vector position = this->get_position(i);
+                spatial::UByte4 angular = this->get_angular(i);
+                int shell_index = this->shell_at(i);
+                int principle = this->get_shell(shell_index).principle;
+                arr.add_basis_function(
+                    position, angular, principle,
+                    coefficients, exponents);
+            }
+        }
+    }
+    return arr;
+}
+
 void BasisFunctionArray::print() const {
     for (int i = 0, shell_ind = 0; i < m_basis_function_count; i++) {
         BasisFunctionData basis_function = m_basis_function_data[i];
@@ -324,6 +359,8 @@ void BasisFunctionArray::print() const {
             std::cout << "##############################";
             std::cout << "##############################" << std::endl;
             std::cout << "Shell " << shell_ind << std::endl;
+            std::cout << "principle: ";
+            std::cout << m_shell_data[shell_ind].principle << std::endl;
             std::cout << "angular: ";
             std::cout << m_shell_data[shell_ind].angular << std::endl;
             std::cout << "position: ";

@@ -79,12 +79,19 @@ double compute_energies::repulsion_exchange(
 double compute_energies::repulsion_exchange(
     const array_helpers::Symmetric4 &repulsion_exchange,
     const array_helpers::Array2D &orbitals) {
-    double repulsion = repulsion_exchange.reduce(
-        0, 1, orbitals, orbitals, 2, 3, orbitals, orbitals
-    );
-    double exchange = repulsion_exchange.reduce(
-        0, 2, orbitals, orbitals, 1, 3, orbitals, orbitals
-    );
+    // if (orbitals.col_size() == 1) {
+    //     double repulsion = repulsion_exchange.reduce(
+    //         0, 1, orbitals, orbitals, 2, 3, orbitals, orbitals
+    //     );
+    //     double exchange = repulsion_exchange.reduce(
+    //         0, 2, orbitals, orbitals, 1, 3, orbitals, orbitals
+    //     );
+    //     return 2.0*repulsion - exchange;
+    // }
+    array_helpers::SquareArray repulsion_arr = repulsion_exchange.reduce_2nd3rd(orbitals);
+    array_helpers::SquareArray exchange_arr = repulsion_exchange.reduce_1st3rd(orbitals);
+    double repulsion = repulsion_arr.reduce(orbitals);
+    double exchange = exchange_arr.reduce(orbitals);
     return 2.0*repulsion - exchange;
 }
 

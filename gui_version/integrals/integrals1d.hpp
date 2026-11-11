@@ -1,6 +1,11 @@
 #include "gaussian1d.hpp"
 #include "spatial.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
 #ifndef _INTEGRALS1D_
 #define _INTEGRALS1D_

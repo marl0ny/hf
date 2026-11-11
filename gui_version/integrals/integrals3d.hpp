@@ -1,5 +1,11 @@
 #include "gaussian3d.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 #ifndef _INTEGRALS3D_
 #define _INTEGRALS3D_
 

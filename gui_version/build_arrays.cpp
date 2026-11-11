@@ -4,8 +4,12 @@
 #include "gl_wrappers.hpp"
 
 #include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
 
-#define THREAD_COUNT 0
+#define THREAD_COUNT 1
 
 // #ifndef __EMSCRIPTEN__
 // #define THREAD_COUNT 10
@@ -462,6 +466,11 @@ static void modify_re_arrays(
                 int start = (k == (outer / shell_count))?
                     std::max(outer % shell_count, k): k;
                 for (int l = start; l < shell_count; l++) {
+                    printf("%d, %d, %d, %d\n",
+                        basis_functions.get_shell(i).angular,
+                        basis_functions.get_shell(j).angular,
+                        basis_functions.get_shell(k).angular,
+                        basis_functions.get_shell(l).angular);
                     int offset_i 
                         = basis_functions.get_shell(i).basis_functions.offset;
                     int offset_j

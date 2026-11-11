@@ -13,6 +13,12 @@ using namespace sim_3d;
 
 #include <functional>
 #include <set>
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+#include <chrono>
 
 #include "parameters.hpp"
 

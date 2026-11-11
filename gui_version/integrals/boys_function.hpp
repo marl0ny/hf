@@ -1,6 +1,12 @@
 #ifndef _BOYS_FUNC_
 #define _BOYS_FUNC_
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 
 namespace from_boost_library {
     // Compute the boys function using the 1F1 functions

@@ -1,6 +1,12 @@
 #include "array_helpers.hpp"
 #include "basis_function_array.hpp"
 
+#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+
 
 #ifndef _ORBITAL_SHADER_CREATOR_
 #define _ORBITAL_SHADER_CREATOR_

@@ -363,6 +363,86 @@ SquareArray Symmetric4::reduce(
     return res;
 }
 
+SquareArray Symmetric4::reduce_last(
+    const Array2D &arr1, const Array2D &arr2
+) const {
+    SquareArray res(this->row_size());
+    if (arr1.row_size() != arr2.row_size() &&  arr1.row_size() != this->row_size())
+        return res;
+    unsigned int mat_col_size = arr1.col_size();
+    for (int a = 0; a < this->row_size(); a++) {
+        for (int b = a; b < this->row_size(); b++) {
+            for (int c = 0; c < this->row_size(); c++) {
+                for (int d = c; d < this->row_size(); d++) {
+                    for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+                        double abcd_val = this->operator()(a, b, c, d);
+                        double val = abcd_val*arr1(m_ind, c)*arr2(m_ind, d);
+                        if (c != d)
+                            val += abcd_val*arr1(m_ind, d)*arr2(m_ind, c);
+                        res(a, b) += val;
+                        if (b != a)
+                            res(b, a) += val;
+                    }
+                }
+            }    
+        }
+    }
+    return res;
+}
+
+SquareArray Symmetric4::reduce_2nd3rd(const Array2D &arr) const {
+    SquareArray res(this->row_size());
+    if (arr.row_size() != this->row_size())
+        return res;
+    unsigned int mat_col_size = arr.col_size();
+    for (int a = 0; a < this->row_size(); a++) {
+        for (int b = a; b < this->row_size(); b++) {
+            double sum_val = 0.0;
+            for (int c = 0; c < this->row_size(); c++) {
+                for (int d = c; d < this->row_size(); d++) {
+                    double abcd_val = this->operator()(a, b, c, d);
+                    for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+                        double arr_mc = arr(m_ind, c);
+                        double arr_md = arr(m_ind, d);
+                        sum_val += ((c == d)? 1.0: 2.0)
+                            *abcd_val*arr_mc*arr_md;
+                    }
+                }
+            }
+            res(a, b) = sum_val;
+            if (a != b)
+                res(b, a) = sum_val;
+        }
+    }
+    return res;
+}
+
+SquareArray Symmetric4::reduce_1st3rd(const Array2D &arr) const {
+    SquareArray res(this->row_size());
+    if (arr.row_size() != this->row_size())
+        return res;
+    unsigned int mat_col_size = arr.col_size();
+    for (int a = 0; a < this->row_size(); a++) {
+        for (int b = a; b < this->row_size(); b++) {
+            double sum_val = 0.0;
+            for (int c = 0; c < this->row_size(); c++) {
+                for (int d = 0; d < this->row_size(); d++) {
+                    double abcd_val = this->operator()(a, c, b, d);
+                    for (int m_ind = 0; m_ind < mat_col_size; m_ind++) {
+                        double arr_mc = arr(m_ind, c);
+                        double arr_md = arr(m_ind, d);
+                        sum_val += abcd_val*arr_mc*arr_md;
+                    }
+                }
+            }
+            res(a, b) = sum_val;
+            if (a != b)
+                res(b, a) = sum_val;
+        }
+    }
+    return res;
+}
+
 SquareArray Symmetric4::reduce(
         unsigned int sum_label_a, unsigned int sum_label_b,
         const Array2D &a, const Array2D &b) const {
