@@ -25,7 +25,7 @@ OrbitalsData get_atomic_description(int z, int &u_count, int &d_count) {
         break;
         case 6:
         u_count = 4, d_count = 2;
-        descr = atomic_data_descriptions::ORB_6P6E_1S4_2S4_2P4;
+        descr = atomic_data_descriptions::ORB_6P6E_1S5_2S5_2P5;
         break;
         case 7:
         u_count = 5, d_count = 2;

@@ -124,7 +124,7 @@ complex computeBFRecurseUpwardsIntermediary(float x) {
 /* See "A fast algorithm for computing the Boys function"
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (3) for recursing to the maximum n value. */
-void computeBFValuesRecurseUpwards(inout float bF[24], float x, int nMax) {
+void computeBFValuesRecurseUpwards(inout float bF[16], float x, int nMax) {
     complex cVal = computeBFRecurseUpwardsIntermediary(x);
     float val = (mul(complex(0.5, 0.0), cVal)).r;
     if (nMax > 12) {
@@ -142,7 +142,7 @@ void computeBFValuesRecurseUpwards(inout float bF[24], float x, int nMax) {
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (4) for the n = 0 case for the recursion relation
 that goes to zero. */
-void computeBFValuesRecurseToZero(inout float bF[24], float x, int nMax) {
+void computeBFValuesRecurseToZero(inout float bF[16], float x, int nMax) {
     float val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
     float bx = 0.5*exp(-x)/x;
     bF[0] = val;
@@ -152,7 +152,7 @@ void computeBFValuesRecurseToZero(inout float bF[24], float x, int nMax) {
     }
 }
 
-void computeBoysFunctionValues(inout float bF[24], float x, int nMax) {
+void computeBoysFunctionValues(inout float bF[16], float x, int nMax) {
     if (abs(x) < 1e-60) {
         for (int n = 0; n <= nMax; n++) {
             bF[n] = 1.0/(2.0*float(n) + 1.0);
@@ -221,13 +221,6 @@ int getSymmetric4Index1D(int a, int b, int c, int d) {
         + (indCD - indAB));
 }
 
-// float pw(float a, int b) {
-//     float sgn = 1.0;
-//     if (a < 0.0 && abs(mod(float(b), float(2))) > 1e-60)
-//         sgn = -1.0;
-//     return sgn*pow(abs(a), float(b));
-// }
-
 float pw(float a, int b) {
     if (b == 0)
         return 1.0;
@@ -237,59 +230,9 @@ float pw(float a, int b) {
     return val;
 }
 
-// /* See "A fast algorithm for computing the Boys function"
-// by Gregory Beylkin and Sandeep Sharma, particularly the section containing
-// equation (3) for recursing to the maximum n value. */
-// float boysFuncRecurseUpwards(float x, int n) {
-//     complex cVal = complex(0.0, 0.0);
-//     complex cX = complex(x, 0.0);
-//     complex one = complex(1.0, 0.0);
-//     complex oneHalf = complex(0.5, 0.0);
-//     for (int i = 0; i < 13; i++) {
-//         complex expVal = WEIGHTS[2*i];
-//         complex weight = WEIGHTS[2*i + 1];
-//         cVal += mul(weight,
-//             mul(-mul(cExp(expVal), inv(cX + expVal)),
-//                 (cExp(-(cX + expVal)) - one)));
-//     }
-//     float val = (mul(oneHalf, cVal)).r;
-//     for (int n_iter = 12; n_iter > n; n_iter--) {
-//         val = x/(float(n_iter) - 0.5)*val 
-//             + exp(-x)/(2.0*(float(n_iter) - 0.5));
-//     }
-//     return val;
-// }
-
-// /* See "A fast algorithm for computing the Boys function"
-// by Gregory Beylkin and Sandeep Sharma, particularly the section containing
-// equation (4) for the n = 0 base if (hex_n_a1_a2 == , and (2) for the recursion relation
-// that goes to zero. */
-// float boysFuncRecurseToZero(float x, int n) {
-//     float val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
-//     float bx = 0.5*exp(-x)/x;
-//     for (int n_iter = 1; n_iter <= n; n_iter++)
-//         val = ((float(n_iter) - 0.5)/x)*val - bx;
-//     return val;
-// }
-
-// float bf(float x, int n) {
-//     if (abs(x) < 1e-60)
-//         return 1.0/(2.0*float(n) + 1.0);
-//     // float y = 1.0;
-//     // int nMax = 12;
-//     // for (int j = 1; j <= nMax; j++) // See I.
-//     //     y *= (j - 0.5);
-//     // float z = pow(y, 1.0/float(nMax));
-//     float z = 4.5425955121971775;
-//     if (abs(x) < z)
-//         return boysFuncRecurseUpwards(x, n);
-//     else
-//         return boysFuncRecurseToZero(x, n);
-// }
-
 
 float coulombCoefficientHelper(
-    inout float bF[24],
+    inout float bF[16],
     ivec3 indices, float orbExp, vec3 r12) {
     vec3 s12 = r12;
     int i = indices[0], j = indices[1], k = indices[2];
@@ -381,7 +324,7 @@ float coulombCoefficientHelper(
 }
 
 float coulombCoefficient(
-    inout float bF[24],
+    inout float bF[16],
     ivec3 indices, float orbExp, vec3 r12) {
     vec3 s12 = r12;
     ivec3 indices2 = indices;
@@ -406,43 +349,14 @@ float coulombCoefficient(
 
 
 void fillOverlapCoefficients(
-    inout vec3[10] overlaps, int index,
+    inout vec4[8] overlaps, int index,
     int a1, int a2, float r, float e1, float e2, float expVal
 ) {
-
-    float r2 = r*r;
-    float r3 = r2*r;
-    float r4 = r2*r2;
-    float r5 = r4*r;
-    float r6 = r3*r3;
-    float r7 = r6*r;
-    float r8 = r7*r;
-    // float expVal = exp(-e1*e2*r2/(e1 + e2));
-
-    float e1_2 = e1*e1;
-    float e1_3 = e1_2*e1;
-    float e1_4 = e1_2*e1_2;
-    float e1_5 = e1_4*e1;
-    float e1_6 = e1_3*e1_3;
-    float e1_7 = e1_6*e1;
-    float e1_8 = e1_4*e1_4;
-
-    float e2_2 = e2*e2;
-    float e2_3 = e2_2*e2;
-    float e2_4 = e2_2*e2_2;
-    float e2_5 = e2_4*e2;
-    float e2_6 = e2_3*e2_3;
-    float e2_7 = e2_6*e2;
-    float e2_8 = e2_4*e2_4;
-
-    float e1e2_2 = (e1 + e2)*(e1 + e2);
-    float e1e2_3 = e1e2_2*(e1 + e2);
-    float e1e2_4 = e1e2_2*e1e2_2;
-    float e1e2_5 = e1e2_4*(e1 + e2);
-    float e1e2_6 = e1e2_3*e1e2_3;
-    float e1e2_7 = e1e2_6*(e1 + e2);
-    float e1e2_8 = e1e2_4*e1e2_4;
-
+    if (a2 < a1) {
+        SWAP_I(a2, a1);
+        SWAP_F(e1, e2);
+        r = -r;
+    }
     int hexA1A2 = 16*a1 + a2;
     for (int i = 0; i < 10; i++)
         overlaps[i][index] = 0.0;
@@ -454,65 +368,81 @@ void fillOverlapCoefficients(
         overlaps[1][index] = 0.5*expVal/(e1 + e2);
     }
     if (hexA1A2 == 0x02) {
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1_2 = e1*e1;
+        float r2 = r*r;
         overlaps[0][index] = expVal*(0.5*e1 + e1_2*r2 + 0.5*e2)/e1e2_2;
         overlaps[1][index] = 1.0*e1*expVal*r/e1e2_2;
         overlaps[2][index] = 0.25*expVal/e1e2_2;
     }
     if (hexA1A2 == 0x03) {
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1_2 = e1*e1;
+        float r2 = r*r;
+        float e1e2_3 = e1e2_2*(e1 + e2);
         overlaps[0][index] = e1*expVal*r*(1.5*e1 + e1_2*r2 + 1.5*e2)/e1e2_3;
         overlaps[1][index] = expVal*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2)/e1e2_3;
         overlaps[2][index] = 0.75*e1*expVal*r/e1e2_3;
         overlaps[3][index] = 0.125*expVal/e1e2_3;
     }
-    if (hexA1A2 == 0x04) {
-        overlaps[0][index] = expVal*(1.0*e1_2*r2*(e1 + e2) + e1_2*r2*(1.5*e1 + e1_2*r2 + 1.5*e2) + 0.5*e1e2_2 + (e1 + e2)*(0.25*e1 + 0.5*e1_2*r2 + 0.25*e2))/e1e2_4;
-        overlaps[1][index] = e1*expVal*r*(3.0*e1 + 2.0*e1_2*r2 + 3.0*e2)/e1e2_4;
-        overlaps[2][index] = expVal*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2)/e1e2_4;
-        overlaps[3][index] = 0.5*e1*expVal*r/e1e2_4;
-        overlaps[4][index] = 0.0625*expVal/e1e2_4;
-    }
-    if (hexA1A2 == 0x10) {
-        overlaps[0][index] = -e2*expVal*r/(e1 + e2);
-        overlaps[1][index] = 0.5*expVal/(e1 + e2);
-    }
     if (hexA1A2 == 0x11) {
+        float r2 = r*r;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
         overlaps[0][index] = expVal*(-e1*e2*r2 + 0.5*e1 + 0.5*e2)/e1e2_2;
         overlaps[1][index] = 0.5*expVal*r*(e1 - e2)/e1e2_2;
         overlaps[2][index] = 0.25*expVal/e1e2_2;
     }
     if (hexA1A2 == 0x12) {
+        float r2 = r*r;
+        float e1_2 = e1*e1;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1e2_3 = e1e2_2*(e1 + e2);
         overlaps[0][index] = expVal*r*(1.0*e1*(e1 + e2) - e2*(0.5*e1 + e1_2*r2 + 0.5*e2))/e1e2_3;
         overlaps[1][index] = expVal*(-1.0*e1*e2*r2 + 0.75*e1 + 0.5*e1_2*r2 + 0.75*e2)/e1e2_3;
         overlaps[2][index] = expVal*r*(0.5*e1 - 0.25*e2)/e1e2_3;
         overlaps[3][index] = 0.125*expVal/e1e2_3;
     }
     if (hexA1A2 == 0x13) {
+        float r2 = r*r;
+        float e1_2 = e1*e1;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1e2_3 = e1e2_2*(e1 + e2);
+        float e1e2_4 = e1e2_2*e1e2_2;
+        float e2_2 = e2*e2;
+        float e2_3 = e2_2*e2;
+        float e2_4 = e2_2*e2_2;
+        float e2_5 = e2_4*e2;
+        float e2_6 = e2_3*e2_3;
+        float e2_7 = e2_6*e2;
+        float e2_8 = e2_4*e2_4;
+        float e1e2_5 = e1e2_4*(e1 + e2);
+        float e1e2_6 = e1e2_3*e1e2_3;
+        float e1e2_7 = e1e2_6*(e1 + e2);
+        float e1e2_8 = e1e2_4*e1e2_4;
         overlaps[0][index] = expVal*(-e1*e2*r2*(1.5*e1 + e1_2*r2 + 1.5*e2) + 1.0*e1_2*r2*(e1 + e2) + 0.5*e1e2_2 + (e1 + e2)*(0.25*e1 + 0.5*e1_2*r2 + 0.25*e2))/e1e2_4;
         overlaps[1][index] = expVal*r*(1.5*e1*(e1 + e2) + 0.5*e1*(1.5*e1 + e1_2*r2 + 1.5*e2) - e2*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2))/e1e2_4;
         overlaps[2][index] = 0.75*expVal*(-e1*e2*r2 + e1 + e1_2*r2 + e2)/e1e2_4;
         overlaps[3][index] = expVal*r*(0.375*e1 - 0.125*e2)/e1e2_4;
         overlaps[4][index] = 0.0625*expVal/e1e2_4;
     }
-    if (hexA1A2 == 0x14) {
-        overlaps[0][index] = expVal*r*(1.5*e1*e2_2 + 5.25*e1_2*e2 - 3.0*e1_2*e2_2*r2 - 1.0*e1_3*e2*r2 + 3.0*e1_3 - 1.0*e1_4*e2*r4 + 2.0*e1_4*r2 - 0.75*e2_3)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[1][index] = expVal*(3.75*e1*e2 - 3.0*e1*e2_2*r2 + 1.5*e1_2*e2*r2 + 1.875*e1_2 - 2.0*e1_3*e2*r4 + 4.5*e1_3*r2 + 0.5*e1_4*r4 + 1.875*e2_2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[2][index] = expVal*r*(1.5*e1*(e1 + e2) + e1*(1.5*e1 + 1.0*e1_2*r2 + 1.5*e2) - e2*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2))/e1e2_5;
-        overlaps[3][index] = expVal*(-0.5*e1*e2*r2 + 0.625*e1 + 0.75*e1_2*r2 + 0.625*e2)/e1e2_5;
-        overlaps[4][index] = expVal*r*(0.25*e1 - 0.0625*e2)/e1e2_5;
-        overlaps[5][index] = 0.03125*expVal/e1e2_5;
-    }
-    if (hexA1A2 == 0x20) {
-        overlaps[0][index] = expVal*(0.5*e1 + 0.5*e2 + e2_2*r2)/e1e2_2;
-        overlaps[1][index] = -1.0*e2*expVal*r/e1e2_2;
-        overlaps[2][index] = 0.25*expVal/e1e2_2;
-    }
-    if (hexA1A2 == 0x21) {
-        overlaps[0][index] = expVal*r*(e2*(e1*e2*r2 - 0.5*e1 - 0.5*e2) + 0.5*(e1 - e2)*(e1 + e2))/e1e2_3;
-        overlaps[1][index] = expVal*(-0.5*e1*e2*r2 + 0.75*e1 - 0.5*e2*r2*(e1 - e2) + 0.75*e2)/e1e2_3;
-        overlaps[2][index] = expVal*r*(0.25*e1 - 0.5*e2)/e1e2_3;
-        overlaps[3][index] = 0.125*expVal/e1e2_3;
-    }
     if (hexA1A2 == 0x22) {
+        float r2 = r*r;
+        float r4 = r2*r2;
+        float e1_2 = e1*e1;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1e2_3 = e1e2_2*(e1 + e2);
+        float e1e2_4 = e1e2_2*e1e2_2;
+        float e2_2 = e2*e2;
+        float e1_3 = e1_2*e1;
+        float e1_4 = e1_2*e1_2;
+        float e2_3 = e2_2*e2;
+        float e2_4 = e2_2*e2_2;
+        float e1_5 = e1_4*e1;
+        float e2_5 = e2_4*e2;
+        float e1e2_5 = e1e2_4*(e1 + e2);
+        float e1e2_6 = e1e2_3*e1e2_3;
+        float e1e2_7 = e1e2_6*(e1 + e2);
+        float e1e2_8 = e1e2_4*e1e2_4;
         overlaps[0][index] = expVal*(-1.0*e1*e2*r2*(e1 + e2) + 0.5*e1e2_2 - e2*r2*(1.0*e1*(e1 + e2) - e2*(0.5*e1 + e1_2*r2 + 0.5*e2)) + (e1 + e2)*(0.25*e1 + 0.5*e1_2*r2 + 0.25*e2))/e1e2_4;
         overlaps[1][index] = expVal*r*(0.5*e1*(e1 + e2) - 0.5*e2*(0.5*e1 + e1_2*r2 + 0.5*e2) - e2*(-1.0*e1*e2*r2 + 0.75*e1 + 0.5*e1_2*r2 + 0.75*e2) + (e1 - 0.5*e2)*(e1 + e2))/e1e2_4;
         overlaps[2][index] = expVal*(-0.5*e1*e2*r2 + 0.75*e1 + 0.25*e1_2*r2 - e2*r2*(0.5*e1 - 0.25*e2) + 0.75*e2)/e1e2_4;
@@ -520,6 +450,23 @@ void fillOverlapCoefficients(
         overlaps[4][index] = 0.0625*expVal/e1e2_4;
     }
     if (hexA1A2 == 0x23) {
+        float r2 = r*r;
+        float r4 = r2*r2;
+        float e1_2 = e1*e1;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1e2_3 = e1e2_2*(e1 + e2);
+        float e1e2_4 = e1e2_2*e1e2_2;
+        float e2_2 = e2*e2;
+        float e1_3 = e1_2*e1;
+        float e1_4 = e1_2*e1_2;
+        float e2_3 = e2_2*e2;
+        float e2_4 = e2_2*e2_2;
+        float e1_5 = e1_4*e1;
+        float e2_5 = e2_4*e2;
+        float e1e2_5 = e1e2_4*(e1 + e2);
+        float e1e2_6 = e1e2_3*e1e2_3;
+        float e1e2_7 = e1e2_6*(e1 + e2);
+        float e1e2_8 = e1e2_4*e1e2_4;
         overlaps[0][index] = expVal*r*(1.5*e1*e1e2_2 + 0.5*e1*(e1 + e2)*(1.5*e1 + e1_2*r2 + 1.5*e2) - e2*(e1 + e2)*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2) - e2*(-e1*e2*r2*(1.5*e1 + e1_2*r2 + 1.5*e2) + 1.0*e1_2*r2*(e1 + e2) + 0.5*e1e2_2 + (e1 + e2)*(0.25*e1 + 0.5*e1_2*r2 + 0.25*e2)))/e1e2_5;
         overlaps[1][index] = expVal*(3.75*e1*e2 - 3.75*e1*e2_2*r2 - 2.25*e1_2*e2*r2 + 1.5*e1_2*e2_2*r4 + 1.875*e1_2 - 1.0*e1_3*e2*r4 + 2.25*e1_3*r2 + 1.875*e2_2 + 0.75*e2_3*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
         overlaps[2][index] = expVal*r*(0.75*e1*(e1 + e2) + 0.25*e1*(1.5*e1 + e1_2*r2 + 1.5*e2) - 0.5*e2*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2) - 0.75*e2*(-e1*e2*r2 + e1 + e1_2*r2 + e2) + (e1 + e2)*(1.125*e1 - 0.375*e2))/e1e2_5;
@@ -527,37 +474,27 @@ void fillOverlapCoefficients(
         overlaps[4][index] = expVal*r*(0.1875*e1 - 0.125*e2)/e1e2_5;
         overlaps[5][index] = 0.03125*expVal/e1e2_5;
     }
-    if (hexA1A2 == 0x24) {
-        overlaps[0][index] = expVal*(5.625*e1*e2_2 - 4.5*e1*e2_3*r2 + 5.625*e1_2*e2 - 6.75*e1_2*e2_2*r2 + 3.0*e1_2*e2_3*r4 + 3.0*e1_3*e2*r2 - 1.0*e1_3*e2_2*r4 + 1.875*e1_3 - 3.5*e1_4*e2*r4 + 1.0*e1_4*e2_2*r6 + 4.5*e1_4*r2 + 0.5*e1_5*r4 + 1.875*e2_3 + 0.75*e2_4*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[1][index] = expVal*r*(3.0*e1*e2_3*r2 + 11.25*e1_2*e2 - 6.0*e1_2*e2_2*r2 - 6.0*e1_3*e2*r2 + 2.0*e1_3*e2_2*r4 + 7.5*e1_3 - 1.0*e1_4*e2*r4 + 3.0*e1_4*r2 - 3.75*e2_3)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[2][index] = expVal*(5.625*e1*e2 - 5.25*e1*e2_2*r2 - 1.5*e1_2*e2*r2 + 1.5*e1_2*e2_2*r4 + 2.8125*e1_2 - 2.0*e1_3*e2*r4 + 4.5*e1_3*r2 + 0.25*e1_4*r4 + 2.8125*e2_2 + 0.75*e2_3*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[3][index] = expVal*r*(0.75*e1*(e1 + e2) + e1*(0.75*e1 + 0.5*e1_2*r2 + 0.75*e2) - 0.5*e2*(0.75*e1 + 1.5*e1_2*r2 + 0.75*e2) - e2*(-0.5*e1*e2*r2 + 0.625*e1 + 0.75*e1_2*r2 + 0.625*e2) + (e1 - 0.25*e2)*(e1 + e2))/e1e2_6;
-        overlaps[4][index] = expVal*(-0.25*e1*e2*r2 + 0.46875*e1 + 0.375*e1_2*r2 - e2*r2*(0.25*e1 - 0.0625*e2) + 0.46875*e2)/e1e2_6;
-        overlaps[5][index] = expVal*r*(0.125*e1 - 0.0625*e2)/e1e2_6;
-        overlaps[6][index] = 0.015625*expVal/e1e2_6;
-    }
-    if (hexA1A2 == 0x30) {
-        overlaps[0][index] = e2*expVal*r*(-1.5*e1 - 1.5*e2 - e2_2*r2)/e1e2_3;
-        overlaps[1][index] = expVal*(0.75*e1 + 0.75*e2 + 1.5*e2_2*r2)/e1e2_3;
-        overlaps[2][index] = -0.75*e2*expVal*r/e1e2_3;
-        overlaps[3][index] = 0.125*expVal/e1e2_3;
-    }
-    if (hexA1A2 == 0x31) {
-        overlaps[0][index] = expVal*(0.5*e1e2_2 - 0.5*e2*r2*(e1 - e2)*(e1 + e2) - e2*r2*(e2*(e1*e2*r2 - 0.5*e1 - 0.5*e2) + 0.5*(e1 - e2)*(e1 + e2)) + (e1 + e2)*(-0.5*e1*e2*r2 + 0.25*e1 + 0.25*e2))/e1e2_4;
-        overlaps[1][index] = expVal*r*(-1.5*e1*e2 + 1.5*e1*e2_2*r2 + 0.75*e1_2 - 2.25*e2_2 - 0.5*e2_3*r2)/(4.0*e1*e2_3 + 6.0*e1_2*e2_2 + 4.0*e1_3*e2 + 1.0*e1_4 + 1.0*e2_4);
-        overlaps[2][index] = expVal*(-0.25*e1*e2*r2 + 0.75*e1 + e2*r2*(-0.25*e1 + 0.5*e2) - 0.25*e2*r2*(e1 - e2) + 0.75*e2)/e1e2_4;
-        overlaps[3][index] = expVal*r*(0.125*e1 - 0.375*e2)/e1e2_4;
-        overlaps[4][index] = 0.0625*expVal/e1e2_4;
-    }
-    if (hexA1A2 == 0x32) {
-        overlaps[0][index] = expVal*r*(-3.0*e1*e2_2 + 2.5*e1*e2_3*r2 + 0.75*e1_2*e2 + 1.5*e1_2*e2_2*r2 - 1.0*e1_2*e2_3*r4 - 1.5*e1_3*e2*r2 + 1.5*e1_3 - 2.25*e2_3 - 0.5*e2_4*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[1][index] = expVal*(3.75*e1*e2 - 2.25*e1*e2_2*r2 - 1.0*e1*e2_3*r4 - 3.75*e1_2*e2*r2 + 1.5*e1_2*e2_2*r4 + 1.875*e1_2 + 0.75*e1_3*r2 + 1.875*e2_2 + 2.25*e2_3*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[2][index] = expVal*r*(-0.75*e1*e2 + 1.5*e1*e2_2*r2 - 0.75*e1_2*e2*r2 + 1.5*e1_2 - 2.25*e2_2 - 0.25*e2_3*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[3][index] = expVal*(-0.25*e1*e2*r2 + 0.625*e1 + 0.125*e1_2*r2 + 0.25*e2*r2*(-e1 + e2) - 0.5*e2*r2*(0.5*e1 - 0.25*e2) + 0.625*e2)/e1e2_5;
-        overlaps[4][index] = expVal*r*(0.125*e1 - 0.1875*e2)/e1e2_5;
-        overlaps[5][index] = 0.03125*expVal/e1e2_5;
-    }
     if (hexA1A2 == 0x33) {
+        float r2 = r*r;
+        float r4 = r2*r2;
+        float r6 = r2*r2*r2;
+        float e1_2 = e1*e1;
+        float e1e2_2 = (e1 + e2)*(e1 + e2);
+        float e1e2_3 = e1e2_2*(e1 + e2);
+        float e1e2_4 = e1e2_2*e1e2_2;
+        float e2_2 = e2*e2;
+        float e1_3 = e1_2*e1;
+        float e1_4 = e1_2*e1_2;
+        float e2_3 = e2_2*e2;
+        float e2_4 = e2_2*e2_2;
+        float e1_5 = e1_4*e1;
+        float e1_6 = e1_5*e1;
+        float e2_5 = e2_4*e2;
+        float e2_6 = e2_5*e1;
+        float e1e2_5 = e1e2_4*(e1 + e2);
+        float e1e2_6 = e1e2_3*e1e2_3;
+        float e1e2_7 = e1e2_6*(e1 + e2);
+        float e1e2_8 = e1e2_4*e1e2_4;
         overlaps[0][index] = expVal*(5.625*e1*e2_2 - 2.25*e1*e2_3*r2 - 1.5*e1*e2_4*r4 + 5.625*e1_2*e2 - 9.0*e1_2*e2_2*r2 + 3.0*e1_2*e2_3*r4 - 2.25*e1_3*e2*r2 + 3.0*e1_3*e2_2*r4 - 1.0*e1_3*e2_3*r6 + 1.875*e1_3 - 1.5*e1_4*e2*r4 + 2.25*e1_4*r2 + 1.875*e2_3 + 2.25*e2_4*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
         overlaps[1][index] = expVal*r*(-5.625*e1*e2_2 + 6.0*e1*e2_3*r2 + 5.625*e1_2*e2 - 1.5*e1_2*e2_3*r4 - 6.0*e1_3*e2*r2 + 1.5*e1_3*e2_2*r4 + 5.625*e1_3 + 0.75*e1_4*r2 - 5.625*e2_3 - 0.75*e2_4*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
         overlaps[2][index] = expVal*(5.625*e1*e2 - 4.5*e1*e2_2*r2 - 0.75*e1*e2_3*r4 - 4.5*e1_2*e2*r2 + 2.25*e1_2*e2_2*r4 + 2.8125*e1_2 - 0.75*e1_3*e2*r4 + 2.25*e1_3*r2 + 2.8125*e2_2 + 2.25*e2_3*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
@@ -565,61 +502,6 @@ void fillOverlapCoefficients(
         overlaps[4][index] = expVal*(-0.1875*e1*e2*r2 + 0.46875*e1 + 0.1875*e1_2*r2 + e2*r2*(-0.1875*e1 + 0.125*e2) - 0.5*e2*r2*(0.375*e1 - 0.125*e2) + 0.46875*e2)/e1e2_6;
         overlaps[5][index] = 0.09375*expVal*r*(e1 - e2)/e1e2_6;
         overlaps[6][index] = 0.015625*expVal/e1e2_6;
-    }
-    if (hexA1A2 == 0x34) {
-        overlaps[0][index] = expVal*r*(-9.375*e1*e2_3 + 7.5*e1*e2_4*r2 + 5.625*e1_2*e2_2 + 3.75*e1_2*e2_3*r2 - 3.0*e1_2*e2_4*r4 + 16.875*e1_3*e2 - 15.0*e1_3*e2_2*r2 + 3.0*e1_3*e2_3*r4 - 7.5*e1_4*e2*r2 + 4.5*e1_4*e2_2*r4 - 1.0*e1_4*e2_3*r6 + 7.5*e1_4 - 1.5*e1_5*e2*r4 + 3.0*e1_5*r2 - 5.625*e2_4 - 0.75*e2_5*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[1][index] = expVal*(19.6875*e1*e2_2 - 11.25*e1*e2_3*r2 - 3.0*e1*e2_4*r4 + 19.6875*e1_2*e2 - 28.125*e1_2*e2_2*r2 + 10.5*e1_2*e2_3*r4 + 4.5*e1_3*e2_2*r4 - 2.0*e1_3*e2_3*r6 + 6.5625*e1_3 - 8.25*e1_4*e2*r4 + 1.5*e1_4*e2_2*r6 + 11.25*e1_4*r2 + 0.75*e1_5*r4 + 6.5625*e2_3 + 5.625*e2_4*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[2][index] = expVal*r*(-5.625*e1*e2_2 + 8.25*e1*e2_3*r2 + 14.0625*e1_2*e2 - 4.5*e1_2*e2_2*r2 - 1.5*e1_2*e2_3*r4 - 10.5*e1_3*e2*r2 + 3.0*e1_3*e2_2*r4 + 11.25*e1_3 - 0.75*e1_4*e2*r4 + 3.0*e1_4*r2 - 8.4375*e2_3 - 0.75*e2_4*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[3][index] = expVal*(6.5625*e1*e2 - 5.625*e1*e2_2*r2 - 0.5*e1*e2_3*r4 - 3.75*e1_2*e2*r2 + 2.25*e1_2*e2_2*r4 + 3.28125*e1_2 - 1.5*e1_3*e2*r4 + 3.75*e1_3*r2 + 0.125*e1_4*r4 + 3.28125*e2_2 + 1.875*e2_3*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[4][index] = expVal*r*(0.46875*e1*e2 + 0.75*e1*e2_2*r2 - 1.125*e1_2*e2*r2 + 1.875*e1_2 + 0.25*e1_3*r2 - 1.40625*e2_2 - 0.0625*e2_3*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[5][index] = expVal*(-0.125*e1*e2*r2 + 0.328125*e1 + 0.1875*e1_2*r2 + e2*r2*(-0.125*e1 + 0.0625*e2) - 0.5*e2*r2*(0.25*e1 - 0.0625*e2) + 0.328125*e2)/e1e2_7;
-        overlaps[6][index] = expVal*r*(0.0625*e1 - 0.046875*e2)/e1e2_7;
-        overlaps[7][index] = 0.0078125*expVal/e1e2_7;
-    }
-    if (hexA1A2 == 0x40) {
-        overlaps[0][index] = expVal*(0.5*e1e2_2 + 1.0*e2_2*r2*(e1 + e2) + e2_2*r2*(1.5*e1 + 1.5*e2 + e2_2*r2) + (e1 + e2)*(0.25*e1 + 0.25*e2 + 0.5*e2_2*r2))/e1e2_4;
-        overlaps[1][index] = e2*expVal*r*(-3.0*e1 - 3.0*e2 - 2.0*e2_2*r2)/e1e2_4;
-        overlaps[2][index] = expVal*(0.75*e1 + 0.75*e2 + 1.5*e2_2*r2)/e1e2_4;
-        overlaps[3][index] = -0.5*e2*expVal*r/e1e2_4;
-        overlaps[4][index] = 0.0625*expVal/e1e2_4;
-    }
-    if (hexA1A2 == 0x41) {
-        overlaps[0][index] = expVal*r*(-5.25*e1*e2_2 + 1.0*e1*e2_3*r2 + 1.0*e1*e2_4*r4 - 1.5*e1_2*e2 + 3.0*e1_2*e2_2*r2 + 0.75*e1_3 - 3.0*e2_3 - 2.0*e2_4*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[1][index] = expVal*(3.75*e1*e2 + 1.5*e1*e2_2*r2 - 2.0*e1*e2_3*r4 - 3.0*e1_2*e2*r2 + 1.875*e1_2 + 1.875*e2_2 + 4.5*e2_3*r2 + 0.5*e2_4*r4)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[2][index] = expVal*r*(-2.25*e1*e2 + 1.5*e1*e2_2*r2 + 0.75*e1_2 - 3.0*e2_2 - 1.0*e2_3*r2)/(5.0*e1*e2_4 + 10.0*e1_2*e2_3 + 10.0*e1_3*e2_2 + 5.0*e1_4*e2 + 1.0*e1_5 + 1.0*e2_5);
-        overlaps[3][index] = expVal*(-0.125*e1*e2*r2 + 0.625*e1 + 0.5*e2*r2*(-0.25*e1 + 0.5*e2) + e2*r2*(-0.125*e1 + 0.375*e2) - 0.125*e2*r2*(e1 - e2) + 0.625*e2)/e1e2_5;
-        overlaps[4][index] = expVal*r*(0.0625*e1 - 0.25*e2)/e1e2_5;
-        overlaps[5][index] = 0.03125*expVal/e1e2_5;
-    }
-    if (hexA1A2 == 0x42) {
-        overlaps[0][index] = expVal*(5.625*e1*e2_2 + 3.0*e1*e2_3*r2 - 3.5*e1*e2_4*r4 + 5.625*e1_2*e2 - 6.75*e1_2*e2_2*r2 - 1.0*e1_2*e2_3*r4 + 1.0*e1_2*e2_4*r6 - 4.5*e1_3*e2*r2 + 3.0*e1_3*e2_2*r4 + 1.875*e1_3 + 0.75*e1_4*r2 + 1.875*e2_3 + 4.5*e2_4*r2 + 0.5*e2_5*r4)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[1][index] = expVal*r*(-11.25*e1*e2_2 + 6.0*e1*e2_3*r2 + 1.0*e1*e2_4*r4 + 6.0*e1_2*e2_2*r2 - 2.0*e1_2*e2_3*r4 - 3.0*e1_3*e2*r2 + 3.75*e1_3 - 7.5*e2_3 - 3.0*e2_4*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[2][index] = expVal*(5.625*e1*e2 - 1.5*e1*e2_2*r2 - 2.0*e1*e2_3*r4 - 5.25*e1_2*e2*r2 + 1.5*e1_2*e2_2*r4 + 2.8125*e1_2 + 0.75*e1_3*r2 + 2.8125*e2_2 + 4.5*e2_3*r2 + 0.25*e2_4*r4)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[3][index] = expVal*r*(-1.25*e1*e2 + 1.5*e1*e2_2*r2 - 0.5*e1_2*e2*r2 + 1.25*e1_2 - 2.5*e2_2 - 0.5*e2_3*r2)/(6.0*e1*e2_5 + 15.0*e1_2*e2_4 + 20.0*e1_3*e2_3 + 15.0*e1_4*e2_2 + 6.0*e1_5*e2 + 1.0*e1_6 + 1.0*e2_6);
-        overlaps[4][index] = expVal*(-0.125*e1*e2*r2 + 0.46875*e1 + 0.0625*e1_2*r2 + 0.125*e2*r2*(-e1 + e2) + e2*r2*(-0.125*e1 + 0.1875*e2) - 0.25*e2*r2*(0.5*e1 - 0.25*e2) + 0.46875*e2)/e1e2_6;
-        overlaps[5][index] = expVal*r*(0.0625*e1 - 0.125*e2)/e1e2_6;
-        overlaps[6][index] = 0.015625*expVal/e1e2_6;
-    }
-    if (hexA1A2 == 0x43) {
-        overlaps[0][index] = expVal*r*(-16.875*e1*e2_3 + 7.5*e1*e2_4*r2 + 1.5*e1*e2_5*r4 - 5.625*e1_2*e2_2 + 15.0*e1_2*e2_3*r2 - 4.5*e1_2*e2_4*r4 + 9.375*e1_3*e2 - 3.75*e1_3*e2_2*r2 - 3.0*e1_3*e2_3*r4 + 1.0*e1_3*e2_4*r6 - 7.5*e1_4*e2*r2 + 3.0*e1_4*e2_2*r4 + 5.625*e1_4 + 0.75*e1_5*r2 - 7.5*e2_4 - 3.0*e2_5*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[1][index] = expVal*(19.6875*e1*e2_2 - 8.25*e1*e2_4*r4 + 19.6875*e1_2*e2 - 28.125*e1_2*e2_2*r2 + 4.5*e1_2*e2_3*r4 + 1.5*e1_2*e2_4*r6 - 11.25*e1_3*e2*r2 + 10.5*e1_3*e2_2*r4 - 2.0*e1_3*e2_3*r6 + 6.5625*e1_3 - 3.0*e1_4*e2*r4 + 5.625*e1_4*r2 + 6.5625*e2_3 + 11.25*e2_4*r2 + 0.75*e2_5*r4)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[2][index] = expVal*r*(-14.0625*e1*e2_2 + 10.5*e1*e2_3*r2 + 0.75*e1*e2_4*r4 + 5.625*e1_2*e2 + 4.5*e1_2*e2_2*r2 - 3.0*e1_2*e2_3*r4 - 8.25*e1_3*e2*r2 + 1.5*e1_3*e2_2*r4 + 8.4375*e1_3 + 0.75*e1_4*r2 - 11.25*e2_3 - 3.0*e2_4*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[3][index] = expVal*(6.5625*e1*e2 - 3.75*e1*e2_2*r2 - 1.5*e1*e2_3*r4 - 5.625*e1_2*e2*r2 + 2.25*e1_2*e2_2*r4 + 3.28125*e1_2 - 0.5*e1_3*e2*r4 + 1.875*e1_3*r2 + 3.28125*e2_2 + 3.75*e2_3*r2 + 0.125*e2_4*r4)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[4][index] = expVal*r*(-0.46875*e1*e2 + 1.125*e1*e2_2*r2 - 0.75*e1_2*e2*r2 + 1.40625*e1_2 + 0.0625*e1_3*r2 - 1.875*e2_2 - 0.25*e2_3*r2)/(7.0*e1*e2_6 + 21.0*e1_2*e2_5 + 35.0*e1_3*e2_4 + 35.0*e1_4*e2_3 + 21.0*e1_5*e2_2 + 7.0*e1_6*e2 + 1.0*e1_7 + 1.0*e2_7);
-        overlaps[5][index] = expVal*(-0.09375*e1*e2*r2 + 0.328125*e1 + 0.09375*e1_2*r2 + 0.09375*e2*r2*(-e1 + e2) + 0.5*e2*r2*(-0.1875*e1 + 0.125*e2) - 0.25*e2*r2*(0.375*e1 - 0.125*e2) + 0.328125*e2)/e1e2_7;
-        overlaps[6][index] = expVal*r*(0.046875*e1 - 0.0625*e2)/e1e2_7;
-        overlaps[7][index] = 0.0078125*expVal/e1e2_7;
-    }
-    if (hexA1A2 == 0x44) {
-        overlaps[0][index] = expVal*(26.25*e1*e2_3 + 3.75*e1*e2_4*r2 - 10.5*e1*e2_5*r4 + 39.375*e1_2*e2_2 - 45.0*e1_2*e2_3*r2 + 3.75*e1_2*e2_4*r4 + 3.0*e1_2*e2_5*r6 + 26.25*e1_3*e2 - 45.0*e1_3*e2_2*r2 + 30.0*e1_3*e2_3*r4 - 5.0*e1_3*e2_4*r6 + 3.75*e1_4*e2*r2 + 3.75*e1_4*e2_2*r4 - 5.0*e1_4*e2_3*r6 + 1.0*e1_4*e2_4*r8 + 6.5625*e1_4 - 10.5*e1_5*e2*r4 + 3.0*e1_5*e2_2*r6 + 11.25*e1_5*r2 + 0.75*e1_6*r4 + 6.5625*e2_4 + 11.25*e2_5*r2 + 0.75*e2_6*r4)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[1][index] = expVal*r*(-52.5*e1*e2_3 + 30.0*e1*e2_4*r2 + 3.0*e1*e2_5*r4 + 37.5*e1_2*e2_3*r2 - 15.0*e1_2*e2_4*r4 + 52.5*e1_3*e2 - 37.5*e1_3*e2_2*r2 + 2.0*e1_3*e2_4*r6 - 30.0*e1_4*e2*r2 + 15.0*e1_4*e2_2*r4 - 2.0*e1_4*e2_3*r6 + 26.25*e1_4 - 3.0*e1_5*e2*r4 + 7.5*e1_5*r2 - 26.25*e2_4 - 7.5*e2_5*r2)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[2][index] = expVal*(39.375*e1*e2_2 - 11.25*e1*e2_3*r2 - 11.25*e1*e2_4*r4 + 39.375*e1_2*e2 - 56.25*e1_2*e2_2*r2 + 15.0*e1_2*e2_3*r4 + 1.5*e1_2*e2_4*r6 - 11.25*e1_3*e2*r2 + 15.0*e1_3*e2_2*r4 - 4.0*e1_3*e2_3*r6 + 13.125*e1_3 - 11.25*e1_4*e2*r4 + 1.5*e1_4*e2_2*r6 + 16.875*e1_4*r2 + 0.75*e1_5*r4 + 13.125*e2_3 + 16.875*e2_4*r2 + 0.75*e2_5*r4)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[3][index] = expVal*r*(-13.125*e1*e2_2 + 12.5*e1*e2_3*r2 + 0.5*e1*e2_4*r4 + 13.125*e1_2*e2 - 3.0*e1_2*e2_3*r4 - 12.5*e1_3*e2*r2 + 3.0*e1_3*e2_2*r4 + 13.125*e1_3 - 0.5*e1_4*e2*r4 + 2.5*e1_4*r2 - 13.125*e2_3 - 2.5*e2_4*r2)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[4][index] = expVal*(6.5625*e1*e2 - 4.6875*e1*e2_2*r2 - 1.0*e1*e2_3*r4 - 4.6875*e1_2*e2*r2 + 2.25*e1_2*e2_2*r4 + 3.28125*e1_2 - 1.0*e1_3*e2*r4 + 2.8125*e1_3*r2 + 0.0625*e1_4*r4 + 3.28125*e2_2 + 2.8125*e2_3*r2 + 0.0625*e2_4*r4)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[5][index] = expVal*r*(0.75*e1*e2_2*r2 - 0.75*e1_2*e2*r2 + 1.3125*e1_2 + 0.125*e1_3*r2 - 1.3125*e2_2 - 0.125*e2_3*r2)/(8.0*e1*e2_7 + 28.0*e1_2*e2_6 + 56.0*e1_3*e2_5 + 70.0*e1_4*e2_4 + 56.0*e1_5*e2_3 + 28.0*e1_6*e2_2 + 8.0*e1_7*e2 + 1.0*e1_8 + 1.0*e2_8);
-        overlaps[6][index] = expVal*(-0.0625*e1*e2*r2 + 0.21875*e1 + 0.09375*e1_2*r2 + 0.5*e2*r2*(-0.125*e1 + 0.0625*e2) + e2*r2*(-0.0625*e1 + 0.046875*e2) - 0.25*e2*r2*(0.25*e1 - 0.0625*e2) + 0.21875*e2)/e1e2_8;
-        overlaps[7][index] = 0.03125*expVal*r*(e1 - e2)/e1e2_8;
-        overlaps[8][index] = 0.00390625*expVal/e1e2_8;
     }
 }
 
@@ -629,7 +511,7 @@ vec3 productCenter(
 }
 
 void fillOverlaps(
-    inout vec3[10] overlaps,
+    inout vec4[8] overlaps,
     vec3 r1, ivec3 a1, float e1, vec3 r2, ivec3 a2, float e2) {
     vec3 r = r1 - r2;
     float expValX = exp(-e1*e2*r.x*r.x/(e1 + e2));
@@ -639,79 +521,6 @@ void fillOverlaps(
     fillOverlapCoefficients(overlaps, xInd, a1.x, a2.x, r.x, e1, e2, expValX);
     fillOverlapCoefficients(overlaps, yInd, a1.y, a2.y, r.y, e1, e2, expValY);
     fillOverlapCoefficients(overlaps, zInd, a1.z, a2.z, r.z, e1, e2, expValZ);
-}
-
-// float getDerivativeValue() {
-
-// }
-
-float repulsionInner(float cc,
-    int xInd, int yInd, int zInd,
-    ivec3 a1, ivec3 a2, ivec3 a3, ivec3 a4,
-    inout vec3 overlapsL[10], inout vec3 overlapsR[10]) {
-
-    float eps = 1e-40;
-    if (abs(cc) < eps)
-        return 0.0;
-    int angXLMax = a1.x + a2.x;
-    int angXRMax = a3.x + a4.x;
-    int angYLMax = a1.y + a2.y;
-    int angYRMax = a3.y + a4.y;
-    int angZLMax = a1.z + a2.z;
-    int angZRMax = a3.z + a4.z;
-    float val = 0.0;
-    for (int xL = 0; 
-         xL < maxAngularIter && xL <= angXLMax;
-         xL++) {
-        int xR = xInd - xL;
-        float oXL = overlapsL[xL].x;
-        float oXR = (xR >= 0 && xR <= angXRMax)?
-            overlapsR[xR].x: 0.0;
-        
-        for (int yL = 0;
-             yL < maxAngularIter && yL <= angYLMax
-             && abs(oXL) > eps && abs(oXR) > eps;
-             yL++) {
-            int yR = yInd - yL;
-
-            float oYL = overlapsL[yL].y;
-            float oYR = (yR >= 0 && yR <= angYRMax)?
-                overlapsR[yR].y: 0.0;
-                
-            for (int zL = 0;
-                 zL < maxAngularIter && zL <= angZLMax
-                 && abs(oYL) > eps && abs(oYR) > eps;
-                 zL++) {
-                int zR = zInd - zL;
-
-                float oZL = overlapsL[zL].z;
-                float oZR = (zR >= 0 && zR <= angZRMax)?
-                    overlapsR[zR].z: 0.0;
-                        
-                float overlaps = oXL*oXR*oYL*oYR*oZL*oZR;
-                //
-                // dFdx1 = factor * (ddx1(oXL)*oXR*oYL*oYR*oZL*oZR*cc + overlaps*ddx1(cc))
-                // dFdy1 = factor * (oXL*oXR*ddy1(oYL)*oYR*oZL*oZR*cc + overlaps*ddy1(cc))
-                // dFdz1 = factor * (oXL*oXR*oYL*oYR*ddz1(oZL)*oZR*cc + overlaps*ddz1(cc))
-                // dFdx2 = factor * (ddx2(oXL)*oXR*oYL*oYR*oZL*oZR*cc + overlaps*ddx2(cc))
-                // dFdy2 = factor * (oXL*oXR*ddy2(oYL)*oYR*oZL*oZR*cc + overlaps*ddy2(cc))
-                // dFdz2 = factor * (oXL*oXR*oYL*oYR*ddz2(oZL)*oZR*cc + overlaps*ddz2(cc))
-
-                // dFdx3 = factor * (oXL*ddx3(oXR)*oYL*oYR*oZL*oZR*cc + overlaps*ddx3(cc))
-                // dFdy3 = factor * (oXL*oXR*oYL*ddy3(oYR)*oZL*oZR*cc + overlaps*ddy3(cc))
-                // dFdz3 = factor * (oXL*oXR*oYL*oYR*oZL*ddz3(oZR)*cc + overlaps*ddz3(cc))
-                // dFdx4 = factor * (oXL*ddx4(oXR)*oYL*oYR*oZL*oZR*cc + overlaps*ddx4(cc))
-                // dFdy4 = factor * (oXL*oXR*oYL*ddy4(oYR)*oZL*oZR*cc + overlaps*ddy4(cc))
-                // dFdz4 = factor * (oXL*oXR*oYL*oYR*oZL*ddz4(oZR)*cc + overlaps*ddz4(cc))
-                
-                float modVal = mod(float(xR + yR + zR), 2.0);
-                float factor = (modVal > eps)? -1.0: 1.0;
-                if (abs(overlaps) > eps)
-                    val += factor * overlaps * cc;
-            }
-        }
-    }
-    return val;
 }
 
 float repulsion(
@@ -740,11 +549,11 @@ float repulsion(
     int maxAy = a1.y + a2.y + a3.y + a4.y;
     int maxAz = a1.z + a2.z + a3.z + a4.z;
 
-    vec3 overlapsL[10];
+    vec4 overlapsL[8];
     fillOverlaps(overlapsL, r1, a1, e1, r2, a2, e2);
-    vec3 overlapsR[10];
+    vec4 overlapsR[8];
     fillOverlaps(overlapsR, r3, a3, e3, r4, a4, e4);
-    float bF[24];
+    float bF[16];
     // vec4 bFVec = texture2D(boysFunctionTex, shellCoord);
     // bF[0] = bFVec[0];
     // bF[1] = bFVec[1];
@@ -752,22 +561,46 @@ float repulsion(
     // bF[3] = bFVec[3];
     computeBoysFunctionValues(
         bF, orbExp*dot(rLR, rLR), maxAx + maxAy + maxAz);
-    
-    for (int i = 0; i <= maxAx; i++) {
-        for (int j = 0; j <= maxAy; j++) {
-            for (int k = 0; k <= maxAz; k++) {
-                
-                float cc = coulombCoefficient(
-                    bF, 
-                    ivec3(i, j, k), orbExp, rLR);
-                val += repulsionInner(cc,
-                    i, j, k,
-                    a1, a2, a3, a4,
-                    overlapsL, overlapsR);
-
+        
+    for (int ix = 0; ix <= angXLMax; ix++) {
+        float oXL = overlapsL[ix].x;
+        for (int iy = 0; iy <= angYLMax; iy++) {
+            float oYL = overlapsL[iy].y;
+            for (int iz = 0; iz <= angZLMax; iz++) {
+                float oZL = overlapsL[iz].z;
+                for (int jx = 0; jx <= angXRMax; jx++) {
+                    float oXR = overlapsR[jx].x;
+                    for (int jy = 0; jy <= angYRMax; jy++) {
+                        float oYR = overlapsR[jy].y;
+                        for (int jz = 0; jz <= angZRMax; jz++) {
+                            float oZR = overlapsR[jz].z;
+                            float overlaps = oXL*oXR*oYL*oYR*oZL*oZR;
+                            float cc = coulombCoefficient(
+                                bF, 
+                                ivec3(ix + jx, iy + jy, iz + jz),
+                                orbExp, rLR);
+                            float modVal = mod(float(jx + jy + jz), 2.0);
+                            float factor = (modVal > eps)? -1.0: 1.0;
+                            val += factor * overlaps * cc;
+                        }
+                    }
+                }
             }
         }
     }
+    // dFdx1 = factor * (ddx1(oXL)*oXR*oYL*oYR*oZL*oZR*cc + overlaps*ddx1(cc))
+    // dFdy1 = factor * (oXL*oXR*ddy1(oYL)*oYR*oZL*oZR*cc + overlaps*ddy1(cc))
+    // dFdz1 = factor * (oXL*oXR*oYL*oYR*ddz1(oZL)*oZR*cc + overlaps*ddz1(cc))
+    // dFdx2 = factor * (ddx2(oXL)*oXR*oYL*oYR*oZL*oZR*cc + overlaps*ddx2(cc))
+    // dFdy2 = factor * (oXL*oXR*ddy2(oYL)*oYR*oZL*oZR*cc + overlaps*ddy2(cc))
+    // dFdz2 = factor * (oXL*oXR*oYL*oYR*ddz2(oZL)*oZR*cc + overlaps*ddz2(cc))
+
+    // dFdx3 = factor * (oXL*ddx3(oXR)*oYL*oYR*oZL*oZR*cc + overlaps*ddx3(cc))
+    // dFdy3 = factor * (oXL*oXR*oYL*ddy3(oYR)*oZL*oZR*cc + overlaps*ddy3(cc))
+    // dFdz3 = factor * (oXL*oXR*oYL*oYR*oZL*ddz3(oZR)*cc + overlaps*ddz3(cc))
+    // dFdx4 = factor * (oXL*ddx4(oXR)*oYL*oYR*oZL*oZR*cc + overlaps*ddx4(cc))
+    // dFdy4 = factor * (oXL*oXR*oYL*ddy4(oYR)*oZL*oZR*cc + overlaps*ddy4(cc))
+    // dFdz4 = factor * (oXL*oXR*oYL*oYR*oZL*ddz4(oZR)*cc + overlaps*ddz4(cc))
     return amplitude*val*(2.0*pow(PI, (5.0/2.0))) 
         / (orbExpL*orbExpR*sqrt(orbExpL + orbExpR));
 }
@@ -845,39 +678,4 @@ void main () {
         );
         fragColor = vec4(sumTerm) + texture2D(previousSumTex, UV);
     }
-
-    /* if (debug > 0) {
-    
-        vec3 fDebugInd = texture2D(debugIndTex, UV).xyz;
-        ivec3 debugInd = ivec3(
-            int(fDebugInd.x), int(fDebugInd.y), int(fDebugInd.z)
-        );
-
-        if (debug == DEBUG_COULOMB) { 
-            // float coulombCoefficient(
-            // ivec3 indices, int n, float orbExp, vec3 r12)
-            // float bF[24];
-            // computeBoysFunctionValues(
-            //     bF, debugCoulombOrbExp
-            //     *dot(debugCoulombR, debugCoulombR), 20);
-            // float val = coulombCoefficient(
-            //     bF,
-            //     debugInd, debugCoulombFactor, debugCoulombOrbExp,
-            //     debugCoulombR);
-            // fragColor = vec4(val);
-        } 
-        else if (debug == DEBUG_OVERLAP) {
-            // int n = debugInd[0];
-            // int a1 = debugInd[1];
-            // int a2 = debugInd[2];
-            // float e1 = debugOverlapExponents[0];
-            // float e2 = debugOverlapExponents[1];
-            // float x1 = debugOverlapPositions[0];
-            // float x2 = debugOverlapPositions[1];
-            // float expVal = exp(-e1*e2*(x2 - x1)*(x2 - x1)/(e1 + e2));
-            // float val = overlapCoefficient(
-            //     n, x1, a1, e1, x2, a2, e2, expVal);
-            // fragColor = vec4(val);
-        }
-    }*/
 }

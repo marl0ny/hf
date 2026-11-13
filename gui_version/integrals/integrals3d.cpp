@@ -484,13 +484,13 @@ double repulsion(const Gaussian3D &g1,
     int max_az = ang_z1_max + ang_z2_max;
     struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
 
-    spatial::Vector overlaps1[10];
-    fill_overlaps(overlaps1, g1, h1);
-    spatial::Vector overlaps2[10];
-    fill_overlaps(overlaps2, g2, h2);
-    int maxi = 0, midi = 0, mini = 0;
-    sort_indices(maxi, midi, mini, 
-        max_ax, max_ay, max_az);
+    // spatial::Vector overlaps1[10];
+    // fill_overlaps(overlaps1, g1, h1);
+    // spatial::Vector overlaps2[10];
+    // fill_overlaps(overlaps2, g2, h2);
+    // int maxi = 0, midi = 0, mini = 0;
+    // sort_indices(maxi, midi, mini, 
+    //     max_ax, max_ay, max_az);
     // for (int i = 0; i < max_ax; i++) {
     /* for (int i = 0; i <= maxi; i++) {
         for (int j = 0; j <= std::min(i, midi); j++) {
@@ -536,7 +536,7 @@ double repulsion(const Gaussian3D &g1,
         }
     }*/
 
-    // }
+    /* 
     for (int i = 0; i <= max_ax; i++) {
         for (int j = 0; j <= max_ay; j++) {
             for (int k = 0; k <= max_az; k++) {
@@ -551,14 +551,13 @@ double repulsion(const Gaussian3D &g1,
     }
     return amplitude*val*(2.0*pow(PI, (5.0/2.0))) 
         / (orb_exp1*orb_exp2*sqrt(orb_exp1 + orb_exp2));
-    // */
+    */
 
 
-    /* 
-    fp_t orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
-    fp_t orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
-    fp_t orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
-    struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
+    // fp_t orb_exp1 = g1.orbital_exponent() + h1.orbital_exponent();
+    // fp_t orb_exp2 = g2.orbital_exponent() + h2.orbital_exponent();
+    // fp_t orb_exp = orb_exp1*orb_exp2/(orb_exp1 + orb_exp2);
+    // struct Vector r12 = product_center(g1, h1) - product_center(g2, h2);
     fp_t eps = 1e-40;
     fp_t eps2 = 1e-40;
     for (int ix = 0; ix < (g1x.angular() + h1x.angular() + 1); ix++) {
@@ -589,5 +588,5 @@ double repulsion(const Gaussian3D &g1,
     }
 
     return val*amplitude; 
-    */
+
 }

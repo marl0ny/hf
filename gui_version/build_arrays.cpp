@@ -664,20 +664,20 @@ void build_arrays::fill(
         for (int j = 0; j < max_primitives_count; j++) {
             for (int k = 0; k < max_primitives_count; k++) {
                 for (int l = 0; l < max_primitives_count; l++) {
-                    shell_rep_exc.draw(
-                        boys_program,
-                        {
-                            {"basisFunctionSpec1Tex", &bf_spec1},
-                            {"basisFunctionSpec2Tex", &bf_spec2},
-                            {"primitivesTex", &primitives},
-                            {"indicesTex", &shell_indices_q},
-                            {"previousSumTex", rep_exc_ptrs[1]},
-                            {"numberOfBasisFunctions", 
-                                    int(basis_functions.get_number_of_basis_functions())},
-                            {"maxNumberOfPrimitives", int(max_primitives_count)},
-                            {"primitiveIndices", IVec4{.x=i, j, k, l}}
-                        }
-                    );
+                    // shell_rep_exc.draw(
+                    //     boys_program,
+                    //     {
+                    //         {"basisFunctionSpec1Tex", &bf_spec1},
+                    //         {"basisFunctionSpec2Tex", &bf_spec2},
+                    //         {"primitivesTex", &primitives},
+                    //         {"indicesTex", &shell_indices_q},
+                    //         {"previousSumTex", rep_exc_ptrs[1]},
+                    //         {"numberOfBasisFunctions", 
+                    //                 int(basis_functions.get_number_of_basis_functions())},
+                    //         {"maxNumberOfPrimitives", int(max_primitives_count)},
+                    //         {"primitiveIndices", IVec4{.x=i, j, k, l}}
+                    //     }
+                    // );
                     rep_exc_ptrs[0]->draw(
                         re_program,
                         {
