@@ -110,7 +110,6 @@ complex computeBFRecurseUpwardsIntermediary(float x) {
     complex cVal = complex(0.0, 0.0);
     complex cX = complex(x, 0.0);
     complex one = complex(1.0, 0.0);
-    complex oneHalf = complex(0.5, 0.0);
     for (int i = 0; i < 13; i++) {
         complex expVal = WEIGHTS[2*i];
         complex weight = WEIGHTS[2*i + 1];
@@ -221,17 +220,7 @@ int getSymmetric4Index1D(int a, int b, int c, int d) {
         + (indCD - indAB));
 }
 
-float pw(float a, int b) {
-    if (b == 0)
-        return 1.0;
-    float val = 1.0;
-    for (int p = 1; p <= b; p++)
-        val = val*a;
-    return val;
-}
-
-
-float coulombCoefficientHelper(
+float coulombCoefficientHelper000To332(
     inout float bF[16],
     ivec3 indices, float orbExp, vec3 r12) {
     vec3 s12 = r12;
@@ -241,86 +230,372 @@ float coulombCoefficientHelper(
     float r2 = dot(r12, r12);
     float val = 0.0;
     float x = s12.x, y = s12.y, z = s12.z;
-    float x2 = x*x, y2 = y*y, z2 = z*z;
-    float x4 = x2*x2, y4 = y2*y2, z4 = z2*z2;
-    float x6 = x2*x2*x2;
-    float y6 = y2*y2*y2;
-    float z6 = z2*z2*z2;
-    float ep1 = e;
-    float ep2 = e*e;
-    float ep3 = ep2*e;
-    float ep4 = ep2*ep2;
-    float ep5 = ep3*ep2;
-    float ep6 = ep3*ep3;
     if (hexIJK == 0x000) {
         return bF[0];
     }
     else if (hexIJK == 0x100) {
-        return -2*bF[1]*ep1*x;
+        float ep1 = e;
+        return -2.0*bF[1]*ep1*x;
     }
     else if (hexIJK == 0x110) {
-        return 4*bF[2]*ep2*x*y;
+        float ep2 = e*e;
+        return 4.0*bF[2]*ep2*x*y;
     }
     else if (hexIJK == 0x111) {
+        float ep3 = e*e*e;
         return -8*bF[3]*ep3*x*y*z;
     }
     else if (hexIJK == 0x200) {
+        float ep1 = e;
+        float ep2 = e*e;
+        float x2 = x*x;
         return -2.0*bF[1]*ep1 + 4.0*bF[2]*ep2*x2;
     }
     else if (hexIJK == 0x210) {
+        float ep3 = e*e*e;
+        float ep2 = e*e;
+        float x2 = x*x;
         return 4.0*bF[2]*ep2*y - 8.0*bF[3]*ep3*x2*y;
     }
     else if (hexIJK == 0x211) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float x2 = x*x;
         return -8.0*bF[3]*ep3*y*z + 16.0*bF[4]*ep4*x2*y*z;
     }
     else if (hexIJK == 0x220) {
+        float ep4 = e*e*e*e;
+        float ep3 = e*e*e;
+        float ep2 = e*e;
+        float x2 = x*x;
+        float y2 = y*y;
         return 4.0*bF[2]*ep2 - 8.0*bF[3]*ep3*x2 - 8.0*bF[3]*ep3*y2 + 16.0*bF[4]*ep4*x2*y2;
     }
     else if (hexIJK == 0x221) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
         return -8.0*bF[3]*ep3*z + 16.0*bF[4]*ep4*x2*z + 16.0*bF[4]*ep4*y2*z - 32.0*bF[5]*ep5*x2*y2*z;
     }
     else if (hexIJK == 0x222) {
+        float ep6 = e*e*e*e*e*e;
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
+        float z2 = z*z;
         return -8.0*bF[3]*ep3 + 16.0*bF[4]*ep4*x2 + 16.0*bF[4]*ep4*y2 + 16.0*bF[4]*ep4*z2 - 32.0*bF[5]*ep5*x2*y2 - 32.0*bF[5]*ep5*x2*z2 - 32.0*bF[5]*ep5*y2*z2 + 64.0*bF[6]*ep6*x2*y2*z2;
     }
     else if (hexIJK == 0x300) {
+        float ep3 = e*e*e;
+        float ep2 = e*e;
+        float x2 = x*x;
         return 12.0*bF[2]*ep2*x - 8.0*bF[3]*ep3*x*x2;
     }
     else if (hexIJK == 0x310) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float x2 = x*x;
         return -24.0*bF[3]*ep3*x*y + 16.0*bF[4]*ep4*x*x2*y;
     }
     else if (hexIJK == 0x311) {
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
         return 48.0*bF[4]*ep4*x*y*z - 32.0*bF[5]*ep5*x*x2*y*z;
     }
     else if (hexIJK == 0x320) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
         return -24.0*bF[3]*ep3*x + 16.0*bF[4]*ep4*x*x2 + 48.0*bF[4]*ep4*x*y2 - 32.0*bF[5]*ep5*x*x2*y2;
     }
     else if (hexIJK == 0x321) {
+        float ep6 = e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
         return 48.0*bF[4]*ep4*x*z - 32.0*bF[5]*ep5*x*x2*z - 96.0*bF[5]*ep5*x*y2*z + 64.0*bF[6]*ep6*x*x2*y2*z;
     }
+    else if (hexIJK == 0x322) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
+        float z2 = z*z;
+        return 48.0*bF[4]*ep4*x - 32.0*bF[5]*ep5*x*x2 - 96.0*bF[5]*ep5*x*y2 - 96.0*bF[5]*ep5*x*z2 + 64.0*bF[6]*ep6*x*x2*y2 + 64.0*bF[6]*ep6*x*x2*z2 + 192.0*bF[6]*ep6*x*y2*z2 - 128.0*bF[7]*ep7*x*x2*y2*z2;
+    }
     else if (hexIJK == 0x330) {
+        float ep6 = e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
         return 144.0*bF[4]*ep4*x*y - 96.0*bF[5]*ep5*x*x2*y - 96.0*bF[5]*ep5*x*y*y2 + 64.0*bF[6]*ep6*x*x2*y*y2;
     }
-    else if (hexIJK == 0x400) {
+    else if (hexIJK == 0x331) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
+        return -288.0*bF[5]*ep5*x*y*z + 192.0*bF[6]*ep6*x*x2*y*z + 192.0*bF[6]*ep6*x*y*y2*z - 128.0*bF[7]*ep7*x*x2*y*y2*z;
+    }
+    else if (hexIJK == 0x332) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x2 = x*x;
+        float y2 = y*y;
+        float z2 = z*z;
+        return -288.0*bF[5]*ep5*x*y + 192.0*bF[6]*ep6*x*x2*y + 192.0*bF[6]*ep6*x*y*y2 + 576.0*bF[6]*ep6*x*y*z2 - 128.0*bF[7]*ep7*x*x2*y*y2 - 384.0*bF[7]*ep7*x*x2*y*z2 - 384.0*bF[7]*ep7*x*y*y2*z2 + 256.0*bF[8]*ep8*x*x2*y*y2*z2;
+    }
+}
+
+
+float coulombCoefficientHelper400To800(
+    inout float bF[16],
+    ivec3 indices, float orbExp, vec3 r12) {
+    vec3 s12 = r12;
+    int i = indices[0], j = indices[1], k = indices[2];
+    int hexIJK = i*16*16 + j*16 + k;
+    float e = orbExp;
+    float r2 = dot(r12, r12);
+    float val = 0.0;
+    float x = s12.x, y = s12.y, z = s12.z;
+    if (hexIJK == 0x400) {
+        float ep4 = e*e*e*e;
+        float ep3 = e*e*e;
+        float ep2 = e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return 12.0*bF[2]*ep2 - 48.0*bF[3]*ep3*x2 + 16.0*bF[4]*ep4*x4;
     }
     else if (hexIJK == 0x410) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return -24.0*bF[3]*ep3*y + 96.0*bF[4]*ep4*x2*y - 32.0*bF[5]*ep5*x4*y;
     }
     else if (hexIJK == 0x411) {
+        float ep6 = e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return 48.0*bF[4]*ep4*y*z - 192.0*bF[5]*ep5*x2*y*z + 64.0*bF[6]*ep6*x4*y*z;
     }
     else if (hexIJK == 0x420) {
+        float ep6 = e*e*e*e*e*e;
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
         return -24.0*bF[3]*ep3 + 96.0*bF[4]*ep4*x2 + 48.0*bF[4]*ep4*y2 - 192.0*bF[5]*ep5*x2*y2 - 32.0*bF[5]*ep5*x4 + 64.0*bF[6]*ep6*x4*y2;
     }
+    else if (hexIJK == 0x421) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return 48.0*bF[4]*ep4*z - 192.0*bF[5]*ep5*x2*z - 96.0*bF[5]*ep5*y2*z + 384.0*bF[6]*ep6*x2*y2*z + 64.0*bF[6]*ep6*x4*z - 128.0*bF[7]*ep7*x4*y2*z;
+    }
+    else if (hexIJK == 0x422) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        float z2 = z*z;
+        return 48.0*bF[4]*ep4 - 192.0*bF[5]*ep5*x2 - 96.0*bF[5]*ep5*y2 - 96.0*bF[5]*ep5*z2 + 384.0*bF[6]*ep6*x2*y2 + 384.0*bF[6]*ep6*x2*z2 + 64.0*bF[6]*ep6*x4 + 192.0*bF[6]*ep6*y2*z2 - 768.0*bF[7]*ep7*x2*y2*z2 - 128.0*bF[7]*ep7*x4*y2 - 128.0*bF[7]*ep7*x4*z2 + 256.0*bF[8]*ep8*x4*y2*z2;
+    }
+    else if (hexIJK == 0x430) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return 144.0*bF[4]*ep4*y - 576.0*bF[5]*ep5*x2*y - 96.0*bF[5]*ep5*y*y2 + 384.0*bF[6]*ep6*x2*y*y2 + 192.0*bF[6]*ep6*x4*y - 128.0*bF[7]*ep7*x4*y*y2;
+    }
+    else if (hexIJK == 0x431) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return -288.0*bF[5]*ep5*y*z + 1152.0*bF[6]*ep6*x2*y*z + 192.0*bF[6]*ep6*y*y2*z - 768.0*bF[7]*ep7*x2*y*y2*z - 384.0*bF[7]*ep7*x4*y*z + 256.0*bF[8]*ep8*x4*y*y2*z;
+    }
+    else if (hexIJK == 0x440) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y4 = y*y*y*y;
+        float y2 = y*y;
+        return 144.0*bF[4]*ep4 - 576.0*bF[5]*ep5*x2 - 576.0*bF[5]*ep5*y2 + 2304.0*bF[6]*ep6*x2*y2 + 192.0*bF[6]*ep6*x4 + 192.0*bF[6]*ep6*y4 - 768.0*bF[7]*ep7*x2*y4 - 768.0*bF[7]*ep7*x4*y2 + 256.0*bF[8]*ep8*x4*y4;
+    }
     else if (hexIJK == 0x500) {
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return -120.0*bF[3]*ep3*x + 160.0*bF[4]*ep4*x*x2 - 32.0*bF[5]*ep5*x*x4;
     }
     else if (hexIJK == 0x510) {
+        float ep6 = e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return 240.0*bF[4]*ep4*x*y - 320.0*bF[5]*ep5*x*x2*y + 64.0*bF[6]*ep6*x*x4*y;
     }
+    else if (hexIJK == 0x511) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        return -480.0*bF[5]*ep5*x*y*z + 640.0*bF[6]*ep6*x*x2*y*z - 128.0*bF[7]*ep7*x*x4*y*z;
+    }
+    else if (hexIJK == 0x520) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return 240.0*bF[4]*ep4*x - 320.0*bF[5]*ep5*x*x2 - 480.0*bF[5]*ep5*x*y2 + 640.0*bF[6]*ep6*x*x2*y2 + 64.0*bF[6]*ep6*x*x4 - 128.0*bF[7]*ep7*x*x4*y2;
+    }
+    else if (hexIJK == 0x521) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return -480.0*bF[5]*ep5*x*z + 640.0*bF[6]*ep6*x*x2*z + 960.0*bF[6]*ep6*x*y2*z - 1280.0*bF[7]*ep7*x*x2*y2*z - 128.0*bF[7]*ep7*x*x4*z + 256.0*bF[8]*ep8*x*x4*y2*z;
+    }
+    else if (hexIJK == 0x530) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return -1440.0*bF[5]*ep5*x*y + 1920.0*bF[6]*ep6*x*x2*y + 960.0*bF[6]*ep6*x*y*y2 - 1280.0*bF[7]*ep7*x*x2*y*y2 - 384.0*bF[7]*ep7*x*x4*y + 256.0*bF[8]*ep8*x*x4*y*y2;
+    }
     else if (hexIJK == 0x600) {
+        float ep6 = e*e*e*e*e*e;
+        float ep3 = e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
         return -120.0*bF[3]*ep3 + 720.0*bF[4]*ep4*x2 - 480.0*bF[5]*ep5*x4 + 64.0*bF[6]*ep6*x6;
     }
+    else if (hexIJK == 0x610) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        return 240.0*bF[4]*ep4*y - 1440.0*bF[5]*ep5*x2*y + 960.0*bF[6]*ep6*x4*y - 128.0*bF[7]*ep7*x6*y;
+    }
+    else if (hexIJK == 0x611) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        return -480.0*bF[5]*ep5*y*z + 2880.0*bF[6]*ep6*x2*y*z - 1920.0*bF[7]*ep7*x4*y*z + 256.0*bF[8]*ep8*x6*y*z;
+    }
+    else if (hexIJK == 0x620) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float y2 = y*y;
+        return 240.0*bF[4]*ep4 - 1440.0*bF[5]*ep5*x2 - 480.0*bF[5]*ep5*y2 + 2880.0*bF[6]*ep6*x2*y2 + 960.0*bF[6]*ep6*x4 - 1920.0*bF[7]*ep7*x4*y2 - 128.0*bF[7]*ep7*x6 + 256.0*bF[8]*ep8*x6*y2;
+    }
+    else if (hexIJK == 0x700) {
+        float ep6 = e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        return 1680.0*bF[4]*ep4*x - 3360.0*bF[5]*ep5*x*x2 + 1344.0*bF[6]*ep6*x*x4 - 128.0*bF[7]*ep7*x*x6;
+    }
+    else if (hexIJK == 0x710) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        return -3360.0*bF[5]*ep5*x*y + 6720.0*bF[6]*ep6*x*x2*y - 2688.0*bF[7]*ep7*x*x4*y + 256.0*bF[8]*ep8*x*x6*y;
+    }
+    else if (hexIJK == 0x800) {
+        float ep6 = e*e*e*e*e*e;
+        float ep8 = e*e*e*e*e*e*e*e;
+        float ep4 = e*e*e*e;
+        float ep5 = e*e*e*e*e;
+        float ep7 = e*e*e*e*e*e*e;
+        float x6 = x*x*x*x*x*x;
+        float x4 = x*x*x*x;
+        float x2 = x*x;
+        float x8 = x4*x4;
+        return 1680.0*bF[4]*ep4 - 13440.0*bF[5]*ep5*x2 + 13440.0*bF[6]*ep6*x4 - 3584.0*bF[7]*ep7*x6 + 256.0*bF[8]*ep8*x8;
+    }
+}
+
+float coulombCoefficientHelper(
+    inout float bF[16],
+    ivec3 indices, float orbExp, vec3 r12) {
+    if (indices[0] <= 3)
+        return coulombCoefficientHelper000To332(bF, indices, orbExp, r12);
+    return coulombCoefficientHelper400To800(bF, indices, orbExp, r12);
 }
 
 float coulombCoefficient(
@@ -343,6 +618,8 @@ float coulombCoefficient(
         SWAP_I(indices2[2], indices2[1]);
         SWAP_F(s12.z, s12.y);
     }
+    // if (indices2[0] > 6)
+    //     return 0.0;
     return coulombCoefficientHelper(
         bF, indices2, orbExp, s12);
 }
@@ -539,6 +816,8 @@ float repulsion(
     vec3 rLR = productCenter(r1, e1, r2, e2) - productCenter(r3, e3, r4, e4);
     float eps = 1e-40;
     float val = 0.0;
+    vec3 grad1Val = vec3(0.0), grad2Val = vec3(0.0);
+    vec3 grad3Val = vec3(0.0), grad4Val = vec3(0.0);
     int angXLMax = a1.x + a2.x;
     int angXRMax = a3.x + a4.x;
     int angYLMax = a1.y + a2.y;
@@ -561,19 +840,30 @@ float repulsion(
     // bF[3] = bFVec[3];
     computeBoysFunctionValues(
         bF, orbExp*dot(rLR, rLR), maxAx + maxAy + maxAz);
-        
     for (int ix = 0; ix <= angXLMax; ix++) {
         float oXL = overlapsL[ix].x;
+        float oXL1 = 1.0;
+        float oXL2 = 1.0;
         for (int iy = 0; iy <= angYLMax; iy++) {
             float oYL = overlapsL[iy].y;
+            float oYL1 = 1.0;
+            float oYL2 = 1.0;
             for (int iz = 0; iz <= angZLMax; iz++) {
                 float oZL = overlapsL[iz].z;
+                float oZL1 = 1.0;
+                float oZL2 = 1.0;
                 for (int jx = 0; jx <= angXRMax; jx++) {
                     float oXR = overlapsR[jx].x;
+                    float oXR3 = 1.0;
+                    float oXR4 = 1.0;
                     for (int jy = 0; jy <= angYRMax; jy++) {
                         float oYR = overlapsR[jy].y;
+                        float oYR3 = 1.0;
+                        float oYR4 = 1.0;
                         for (int jz = 0; jz <= angZRMax; jz++) {
                             float oZR = overlapsR[jz].z;
+                            float oZR3 = 1.0;
+                            float oZR4 = 1.0;
                             float overlaps = oXL*oXR*oYL*oYR*oZL*oZR;
                             float cc = coulombCoefficient(
                                 bF, 
@@ -582,6 +872,30 @@ float repulsion(
                             float modVal = mod(float(jx + jy + jz), 2.0);
                             float factor = (modVal > eps)? -1.0: 1.0;
                             val += factor * overlaps * cc;
+                            vec3 cc1 = vec3(1.0);
+                            vec3 cc2 = vec3(1.0);
+                            vec3 cc3 = vec3(1.0);
+                            vec3 cc4 = vec3(1.0);
+                            grad1Val += factor*vec3(
+                                oXL1*oYL *oZL *oXR*oYR*oZR + overlaps*cc1.x,
+                                oXL *oYL1*oZL *oXR*oYR*oZR + overlaps*cc1.y,
+                                oXL *oYL *oZL1*oXR*oYR*oZR + overlaps*cc1.z
+                            );
+                            grad2Val += factor*vec3(
+                                oXL2*oYL *oZL *oXR*oYR*oZR + overlaps*cc2.x,
+                                oXL *oYL2*oZL *oXR*oYR*oZR + overlaps*cc2.y,
+                                oXL *oYL *oZL2*oXR*oYR*oZR + overlaps*cc2.z
+                            );
+                            grad3Val += factor*vec3(
+                                oXL*oYL*oZL*oXR3*oYR *oZR  + overlaps*cc3.x,
+                                oXL*oYL*oZL*oXR *oYR3*oZR  + overlaps*cc3.y,
+                                oXL*oYL*oZL*oXR *oYR *oZR3 + overlaps*cc3.z
+                            );
+                            grad4Val += factor*vec3(
+                                oXL*oYL*oZL*oXR4*oYR *oZR  + overlaps*cc4.x,
+                                oXL*oYL*oZL*oXR *oYR4*oZR  + overlaps*cc4.y,
+                                oXL*oYL*oZL*oXR *oYR *oZR4 + overlaps*cc4.z
+                            );
                         }
                     }
                 }

@@ -1511,19 +1511,19 @@ void Simulation::debug_stuff() {
         m_frames.debugs.coulomb_coeff.fill_array_with_contents(&res[0]);
         index_count = 0;
         printf("Orbital exponent: %g\n", orb_exp);
-        for (int i = 0; i <= 7; i++) {
-            for (int j = 0; j <= i; j++) {
-                for (int k = 0; k <= j; k++) {
-                    printf("%d, %d, %d\t%g\n", i, j, k, res[index_count]);
-                    printf("%d, %d, %d\t%g\n", i, j, k,
-                        coulomb_coefficient(i, j, k, coulomb_factor, orb_exp,
-                            spatial::Vector{.t=0.0, .x=x, y, z}));
-                        // overlap_coefficient(
-                        //     indices[4*index_count], g1, g2));
-                    index_count++;
-                }
-            }
-        }
+        // for (int i = 0; i <= 7; i++) {
+        //     for (int j = 0; j <= i; j++) {
+        //         for (int k = 0; k <= j; k++) {
+        //             printf("%d, %d, %d\t%g\n", i, j, k, res[index_count]);
+        //             printf("%d, %d, %d\t%g\n", i, j, k,
+        //                 coulomb_coefficient(i, j, k, coulomb_factor, orb_exp,
+        //                     spatial::Vector{.t=0.0, .x=x, y, z}));
+        //                 // overlap_coefficient(
+        //                 //     indices[4*index_count], g1, g2));
+        //             index_count++;
+        //         }
+        //     }
+        // }
     }
 
 }

@@ -279,7 +279,7 @@ def print_glsl_implementation_v2(min_angular, max_angular):
     for i in range(min_angular, max_angular + 1):
         for j in range(0, i+1):
             for k in range(0, j+1):
-                if i + j + k <= 6:
+                if i + j + k <= 8:
                     val = coulomb_coefficient(
                         i, j, k, 0, e, x, y, z).subs(
                             x**2 + y**2 + z**2, r2
@@ -303,14 +303,15 @@ def print_glsl_implementation_v2(min_angular, max_angular):
                             ).subs(
                                 z**2, z2
                             ).simplify()
+                    val = val.simplify()
                     # val = val.subs((-2.0)**n, 'neg2_pow_n')
                     rep_val = val.expand()
                     ddx_rep_val = diff(val, x)
                     ddy_rep_val = diff(val, y)
                     ddz_rep_val = diff(val, z)
                     for pow_val in range(5*max_angular, 0, -1):
-                        # rep_val = rep_val.subs(
-                        #     boys_func(e*r2, pow_val), f'bF{pow_val}')
+                        rep_val = rep_val.subs(
+                            boys_func(e*r2, pow_val), f'bF{pow_val}')
                         # rep_val2 = -rep_val.subs(
                         #     boys_func(e*r2, pow_val + 1), f'bF{pow_val}')
                         rep_val = rep_val.subs(
@@ -328,6 +329,11 @@ def print_glsl_implementation_v2(min_angular, max_angular):
                         ddz_rep_val = ddz_rep_val.subs(
                             power(e, pow_val), f'ep{pow_val}')
                     bf_set = set(re.findall('bF[0-9]+', str(rep_val)))
+                    ep_set = set(re.findall('ep[0-9]+', str(rep_val)))
+                    x_set = set(re.findall('x[0-9]+', str(rep_val)))
+                    y_set = set(re.findall('y[0-9]+', str(rep_val)))
+                    z_set = set(re.findall('z[0-9]+', str(rep_val)))
+                    # print(ep_set, x_set, y_set, z_set)
                     str_expr = str(rep_val)
                     # print(len(rep_val.args))
                     # for term in rep_val.args:
@@ -345,6 +351,26 @@ def print_glsl_implementation_v2(min_angular, max_angular):
                         print(f'    if (hexIJK == 0x{i}{j}{k})' + ' {')
                     else:
                         print(f'    else if (hexIJK == 0x{i}{j}{k})' + ' {')
+                        for element in ep_set:
+                            print(f'        float {element} = ' +
+                                   '*'.join(
+                                       ['e' for _ in range(int(element[2::]))]
+                                       ) + ';')
+                        for element in x_set:
+                            print(f'        float {element} = ' +
+                                   '*'.join(
+                                       ['x' for _ in range(int(element[1::]))]
+                                       ) + ';')
+                        for element in y_set:
+                            print(f'        float {element} = ' +
+                                   '*'.join(
+                                       ['y' for _ in range(int(element[1::]))]
+                                       ) + ';')
+                        for element in z_set:
+                            print(f'        float {element} = ' +
+                                   '*'.join(
+                                       ['z' for _ in range(int(element[1::]))]
+                                       ) + ';')
                     # print('        return vec3(')
                     # print(f'            {str_ddx_expr},')
                     # print(f'            {str_ddy_expr},')
@@ -464,7 +490,7 @@ def get_glsl_helper_functions(amount):
 
 if __name__ == '__main__':
     # print(cc(14, n, x).simplify())
-    print_glsl_implementation_v2(0, 6)
+    print_glsl_implementation_v2(0, 8)
     # print_table(0, 4)
     # print_glsl_implementation_v3()
     # indices = set()

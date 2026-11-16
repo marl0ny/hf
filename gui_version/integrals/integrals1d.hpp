@@ -24,4 +24,7 @@ fp_type laplacian1d(Gaussian1D g1, Gaussian1D g2);
 fp_type coulomb_coefficient(int i, int j, int k, int n,
                            fp_type orb_exp, const spatial::Vector &r12);
 
+fp_type coulomb_coefficient(fp_type *bf, int i, int j, int k, int n,
+                           fp_type orb_exp, const spatial::Vector &r12);
+
 #endif

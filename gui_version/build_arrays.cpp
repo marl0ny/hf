@@ -9,7 +9,7 @@
 #include <vector>
 #include <iostream>
 
-#define THREAD_COUNT 1
+#define THREAD_COUNT 10
 
 // #ifndef __EMSCRIPTEN__
 // #define THREAD_COUNT 10
@@ -437,7 +437,7 @@ static void modify_re_arrays(
                 for (int l = start; l < n; l++) {
                     double four_e1 = re_abab(i, j);
                     double four_e2 = re_abab(k, l);
-                    if (sqrt(four_e1 * four_e2) > 1e-10) {
+                    // if (sqrt(four_e1 * four_e2) > 1e-10) {
                         // printf("%d %d %d %d: ", i, j, k, l);
                         // printf("%d %d %d %d\n",
                         //     basis_functions.shell_at(i),
@@ -452,7 +452,7 @@ static void modify_re_arrays(
                         curr++;
                         indices[curr] = (float)l;
                         curr++;
-                    }
+                    // }
                 }   
             }
         }
@@ -784,18 +784,18 @@ void build_arrays::fill(
     fill_repulsion_exchange_cull_vanishing_shells(
         repulsion_exchange, basis_functions, re_abab);
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            for (int k = 0; k < n; k++) {
-                for (int l = 0; l < n; l++) {
-                    if (i == j && k == l) {
-                        double val = repulsion_exchange(i, j, k, l);
-                        printf("%d, %d, %d, %d\t%g\n", i, j, k, l, val);
-                    }
-                }
-            }
-        }
-    }
+    // for (int i = 0; i < n; i++) {
+    //     for (int j = 0; j < n; j++) {
+    //         for (int k = 0; k < n; k++) {
+    //             for (int l = 0; l < n; l++) {
+    //                 if (i == j && k == l) {
+    //                     double val = repulsion_exchange(i, j, k, l);
+    //                     printf("%d, %d, %d, %d\t%g\n", i, j, k, l, val);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
 
     // for (int i = 0; i < n; i++) {

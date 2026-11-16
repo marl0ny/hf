@@ -10,6 +10,8 @@ by Joshua Goings:
 
 #define PI 3.141592653589793
 
+#define RECURSE_DIR_TURN_POINT 4.5425955121971775
+
 /*
 This uses Hypergeometric 1F1 as implemented by the Boost math library:
 https://live.boost.org/doc/libs/master/libs/\
@@ -135,4 +137,65 @@ static inline fp_type boys_func_recurse_to_zero(fp_type x, int n) {
         return sqrt(PI)*std::erf(sqrt(x))/(2.0*sqrt(x));
     // See (2)
     return ((n - 0.5)/x)*boys_func_recurse_to_zero(x, n-1) - 0.5*exp(-x)/x;*/
+}
+
+static comp_type compute_bf_recurse_upwards_intermediary(fp_type x) {
+    comp_type c_val = 0.0;
+    comp_type c_x = x;
+    comp_type one = 1.0;
+    for (int i = 0; i < 13; i++) {
+        comp_type exp_val = WEIGHTS[2*i];
+        comp_type weight = WEIGHTS[2*i + 1];
+        c_val += weight *
+            (-(std::exp(exp_val) / (c_x + exp_val))
+             * (std::exp(-(c_x + exp_val)) - one));
+    }
+    return c_val;
+}
+
+/* See "A fast algorithm for computing the Boys function"
+by Gregory Beylkin and Sandeep Sharma, particularly the section containing
+equation (3) for recursing to the maximum n value. */
+static void 
+compute_bf_values_recurse_upwards(fp_type *bf, float x, int n_max) {
+    comp_type c_val = compute_bf_recurse_upwards_intermediary(x);
+    float val = (comp_type(0.5, 0.0) * c_val).real();
+    if (n_max > 12) {
+        for (int nIter = n_max; nIter > 12; nIter--)
+            bf[nIter - 1] = val;
+    }
+    for (int nIter = 12; nIter > 0; nIter--) {
+        val = x/(float(nIter) - 0.5)*val 
+            + exp(-x)/(2.0*(float(nIter) - 0.5));
+        bf[nIter - 1] = val;
+    }
+}
+
+static 
+void compute_bf_values_recurse_to_zero(fp_type *bf, float x, int n_max) {
+    float val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
+    float bx = 0.5*exp(-x)/x;
+    bf[0] = val;
+    for (int n_iter = 1; n_iter <= n_max; n_iter++) {
+        val = ((float(n_iter) - 0.5)/x)*val - bx;
+        bf[n_iter] = val;
+    }
+}
+
+void beylkin_sharma::compute_bf_table(fp_type *bf, fp_type x, int n_max) {
+    if (abs(x) < 1e-60) {
+        for (int n = 0; n <= n_max; n++) {
+            bf[n] = 1.0/(2.0*float(n) + 1.0);
+        }
+    }
+    // float y = 1.0;
+    // int nMax = 12;
+    // for (int j = 1; j <= nMax; j++) // See I.
+    //     y *= (j - 0.5);
+    // float z = pow(y, 1.0/float(nMax));
+    if (abs(x) < RECURSE_DIR_TURN_POINT)
+        compute_bf_values_recurse_upwards(bf, x, n_max);
+    else
+        compute_bf_values_recurse_to_zero(bf, x, n_max);
+
 }

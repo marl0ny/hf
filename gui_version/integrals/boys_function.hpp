@@ -20,6 +20,7 @@ namespace beylkin_sharma {
     by Gregory Beylkin and Sandeep Sharma. */
     using fp_type = float;
     fp_type boys(fp_type x, int n);
+    void compute_bf_table(fp_type *bf, fp_type x, int n_max);
 
 };
 

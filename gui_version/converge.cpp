@@ -115,17 +115,11 @@ void converge::iteration(
     array_helpers::Array2D orbitals = array_helpers::row_stack(
         orbitals_u, orbitals_d);
     array_helpers::SquareArray
-    repulsion = repulsion_exchange_tensor.reduce(
-        2, 3, orbitals, orbitals
-    );
+    repulsion = repulsion_exchange_tensor.reduce_2nd3rd(orbitals);
     array_helpers::SquareArray
-    exchange_u = repulsion_exchange_tensor.reduce(
-        1, 3, orbitals_u, orbitals_u
-    );
+    exchange_u = repulsion_exchange_tensor.reduce_1st3rd(orbitals_u);
     array_helpers::SquareArray
-    exchange_d = repulsion_exchange_tensor.reduce(
-        1, 3, orbitals_d, orbitals_d
-    );
+    exchange_d = repulsion_exchange_tensor.reduce_1st3rd(orbitals_d);
     // printf("Row sizes: %d, %d, %d\n", 
     //        kinetic_nuclear.row_size(), repulsion.row_size(), exchange_u.row_size());
     array_helpers::SquareArray
