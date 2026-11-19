@@ -31,7 +31,7 @@ void closed_shell_element_example(int z) {
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
-    array_helpers::HypercubeArray repulsion_exchange(n);
+    array_helpers::Symmetric4 repulsion_exchange(n);
     build_arrays::fill(
         overlap, kinetic, nuclear, repulsion_exchange, 
         arr, nuclear_charges);
@@ -99,7 +99,7 @@ spatial::Vector position {.t=0.0, .x=0.0, .y=0.0, .z=0.0};
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
-    array_helpers::HypercubeArray repulsion_exchange(n);
+    array_helpers::Symmetric4 repulsion_exchange(n);
 
     struct timespec frame_time[2];
     clock_gettime(CLOCK_MONOTONIC, &frame_time[0]);
@@ -301,7 +301,7 @@ void h2_example() {
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
-    array_helpers::HypercubeArray repulsion_exchange(n);
+    array_helpers::Symmetric4 repulsion_exchange(n);
     build_arrays::fill(
         overlap, kinetic, nuclear,
         repulsion_exchange, arr, nuclear_charges);
@@ -357,7 +357,7 @@ void h2o_example() {
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
-    array_helpers::HypercubeArray repulsion_exchange(n);
+    array_helpers::Symmetric4 repulsion_exchange(n);
     build_arrays::fill(
         overlap, kinetic, nuclear, repulsion_exchange, arr, nuclear_charges);
     array_helpers::SquareArray h = kinetic + nuclear;
@@ -572,7 +572,7 @@ void o2_example() {
     array_helpers::SquareArray overlap(n);
     array_helpers::SquareArray kinetic(n);
     array_helpers::SquareArray nuclear(n);
-    array_helpers::HypercubeArray repulsion_exchange(n);
+    array_helpers::Symmetric4 repulsion_exchange(n);
     build_arrays::fill(
         overlap, kinetic, nuclear, repulsion_exchange, 
         arr, nuclear_charges);

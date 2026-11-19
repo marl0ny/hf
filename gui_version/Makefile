@@ -44,7 +44,8 @@ INCLUDE = -I${PWD} -I${PWD}/spatial -I${PWD}/integrals \
 	-I${PWD}/matrix_computations -I${PWD}/metropolis \
 	-I/opt/homebrew/lib -I${PWD}/bmp \
 	-I${PWD}/gl_wrappers -I${PWD}/glfw_wrappers \
-    -I${PWD}/visualization_3d -I${PWD}/matrix
+    -I${PWD}/visualization_3d -I${PWD}/matrix \
+	-I${PWD}/imgui
 # 	 -I${PWD}/matrix -I${PWD}/parse -I${PWD}/user_edit -I${PWD}/bmp
 LIBS = -lm -lGL -lGLEW -lglfw -lpthread
 endif
@@ -60,6 +61,8 @@ IMGUI_SOURCES = ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_draw.cpp \
 IMGUI_OBJECTS = ./imgui.o ./imgui_draw.o ./imgui_impl_glfw.o \
 				./imgui_impl_opengl3.o \
                 ./imgui_tables.o ./imgui_widgets.o
+
+EIGEN_HEADERS = ./matrix_computations/Eigen/Core
 
 ##############################################################################
 ##############################################################################
@@ -153,7 +156,7 @@ SHADERS := $(wildcard ./shaders/**/*.frag) $(wildcard ./shaders/**/*.vert)
 ${TARGET}: ${OBJECTS} ${SHADERS}
 	${CPP_COMPILE} ${FLAGS_NO_OPT} -o $@ ${OBJECTS} ${LIBS} ${FLAGS2}
 
-${TOP_LEVEL_OBJECTS}: ${TOP_LEVEL_SOURCES} ${DEPENDENCIES}
+${TOP_LEVEL_OBJECTS}: ${TOP_LEVEL_SOURCES} ${DEPENDENCIES} ${IMGUI_OBJECTS}
 	${CPP_COMPILE} ${FLAGS} -c ${TOP_LEVEL_SOURCES} ${INCLUDE}
 
 ${INTEGRALS_OBJECTS}: ${INTEGRALS_SOURCES} ${DEPENDENCIES}
@@ -165,7 +168,7 @@ ${ATOMIC_DATA_OBJECTS}: ${ATOMIC_DATA_SOURCES} ${DEPENDENCIES}
 ${SPATIAL_OBJECTS}: ${SPATIAL_SOURCES} ${DEPENDENCIES}
 	${CPP_COMPILE} ${FLAGS} -c ${SPATIAL_SOURCES} ${INCLUDE}
 
-${MATRIX_COMPUTATIONS_OBJECTS}: ${MATRIX_COMPUTATIONS_SOURCES}
+${MATRIX_COMPUTATIONS_OBJECTS}: ${MATRIX_COMPUTATIONS_SOURCES} ${EIGEN_HEADERS}
 	${CPP_COMPILE} ${FLAGS} -c ${MATRIX_COMPUTATIONS_SOURCES} ${INCLUDE}
 
 ${METROPOLIS_OBJECTS}: ${METROPOLIS_SOURCES}
@@ -203,6 +206,13 @@ ${IMGUI_SOURCES}:
 	unzip master.zip
 	mv ./imgui-master ./imgui
 
+${EIGEN_HEADERS}:
+	wget "https://gitlab.com/libeigen/eigen/-/archive/nightly/eigen-nightly.zip"
+	unzip ./eigen-nightly.zip
+	cp -R ./eigen-nightly/Eigen ./matrix_computations
+
+
+
 clean_obj:
 	rm -f *.o
 
@@ -211,3 +221,7 @@ clean_bmp:
 
 clean:
 	rm -f *.o ${TARGET} *.wasm *.js
+
+clean2:
+	rm -f *.o ${TARGET} *.wasm *.js *.zip *.zip.1 *.mem
+	rm -rf ./matrix_computations/Eigen ./imgui ./eigen*/

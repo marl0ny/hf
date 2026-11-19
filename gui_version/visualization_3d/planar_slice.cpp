@@ -244,7 +244,7 @@ static Vec3 most_perpendicular_intersection_helper(
     }
     int most_perp_slice = 0;
     for (int i = 0; i < 3; i++) {
-        if (abs(dots[i]) > abs(dots[most_perp_slice]))
+        if (std::abs(dots[i]) > std::abs(dots[most_perp_slice]))
             most_perp_slice = i;
     }
 }*/
@@ -276,7 +276,7 @@ Vec3 PlanarSlices::most_perpendicular_intersection(
     }
     int most_perp_slice = 0;
     for (int i = 0; i < 3; i++) {
-        if (abs(dots[i]) > abs(dots[most_perp_slice]))
+        if (std::abs(dots[i]) > std::abs(dots[most_perp_slice]))
             most_perp_slice = i;
     }
     most_perp = most_perp_slice;

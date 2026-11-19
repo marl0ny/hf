@@ -1431,7 +1431,7 @@ void test10() {
         for (int j = 0; j < arr.row_size(); j++) {
             for (int k = 0; k < arr.row_size(); k++) {
                 for (int l = 0; l < arr.row_size(); l++) {
-                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                    if (std::abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
                         indices.push_back({i, j, k, l});
                 }
             }
@@ -1497,7 +1497,7 @@ void test11() {
         for (int j = 0; j < arr.row_size(); j++) {
             for (int k = 0; k < arr.row_size(); k++) {
                 for (int l = 0; l < arr.row_size(); l++) {
-                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                    if (std::abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
                         indices.push_back({i, j, k, l});
                 }
             }
@@ -1564,7 +1564,7 @@ void test12() {
         for (int j = 0; j < arr.row_size(); j++) {
             for (int k = 0; k < arr.row_size(); k++) {
                 for (int l = 0; l < arr.row_size(); l++) {
-                    if (abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
+                    if (std::abs(arr2(i, j, k, l) - arr(i, j, k, l)) > 1e-60)
                         indices.push_back({i, j, k, l});
                 }
             }

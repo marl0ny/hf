@@ -50,6 +50,16 @@ static inline fp_type boys_func_recurse_upwards(fp_type x, int n);
 
 static inline fp_type boys_func_recurse_to_zero(fp_type x, int n);
 
+fp_type & BFTable::operator[](unsigned int index) {
+    index = index % MAX_SIZE;
+    return this->ind[index];
+}
+
+fp_type BFTable::operator[](unsigned int index) const {
+    index = index % MAX_SIZE;
+    return this->ind[index];
+}
+
 /* Please look at "A fast algorithm for computing the Boys function"
 by Gregory Beylkin and Sandeep Sharma, which is where this
 implementation is taken from. This function is WIP.
@@ -65,7 +75,7 @@ fp_type beylkin_sharma::boys(fp_type x, int n) {
     for (int j = 1; j <= n_max; j++) // See I.
         y *= (j - 0.5);
     fp_type z = std::pow(y, 1.0/n_max);
-    if (abs(x) < z)
+    if (std::abs(x) < z)
         return boys_func_recurse_upwards(x, n);
     else
         return boys_func_recurse_to_zero(x, n);
@@ -157,7 +167,7 @@ static comp_type compute_bf_recurse_upwards_intermediary(fp_type x) {
 by Gregory Beylkin and Sandeep Sharma, particularly the section containing
 equation (3) for recursing to the maximum n value. */
 static void 
-compute_bf_values_recurse_upwards(fp_type *bf, float x, int n_max) {
+compute_bf_values_recurse_upwards(BFTable &bf, float x, int n_max) {
     comp_type c_val = compute_bf_recurse_upwards_intermediary(x);
     float val = (comp_type(0.5, 0.0) * c_val).real();
     if (n_max > 12) {
@@ -172,7 +182,7 @@ compute_bf_values_recurse_upwards(fp_type *bf, float x, int n_max) {
 }
 
 static 
-void compute_bf_values_recurse_to_zero(fp_type *bf, float x, int n_max) {
+void compute_bf_values_recurse_to_zero(BFTable &bf, float x, int n_max) {
     float val = sqrt(PI)*erf(sqrt(x))/(2.0*sqrt(x));
     float bx = 0.5*exp(-x)/x;
     bf[0] = val;
@@ -182,8 +192,8 @@ void compute_bf_values_recurse_to_zero(fp_type *bf, float x, int n_max) {
     }
 }
 
-void beylkin_sharma::compute_bf_table(fp_type *bf, fp_type x, int n_max) {
-    if (abs(x) < 1e-60) {
+void beylkin_sharma::compute_bf_table(BFTable &bf, fp_type x, int n_max) {
+    if (std::abs(x) < 1e-60) {
         for (int n = 0; n <= n_max; n++) {
             bf[n] = 1.0/(2.0*float(n) + 1.0);
         }
@@ -193,7 +203,7 @@ void beylkin_sharma::compute_bf_table(fp_type *bf, fp_type x, int n_max) {
     // for (int j = 1; j <= nMax; j++) // See I.
     //     y *= (j - 0.5);
     // float z = pow(y, 1.0/float(nMax));
-    if (abs(x) < RECURSE_DIR_TURN_POINT)
+    if (std::abs(x) < RECURSE_DIR_TURN_POINT)
         compute_bf_values_recurse_upwards(bf, x, n_max);
     else
         compute_bf_values_recurse_to_zero(bf, x, n_max);

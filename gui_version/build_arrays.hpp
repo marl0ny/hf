@@ -14,14 +14,6 @@
 
 namespace build_arrays {
 
-    void fill(
-        array_helpers::SquareArray &overlap,
-        array_helpers::SquareArray &kinetic,
-        array_helpers::SquareArray &nuclear,
-        array_helpers::HypercubeArray &repulsion_exchange,
-        const BasisFunctionArray &basis_functions,
-        const NuclearChargesArray &nuclear_charges
-    );
 
     void fill(
         array_helpers::SquareArray &overlap,

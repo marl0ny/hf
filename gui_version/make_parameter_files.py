@@ -623,9 +623,10 @@ def write_sliders_js(parameters, dst_file_name):
         if parameter['type'] == 'HoveringCanvasLabel':
             file_contents += f'createHoveringLabelOnCanvas({i}, "{name}");'
         if parameter['type'] == 'LinkedLabel':
+            parameter_value = parameter['value']
             file_contents \
                 += f'createLinkedLabel({controls[-1]}, {i}, '\
-                    f'\"{name}\", \"{parameter['value']}\");\n'
+                    f'\"{name}\", \"{parameter_value}\");\n'
         if parameter['type'] == 'KaTeXLabel':
             file_contents += f'createKaTeXLabel({controls[-1]}, {i}, '\
                     f'\"{name}\");\n'

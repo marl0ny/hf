@@ -186,7 +186,7 @@ std::string express_orbitals_as_function(
         st += "return \n    ";
         // st += "" + std::to_string(n) + "  \n";
         for (int i = 0; i < orbitals.column_count(); i++) {
-            if (abs(orbitals(n, i)) > 0.0) {
+            if (std::abs(orbitals(n, i)) > 0.0) {
                 double coeff = orbitals(n, i);
                 for (int p = 0; p < arr.primitive_count_at(i); p++) {
                     Gaussian3D g = arr.get_primitive(i, p);

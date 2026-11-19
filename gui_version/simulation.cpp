@@ -556,7 +556,7 @@ void Simulation::solve(const SimParams &params) {
         double t2_sec = time_conv[1].tv_sec;
         double t1_sec = time_conv[0].tv_sec;
         double delta_t = 0.0;
-        if (abs(t2_sec - t1_sec) > 1.0) {
+        if (std::abs(t2_sec - t1_sec) > 1.0) {
             if ((t2_sec - t1_sec) < 0.0)
                 std::swap(t2_sec, t1_sec);
             delta_t += t2_sec - t1_sec;
